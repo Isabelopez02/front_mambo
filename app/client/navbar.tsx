@@ -1,32 +1,43 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Notification01Icon,
   ShoppingBag01Icon, 
-  TruckIcon,       
   Menu01Icon,
-  Cancel01Icon 
+  Cancel01Icon,
+  UserCircleIcon,
+  Store01Icon
 } from "hugeicons-react";
 
-// --- Botón de Acción ---
-function ActionButton({ icon }: { icon: React.ReactNode }) {
+// --- Botón de Ícono Simple ---
+function ActionButton({ icon, badge }: { icon: React.ReactNode, badge?: boolean }) {
   return (
     <motion.button 
+      whileHover={{ backgroundColor: '#f1f5f9' }}
       whileTap={{ scale: 0.9 }}
       style={{ 
-        padding: '8px', 
-        borderRadius: '8px', 
+        padding: '10px', 
+        borderRadius: '50%', 
         border: 'none', 
         background: 'transparent',
         cursor: 'pointer',
-        color: '#64748b',
+        color: '#0f172a',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        position: 'relative'
       }}
     >
       {icon}
+      {/* Puntito rojo de notificación/carrito */}
+      {badge && (
+        <span style={{ 
+          position: 'absolute', top: '6px', right: '6px', width: '8px', height: '8px', 
+          backgroundColor: '#ef4444', borderRadius: '50%', border: '2px solid white' 
+        }} />
+      )}
     </motion.button>
   );
 }
@@ -34,84 +45,129 @@ function ActionButton({ icon }: { icon: React.ReactNode }) {
 export default function Navbar() {
   const [isMobile, setIsMobile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 1024);
     checkMobile();
     window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+
+    // Detectar scroll para agregar sombra al navbar
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("resize", checkMobile);
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
+
+  const navLinks = ["Ropa", "Sobre Nosotros", "Envíos"];
 
   return (
     <nav style={{
+      position: 'fixed', // Lo mantiene fijo en la pantalla
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '70px',
+      backgroundColor: scrolled ? 'rgba(255, 255, 255, 0.9)' : '#ffffff', // Ligeramente transparente al hacer scroll
+      backdropFilter: scrolled ? 'blur(10px)' : 'none', // Efecto cristal
+      borderBottom: scrolled ? '1px solid transparent' : '1px solid #e2e8f0',
+      boxShadow: scrolled ? '0 4px 20px rgba(0,0,0,0.05)' : 'none',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      padding: isMobile ? '0 1.2rem' : '0 2rem',
-      height: '64px',
-      backgroundColor: '#ffffff',
-      borderBottom: '1px solid #e2e8f0',
-      position: 'sticky',
-      top: 0,
-      zIndex: 100,
+      padding: isMobile ? '0 20px' : '0 5%',
+      zIndex: 1000,
+      transition: 'all 0.3s ease'
     }}>
       
-      {/* 1. BRANDING & LINKS (Desktop) */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '2.5rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{ width: '28px', height: '28px', backgroundColor: '#0f172a', borderRadius: '6px' }} />
-          <span style={{ fontWeight: '700', fontSize: '1.1rem', color: '#0f172a', letterSpacing: '-0.5px' }}>
-            MAMBO
-          </span>
+      {/* 1. BRANDING (Logo) */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+        <div style={{ width: '32px', height: '32px', backgroundColor: '#000', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+           <span style={{ color: '#fff', fontWeight: '900', fontSize: '1rem' }}>M</span>
         </div>
-
-        {/* Links ocultos en móvil */}
-        {!isMobile && (
-          <div style={{ display: 'flex', gap: '1.5rem' }}>
-            {["Resumen", "Clientes", "Productos", "Ajustes"].map((link, i) => (
-              <span key={link} style={{ fontSize: '0.875rem', fontWeight: i === 0 ? '600' : '500', color: i === 0 ? '#0f172a' : '#64748b', cursor: 'pointer' }}>
-                {link}
-              </span>
-            ))}
-          </div>
-        )}
+        <span style={{ fontWeight: '900', fontSize: '1.3rem', color: '#000', letterSpacing: '-0.5px' }}>
+          MAMBO
+        </span>
       </div>
 
-      {/* 2. ACCIONES */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.2rem' : '0.5rem' }}>
+      {/* 2. ENLACES (Solo Desktop - Centrados) */}
+      {!isMobile && (
+        <div style={{ display: 'flex', gap: '30px', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
+          {navLinks.map((link) => (
+            <span key={link} style={{ 
+              fontSize: '0.9rem', 
+              fontWeight: '700', 
+              color: '#475569', 
+              cursor: 'pointer',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              transition: 'color 0.2s'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.color = '#000'}
+            onMouseOut={(e) => e.currentTarget.style.color = '#475569'}
+            >
+              {link}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* 3. ACCIONES Y BOTONES (Derecha) */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '5px' : '15px' }}>
         
-        {/* Iconos que se mantienen en móvil */}
-        <ActionButton icon={<Notification01Icon size={20} />} />
-        <ActionButton icon={<ShoppingBag01Icon size={20} />} />
+        {/* Íconos (Notificaciones y Carrito) */}
+        {!isMobile && <ActionButton icon={<Notification01Icon size={22} />} badge />}
+        <ActionButton icon={<ShoppingBag01Icon size={22} />} badge />
+
+        {/* Separador */}
+        {!isMobile && <div style={{ width: '1px', height: '24px', backgroundColor: '#e2e8f0', margin: '0 5px' }} />}
 
         {!isMobile && (
           <>
-            <div style={{ position: 'relative' }}>
-              <ActionButton icon={<TruckIcon size={20} />} />
-              <span style={{ position: 'absolute', top: '6px', right: '6px', width: '8px', height: '8px', backgroundColor: '#ef4444', borderRadius: '50%', border: '2px solid white' }} />
-            </div>
-            <div style={{ width: '1px', height: '24px', backgroundColor: '#e2e8f0', margin: '0 8px' }} />
-            
-            {/* Botón Mi Cuenta (Desktop) */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 12px 4px 4px', backgroundColor: '#f8fafc', borderRadius: '20px', border: '1px solid #e2e8f0', cursor: 'pointer' }}>
-              <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.7rem', fontWeight: '700' }}>P</div>
-              <span style={{ fontSize: '0.8rem', fontWeight: '600', color: '#1e293b' }}>Mi Cuenta</span>
-            </div>
+            {/* Botón Acceder (Minimalista) */}
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', color: '#000' }}
+            >
+              <UserCircleIcon size={24} />
+              <span style={{ fontSize: '0.9rem', fontWeight: '700' }}>Acceder</span>
+            </motion.button>
+
+            {/* Botón Tienda Virtual (Call to Action Principal) */}
+            <motion.button 
+              whileHover={{ scale: 1.05, backgroundColor: '#1e293b' }}
+              whileTap={{ scale: 0.95 }}
+              style={{ 
+                display: 'flex', alignItems: 'center', gap: '8px', 
+                backgroundColor: '#000', color: '#fff', 
+                padding: '10px 20px', borderRadius: '12px', 
+                border: 'none', cursor: 'pointer', 
+                fontWeight: '800', fontSize: '0.85rem',
+                textTransform: 'uppercase', letterSpacing: '0.5px'
+              }}
+            >
+              <Store01Icon size={18} />
+              Tienda Virtual
+            </motion.button>
           </>
         )}
 
-        {/* Botón Menú (Solo móvil) */}
+        {/* Botón Menú Hamburguesa (Solo móvil) */}
         {isMobile && (
           <button 
             onClick={() => setMenuOpen(!menuOpen)}
-            style={{ background: 'none', border: 'none', padding: '8px', color: '#0f172a', cursor: 'pointer' }}
+            style={{ background: 'none', border: 'none', padding: '8px', color: '#000', cursor: 'pointer' }}
           >
-            {menuOpen ? <Cancel01Icon size={24} /> : <Menu01Icon size={24} />}
+            {menuOpen ? <Cancel01Icon size={28} /> : <Menu01Icon size={28} />}
           </button>
         )}
       </div>
 
-      {/* 3. MENÚ DESPLEGABLE (Mobile Overlay) */}
+      {/* 4. MENÚ DESPLEGABLE (Móvil) */}
       <AnimatePresence>
         {isMobile && menuOpen && (
           <motion.div
@@ -120,24 +176,47 @@ export default function Navbar() {
             exit={{ opacity: 0, y: -20 }}
             style={{
               position: 'absolute',
-              top: '64px',
+              top: '70px', // Justo debajo del navbar
               left: 0,
               right: 0,
               backgroundColor: '#ffffff',
               borderBottom: '1px solid #e2e8f0',
-              padding: '20px',
+              padding: '24px 20px',
               display: 'flex',
               flexDirection: 'column',
-              gap: '20px',
-              zIndex: 99,
-              boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'
+              gap: '24px',
+              boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)'
             }}
           >
-            {["Resumen", "Clientes", "Productos", "Ajustes", "Mi Cuenta"].map((link) => (
-              <span key={link} style={{ fontSize: '1rem', fontWeight: '600', color: '#1e293b' }}>
-                {link}
-              </span>
-            ))}
+            {/* Links Móvil */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {navLinks.map((link) => (
+                <span key={link} style={{ fontSize: '1.2rem', fontWeight: '800', color: '#000', textTransform: 'uppercase' }}>
+                  {link}
+                </span>
+              ))}
+            </div>
+            
+            <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0' }} />
+
+            {/* Botones Móvil */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <button style={{ 
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                padding: '14px', borderRadius: '12px', border: '2px solid #000', 
+                backgroundColor: '#fff', color: '#000', fontWeight: '800', fontSize: '1rem' 
+              }}>
+                <UserCircleIcon size={20} /> Acceder
+              </button>
+              
+              <button style={{ 
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                padding: '14px', borderRadius: '12px', border: 'none', 
+                backgroundColor: '#000', color: '#fff', fontWeight: '800', fontSize: '1rem' 
+              }}>
+                <Store01Icon size={20} /> Tienda Virtual
+              </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
