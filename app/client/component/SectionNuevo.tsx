@@ -7,6 +7,7 @@ const nuevasPrendas = [
   { id: 101, name: "Urban Capa M1", price: "$120", img: "https://i.pinimg.com/736x/87/97/35/87973582c53b4851c2947bb4812fb441.jpg" },
   { id: 102, name: "Neo Cargo Pant", price: "$95", img: "https://i.pinimg.com/736x/4a/6f/b6/4a6fb6a7ee2e53f7eb37d85f48410f4e.jpg" },
   { id: 103, name: "Cyber Hoodie v2", price: "$85", img: "https://i.pinimg.com/736x/38/55/31/385531833eccf3172f2b9ac1cf6684a9.jpg" },
+  { id: 103, name: "Cyber Hoodie v2", price: "$85", img: "https://i.pinimg.com/736x/38/55/31/385531833eccf3172f2b9ac1cf6684a9.jpg" },
   { id: 104, name: "Alpha Sneakers", price: "$150", img: "https://i.pinimg.com/1200x/06/a1/03/06a10364ca9d2bdb3f120bc34e708421.jpg" },
 ];
 
@@ -62,7 +63,7 @@ export function NuevosIngresos() {
                 margin: 0, 
                 letterSpacing: '-1px' 
             }}>
-              NUEVOS <br/> <span style={{ color: '#3b82f6' }}>INGRESOS</span>
+              NUEVOS <span style={{ color: '#3b82f6' }}>INGRESOS</span>
             </h2>
           </div>
           
@@ -83,7 +84,7 @@ export function NuevosIngresos() {
               <motion.div 
                 key={item.id}
                 whileHover={!isMobile ? { y: -10 } : {}}
-                style={{ minWidth: isMobile ? `${cardWidth - 120}px` : '320px' }}
+                style={{ minWidth: isMobile ? `${cardWidth - 350}px` : '320px' }}
               >
                 <div style={{ 
                   height: isMobile ? '350px' : '420px', 

@@ -62,7 +62,7 @@ export function SectionVendidos() {
       onMouseLeave={() => setIsHoveredGlobal(false)}
       style={{ padding: '10px 0', backgroundColor: '#fff', overflow: 'hidden' }}
     >
-      <div style={{ padding: '0 2%', display: 'flex', justifyContent: 'space-between', marginBottom: '40px', alignItems: 'center' }}>
+      <div style={{ padding: '0 2%', display: 'flex', justifyContent: 'space-between', marginBottom: '0px', alignItems: 'center' }}>
         <h2 style={{ fontSize: '2.5rem', fontWeight: '900' }}>Los Más Vendidos</h2>
         <div style={{ display: 'flex', gap: '10px' }}>
           <button onClick={movePrev} style={btnNavStyle}><ArrowLeft01Icon /></button>
@@ -85,7 +85,7 @@ function ProductCard({ item }: { item: any }) {
   const [isHover, setIsHover] = useState(false);
 
   return (
-    <div style={{ minWidth: '350px' }}>
+    <div style={{ minWidth: '250px' }}>
       <motion.div 
         onMouseEnter={() => setIsHover(true)}
         onMouseLeave={() => setIsHover(false)}
@@ -97,7 +97,7 @@ function ProductCard({ item }: { item: any }) {
         }}
         transition={{ type: "spring", stiffness: 100, damping: 100 , mass: 0.8 }}
         style={{ 
-          height: '550px', 
+          height: '350px', 
           borderRadius: '24px', 
           overflow: 'hidden', 
           position: 'relative',

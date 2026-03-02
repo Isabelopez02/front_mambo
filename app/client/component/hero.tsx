@@ -39,7 +39,7 @@ export default function Hero() {
   const [isMobile, setIsMobile] = useState(false);
   const current = characters[index];
 
-  // Detectar tamaño de pantalla para ajustes finos
+  // 1. Detectar tamaño de pantalla para ajustes finos
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
     handleResize();
@@ -47,11 +47,21 @@ export default function Hero() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // 2. NUEVO: Auto-reproducción cada 5 segundos
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prevIndex) => (prevIndex + 1) % characters.length);
+    }, 5000); // 5000ms = 5 segundos
+
+    // Limpiamos el intervalo cuando el componente se desmonta para evitar bugs
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <section 
       style={{ 
         display: 'flex', 
-        flexDirection: isMobile ? 'column' : 'row', // Vertical en móvil
+        flexDirection: isMobile ? 'column' : 'row',
         minHeight: isMobile ? 'auto' : 'calc(100vh - 64px)', 
         height: isMobile ? 'auto' : '90vh',
         overflow: 'hidden',
@@ -83,7 +93,7 @@ export default function Hero() {
         alignItems: 'flex-end', 
         justifyContent: 'center',
         width: isMobile ? '100%' : '55%',
-        height: isMobile ? '400px' : '100%',
+        height: isMobile ? '400px' : '110%',
         order: isMobile ? 1 : 1
       }}>
         <AnimatePresence mode="popLayout">
@@ -153,25 +163,11 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           style={{ display: 'flex', flexDirection: 'column', alignItems: isMobile ? 'center' : 'flex-start' }}
         >
-          <div style={{ 
-            color: current.accent, 
-            fontWeight: '700', 
-            fontSize: '0.7rem',
-            textTransform: 'uppercase',
-            padding: '6px 14px',
-            borderRadius: '100px',
-            backgroundColor: `${current.accent}20`,
-            border: `1px solid ${current.accent}50`,
-            marginBottom: '15px'
-          }}>
-            <ZapIcon size={12} style={{ marginRight: '5px' }} /> FULL OUTFIT SET
-          </div>
-
           <h1 style={{ 
             fontSize: isMobile ? '3rem' : '4.5rem', 
             fontWeight: '950', 
             lineHeight: 0.9, 
-            margin: '0 0 20px 0', 
+            margin: '0 0 0px 0', 
             color: '#fff' 
           }}>
             {current.name}
@@ -192,28 +188,6 @@ export default function Hero() {
           >
             SIGUIENTE OUTFIT <ArrowRight01Icon size={20} />
           </button>
-
-          {/* 3. SELECTOR MINIATURAS */}
-          <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-            {characters.map((char, i) => (
-              <motion.div
-                key={char.id}
-                onClick={() => setIndex(i)}
-                style={{ 
-                  width: '60px', 
-                  height: '60px', 
-                  borderRadius: '10px',
-                  border: index === i ? `2px solid ${current.accent}` : '1px solid rgba(255,255,255,0.2)',
-                  overflow: 'hidden',
-                  cursor: 'pointer',
-                  opacity: index === i ? 1 : 0.5,
-                  backgroundColor: 'rgba(255,255,255,0.05)'
-                }}
-              >
-                <img src={char.img} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-              </motion.div>
-            ))}
-          </div>
         </motion.div>
       </div>
     </section>
