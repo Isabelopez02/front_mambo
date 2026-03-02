@@ -88,7 +88,7 @@ export function Categorias() {
           >
             {/* Foto del modelo */}
             <img 
-              src="https://images.unsplash.com/photo-1523398002811-999aa8e9f5b9?q=80&w=800&auto=format&fit=crop" 
+              src="https://i.pinimg.com/1200x/e3/e3/19/e3e3194f1a55180dc38752fe95dd525c.jpg" 
               alt="Modelo Mambo" 
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
