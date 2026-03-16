@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
-import Hero from "./home/component/hero"; 
-import { BannerEnvios } from "./home/component/banerEnvios";
-import { NuevosIngresos } from "./home/component/SectionNuevo";
-import { SectionVendidos } from "./home/component/SectionVendidos";
-import { PrendasPopulares } from "./home/component/PrendasPopulares";
-import { SectionCategorias } from "./home/component/SectionCategorias";
-import { Servicio } from "./home/component/Servicio";
-import { SectionLooks } from "./home/looks/SectionLooks";
+import Hero from "./component/hero";
+import { BannerEnvios } from "./component/banerEnvios";
+import { NuevosIngresos } from "./component/SectionNuevo";
+import { SectionVendidos } from "./component/SectionVendidos";
+import { PrendasPopulares } from "./component/PrendasPopulares";
+import { Categorias } from "./component/SectionCategorias";
+import { Servicio } from "./component/Servicio";
+import { SectionLooks } from "./looks/SectionLooks";
 // Configuramos la fuente
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -26,13 +26,13 @@ export default function page({ children }: { children: React.ReactNode }) {
     <html lang="es" className={jakarta.className}>
       <body>
         <Hero />
-        <BannerEnvios />
         <SectionLooks />
-        <SectionCategorias />
+        <BannerEnvios />
+        <Servicio />
         <NuevosIngresos />
         <SectionVendidos />
         <PrendasPopulares />
-
+        <Categorias />
         <Servicio />
       </body>
     </html>

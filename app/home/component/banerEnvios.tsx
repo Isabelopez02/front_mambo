@@ -16,6 +16,7 @@ export function BannerEnvios() {
       borderBottom: '1px solid #e2e8f0',
       overflow: 'hidden',
       display: 'flex',
+      width: '100%',
       whiteSpace: 'nowrap',
       position: 'relative'
     }}>
