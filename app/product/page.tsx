@@ -4,10 +4,10 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBag01Icon, StarIcon, ArrowRight01Icon } from "hugeicons-react";
 // Importamos tu barra de filtros (Asegúrate de que la ruta coincida)
-import { SidebarFiltros } from "./SidebarFiltro";
+import { SidebarFiltros } from "./component/SidebarFiltro";
 import Link from "next/link";
 import TarjetaProducto from "../component/cardProducto"; 
-import { productosCatalogo } from "./producto";
+import { productosCatalogo } from "../ts/Prendas"; 
 import { Plus_Jakarta_Sans } from "next/font/google";
 
 const jakarta = Plus_Jakarta_Sans({

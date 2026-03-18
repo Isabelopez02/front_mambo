@@ -6,6 +6,6 @@ export type NavLink = {
 // Exportamos el arreglo
 export const navLinks: NavLink[] = [
   { name: "Ropa", path: "/product" },
-  { name: "Sobre Nosotros", path: "/nosotros" },
+  { name: "Sobre Nosotros", path: "/vestidor" },
   { name: "Envíos", path: "/envios" }
 ];

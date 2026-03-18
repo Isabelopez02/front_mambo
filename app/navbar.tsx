@@ -86,7 +86,7 @@ export default function Navbar() {
         {/* ACCIONES Y BOTONES */}
         <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '5px' : '15px', zIndex: 10 }}>
           {!isMobile && <ActionButton icon={<Notification01Icon size={22} />} badge />}
-          <ActionButton icon={<ShoppingCart01Icon size={22} />} badge />
+          <ActionButton data-carrito="true"  icon={<ShoppingCart01Icon size={22} />} badge />
           {!isMobile && <div style={{ width: '1px', height: '24px', backgroundColor: '#e2e8f0', margin: '0 5px' }} />}
 
           {!isMobile && (

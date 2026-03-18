@@ -51,6 +51,30 @@ export function SidebarFiltros() {
   // Contenido interno de los filtros (para reutilizar en PC y Móvil)
   const FiltrosContent = () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+      {/* 4. PRECIO */}
+      <div>
+        <div style={headerSeccionStyle} onClick={() => toggleSeccion('precio')}>
+          <h3 style={tituloSeccionStyle}>Precio</h3>
+          {secciones.precio ? <ArrowUp01Icon size={20} /> : <ArrowDown01Icon size={20} />}
+        </div>
+        <AnimatePresence>
+          {secciones.precio && (
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: 'hidden' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '15px' }}>
+                <div style={inputContainerStyle}>
+                  <span style={{ color: '#9ca3af', fontWeight: '700', fontSize: '0.8rem' }}>S/.</span>
+                  <input type="number" placeholder="Min" value={precio.min} onChange={e => setPrecio({...precio, min: e.target.value})} style={inputPrecioStyle} />
+                </div>
+                <span style={{ color: '#9ca3af', fontWeight: '900' }}>-</span>
+                <div style={inputContainerStyle}>
+                  <span style={{ color: '#9ca3af', fontWeight: '700', fontSize: '0.8rem' }}>S/.</span>
+                  <input type="number" placeholder="Max" value={precio.max} onChange={e => setPrecio({...precio, max: e.target.value})} style={inputPrecioStyle} />
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
       
       {/* 1. ESTADOS ESPECIALES (Switches/Checkboxes) */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -135,30 +159,6 @@ export function SidebarFiltros() {
 
       <hr style={lineaStyle} />
 
-      {/* 4. PRECIO */}
-      <div>
-        <div style={headerSeccionStyle} onClick={() => toggleSeccion('precio')}>
-          <h3 style={tituloSeccionStyle}>Precio</h3>
-          {secciones.precio ? <ArrowUp01Icon size={20} /> : <ArrowDown01Icon size={20} />}
-        </div>
-        <AnimatePresence>
-          {secciones.precio && (
-            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: 'hidden' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '15px' }}>
-                <div style={inputContainerStyle}>
-                  <span style={{ color: '#9ca3af', fontWeight: '700', fontSize: '0.8rem' }}>S/.</span>
-                  <input type="number" placeholder="Min" value={precio.min} onChange={e => setPrecio({...precio, min: e.target.value})} style={inputPrecioStyle} />
-                </div>
-                <span style={{ color: '#9ca3af', fontWeight: '900' }}>-</span>
-                <div style={inputContainerStyle}>
-                  <span style={{ color: '#9ca3af', fontWeight: '700', fontSize: '0.8rem' }}>S/.</span>
-                  <input type="number" placeholder="Max" value={precio.max} onChange={e => setPrecio({...precio, max: e.target.value})} style={inputPrecioStyle} />
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
 
       {/* Botón Aplicar (Principalmente útil en móvil) */}
       <button style={{ width: '100%', padding: '16px', backgroundColor: '#000', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: '900', fontSize: '0.9rem', marginTop: '20px', cursor: 'pointer' }} onClick={() => setIsOpenMobile(false)}>
