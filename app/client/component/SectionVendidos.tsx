@@ -1,136 +1,387 @@
 "use client";
-import { useEffect, useState } from "react";
-import { motion, useAnimation, AnimatePresence } from "framer-motion";
-import { ShoppingBag01Icon, ArrowRight01Icon, ArrowLeft01Icon } from "hugeicons-react";
+import React, { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
+import { StarIcon, ArrowLeft01Icon, ArrowRight01Icon } from "hugeicons-react";
 
-const initialItems = [
-  { id: 1, title: "Mambo Classic", price: "$29.99", img: "https://i.pinimg.com/736x/1f/35/8f/1f358fc40b87d712c8c89f838fb73f43.jpg", imgHover: "https://i.pinimg.com/736x/de/9b/b2/de9bb28c5c7f2bec54bc8980edc7ce3a.jpg" },
-  { id: 2, title: "Neo Cargo", price: "$89.99", img: "https://i.pinimg.com/1200x/3c/34/c0/3c34c0916813a9e9a932e39044ec29b3.jpg", imgHover: "https://i.pinimg.com/1200x/9e/07/7e/9e077e5cbf95e126f048e36869e6633e.jpg" },
-  { id: 3, title: "Cyber Hoodie", price: "$55.00", img: "https://i.pinimg.com/736x/87/97/35/87973582c53b4851c2947bb4812fb441.jpg", imgHover: "https://i.pinimg.com/736x/74/24/ba/7424baa68df7565a572e76323e41735c.jpg" },
-  { id: 4, title: "Alpha Sneakers", price: "$120.0", img: "https://i.pinimg.com/736x/44/0f/85/440f859330e1665d56f740067878c6eb.jpg", imgHover: "https://i.pinimg.com/736x/e8/5e/12/e85e125b80e0d7a7a9a6d46276e95064.jpg" },
-  { id: 5, title: "Urban Wind", price: "$75.00", img: "https://i.pinimg.com/736x/38/55/31/385531833eccf3172f2b9ac1cf6684a9.jpg", imgHover: "https://i.pinimg.com/736x/4a/6f/b6/4a6fb6a7ee2e53f7eb37d85f48410f4e.jpg" },
-  { id: 6, title: "Ovserdie complet", price: "$175.00", img: "https://i.pinimg.com/1200x/d4/25/21/d42521fa7f2a1566515cbd02fa3299a6.jpg", imgHover: "https://i.pinimg.com/736x/87/97/35/87973582c53b4851c2947bb4812fb441.jpg" },
-  { id: 7, title: "Urban Work", price: "$345.00", img: "https://i.pinimg.com/736x/58/9e/47/589e4703e15ce9ad9619c222aab5101d.jpg", imgHover: "https://i.pinimg.com/1200x/06/a1/03/06a10364ca9d2bdb3f120bc34e708421.jpg" },
-];
+interface Product {
+  id: number;
+  title: string;
+  price: string;
+  rating: number;
+  img: string;
+}
 
-const doubleItems = [...initialItems, ...initialItems];
+interface ProductSectionProps {
+  subtitle?: string;
+  title: string;
+  products: Product[];
+}
 
 export function SectionVendidos() {
-  const [isHoveredGlobal, setIsHoveredGlobal] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const controls = useAnimation();
-  const cardWidth = 375; // 350px width + 25px gap
-
-  const moveNext = async () => {
-    const nextIndex = currentIndex + 1;
-    
-    await controls.start({
-      x: -(cardWidth * nextIndex),
-      transition: { duration: 0.8, ease: [0.45, 0, 0.55, 1] }
-    });
-
-    if (nextIndex >= initialItems.length) {
-      controls.set({ x: 0 });
-      setCurrentIndex(0);
-    } else {
-      setCurrentIndex(nextIndex);
+  const ultimosIngresos: Product[] = [
+    {
+      id: 1,
+      title: "Cartera Último",
+      price: "S/. 20.00",
+      rating: 3,
+      img: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=600&auto=format&fit=crop"
+    },
+    {
+      id: 2,
+      title: "Cartera Último",
+      price: "S/. 20.00",
+      rating: 3,
+      img: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?q=80&w=600&auto=format&fit=crop"
+    },
+    {
+      id: 3,
+      title: "Cartera Último",
+      price: "S/. 20.00",
+      rating: 3,
+      img: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=600&auto=format&fit=crop"
+    },
+    {
+      id: 4,
+      title: "Cartera Último",
+      price: "S/. 20.00",
+      rating: 3,
+      img: "https://images.unsplash.com/photo-1608248597261-833257647000?q=80&w=600&auto=format&fit=crop"
     }
-  };
+  ];
 
-  const movePrev = async () => {
-    let prevIndex = currentIndex - 1;
-    if (prevIndex < 0) {
-      controls.set({ x: -(cardWidth * initialItems.length) });
-      prevIndex = initialItems.length - 1;
+  const maquillajeSkincare: Product[] = [
+    {
+      id: 101,
+      title: "Set Skincare Glow",
+      price: "S/. 45.00",
+      rating: 4,
+      img: "https://images.unsplash.com/photo-1608248597261-833257647000?q=80&w=600&auto=format&fit=crop"
+    },
+    {
+      id: 102,
+      title: "Sombra de Ojos Pastel",
+      price: "S/. 25.00",
+      rating: 5,
+      img: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=600&auto=format&fit=crop"
+    },
+    {
+      id: 103,
+      title: "Labial Matte Hydrating",
+      price: "S/. 18.00",
+      rating: 4,
+      img: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?q=80&w=600&auto=format&fit=crop"
+    },
+    {
+      id: 104,
+      title: "Brochas de Maquillaje Set",
+      price: "S/. 32.00",
+      rating: 5,
+      img: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=600&auto=format&fit=crop"
     }
-    await controls.start({
-      x: -(cardWidth * prevIndex),
-      transition: { duration: 0.8, ease: [0.45, 0, 0.55, 1] }
-    });
-    setCurrentIndex(prevIndex);
-  };
+  ];
 
-  useEffect(() => {
-    if (isHoveredGlobal) return;
-    const interval = setInterval(moveNext, 3000);
-    return () => clearInterval(interval);
-  }, [isHoveredGlobal, currentIndex]);
+  const carterasTendencia: Product[] = [
+    {
+      id: 201,
+      title: "Cartera Crossbody Luxe",
+      price: "S/. 65.00",
+      rating: 5,
+      img: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?q=80&w=600&auto=format&fit=crop"
+    },
+    {
+      id: 202,
+      title: "Bolso de Mano Nude",
+      price: "S/. 78.00",
+      rating: 4,
+      img: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=600&auto=format&fit=crop"
+    },
+    {
+      id: 203,
+      title: "Mini Tote Bag Premium",
+      price: "S/. 55.00",
+      rating: 5,
+      img: "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?q=80&w=600&auto=format&fit=crop"
+    },
+    {
+      id: 204,
+      title: "Cartera Cuero Sintético",
+      price: "S/. 70.00",
+      rating: 4,
+      img: "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?q=80&w=600&auto=format&fit=crop"
+    }
+  ];
 
   return (
-    <section 
-      onMouseEnter={() => setIsHoveredGlobal(true)}
-      onMouseLeave={() => setIsHoveredGlobal(false)}
-      style={{ padding: '10px 0', backgroundColor: '#fff', overflow: 'hidden' }}
-    >
-      <div style={{ padding: '0 2%', display: 'flex', justifyContent: 'space-between', marginBottom: '40px', alignItems: 'center' }}>
-        <h2 style={{ fontSize: '2.5rem', fontWeight: '900' }}>Los Más Vendidos</h2>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button onClick={movePrev} style={btnNavStyle}><ArrowLeft01Icon /></button>
-          <button onClick={moveNext} style={btnNavStyle}><ArrowRight01Icon /></button>
+    <div style={{ backgroundColor: '#ffffff' }}>
+      {/* SECCIÓN 1: ÚLTIMOS INGRESOS */}
+      <ProductSection
+        subtitle="¡Recién Llegados!" 
+        title="Últimos Ingresos" 
+        products={ultimosIngresos} />
+
+      {/* SECCIÓN 2: MAQUILLAJE Y SKINCARE */}
+      <ProductSection 
+        subtitle="TENDENCIA EN MODA" 
+        title="Maquillaje y Skincare" 
+        products={maquillajeSkincare} 
+      />
+
+      {/* SECCIÓN 3: CARTERAS EN TENDENCIA */}
+      <ProductSection 
+        subtitle="MODA CARTERA" 
+        title="Carteras en Tendencia" 
+        products={carterasTendencia} 
+      />
+    </div>
+  );
+}
+
+function ProductSection({ subtitle, title, products }: ProductSectionProps) {
+  const [isMobile, setIsMobile] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  const scrollLeft = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: -300, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+    }
+  };
+
+  return (
+    <section style={{ 
+      padding: isMobile ? '24px 16px' : '36px 6%', 
+      backgroundColor: '#ffffff' 
+    }}>
+      {/* HEADER */}
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'flex-end', 
+        marginBottom: '20px' 
+      }}>
+        <div>
+          {subtitle && (
+            <span style={{ 
+              fontSize: '0.65rem', 
+              fontWeight: '700', 
+              letterSpacing: '2px',
+              color: '#e0527f',
+              textTransform: 'uppercase',
+              display: 'block',
+              marginBottom: '4px'
+            }}>
+              {subtitle}
+            </span>
+          )}
+          
+          <h2 style={{ 
+            fontSize: isMobile ? '1.1rem' : (subtitle ? '1.6rem' : '0.98rem'), 
+            fontFamily: subtitle ? 'var(--font-dm-serif), Georgia, serif' : 'inherit',
+            fontWeight: subtitle ? '400' : '600', 
+            letterSpacing: subtitle ? '0px' : '3px',
+            color: '#1a0f14',
+            textTransform: subtitle ? 'none' : 'uppercase',
+            margin: 0
+          }}>
+            {title}
+          </h2>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <a href="#" style={{ 
+            fontSize: '0.72rem', 
+            fontWeight: '500', 
+            color: '#1a0f14', 
+            textDecoration: 'none',
+            letterSpacing: '1px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            textTransform: 'uppercase',
+            opacity: 0.8
+          }}>
+            VER TODO →
+          </a>
         </div>
       </div>
 
-      <div style={{ padding: '0 5%' }}>
-        <motion.div animate={controls} initial={{ x: 0 }} style={{ display: 'flex', gap: '25px' }}>
-          {doubleItems.map((item, index) => (
-            <ProductCard key={`${item.id}-${index}`} item={item} />
+      {/* CAROUSEL WRAPPER WITH CIRCLE ARROW BUTTONS */}
+      <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+        {/* LEFT CIRCLE ARROW */}
+        <button 
+          onClick={scrollLeft}
+          style={arrowButtonStyle('left')}
+          title="Anterior"
+        >
+          <ArrowLeft01Icon size={16} color="#1a0f14" />
+        </button>
+
+        {/* SCROLLABLE CAROUSEL CONTAINER */}
+        <div 
+          ref={scrollRef}
+          style={{ 
+            display: 'grid',
+            gridAutoFlow: isMobile ? 'column' : 'column',
+            gridAutoColumns: isMobile ? '60%' : 'calc(20% - 15px)',
+            gap: '20px',
+            overflowX: 'auto',
+            scrollBehavior: 'smooth',
+            width: '100%',
+            padding: '2px 0 12px 0',
+            msOverflowStyle: 'none',
+            scrollbarWidth: 'none'
+          }}
+        >
+          {products.map((item) => (
+            <ProductCard key={item.id} item={item} />
           ))}
-        </motion.div>
+        </div>
+
+        {/* RIGHT CIRCLE ARROW */}
+        <button 
+          onClick={scrollRight}
+          style={arrowButtonStyle('right')}
+          title="Siguiente"
+        >
+          <ArrowRight01Icon size={16} color="#1a0f14" />
+        </button>
       </div>
     </section>
   );
 }
 
-function ProductCard({ item }: { item: any }) {
-  const [isHover, setIsHover] = useState(false);
-
+function ProductCard({ item }: { item: Product }) {
   return (
-    <div style={{ minWidth: '350px' }}>
-      <motion.div 
-        onMouseEnter={() => setIsHover(true)}
-        onMouseLeave={() => setIsHover(false)}
-        whileHover={{ 
-            scale: 1.05,
-            outline: "4px solid #000",
-            outlineOffset: "-4px",
-            zIndex: 50 // Asegura que al agrandarse esté por encima
-        }}
-        transition={{ type: "spring", stiffness: 100, damping: 100 , mass: 0.8 }}
-        style={{ 
-          height: '550px', 
-          borderRadius: '24px', 
-          overflow: 'hidden', 
-          position: 'relative',
-          cursor: 'pointer',
-          backgroundColor: '#f1f1f1'
-        }}
-      >
-        <AnimatePresence mode="wait">
-          <motion.img
-            key={isHover ? 'hover' : 'normal'}
-            src={isHover && item.imgHover ? item.imgHover : item.img}
-            initial={{ opacity: 0.9 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0.9 }}
-            transition={{ duration: 0.3 }}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-          />
-        </AnimatePresence>
-      </motion.div>
+    <motion.div
+      whileHover={{ y: -3 }}
+      transition={{ duration: 0.2 }}
+      style={{
+        borderRadius: '16px',
+        overflow: 'hidden',
+        border: '1px solid #f3e2e8',
+        backgroundColor: '#ffffff',
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%'
+      }}
+    >
+      {/* TOP IMAGE CONTAINER WITH REAL HIGH QUALITY PRODUCT IMAGE */}
+      <div style={{
+        width: '100%',
+        height: '210px',
+        backgroundColor: '#f5f5f5',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        <img 
+          src={item.img} 
+          alt={item.title} 
+          style={{ 
+            width: '100%', 
+            height: '100%', 
+            objectFit: 'cover'
+          }} 
+        />
+      </div>
 
-      <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      {/* BOTTOM SOFT PINK CONTAINER */}
+      <div style={{
+        backgroundColor: '#fcf0f4',
+        padding: '14px 14px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '5px',
+        flexGrow: 1,
+        justifyContent: 'space-between'
+      }}>
         <div>
-          <h4 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '700' }}>{item.title}</h4>
-          <p style={{ margin: 0, color: '#3b82f6', fontWeight: '800' }}>{item.price}</p>
+          <h4 style={{ 
+            fontSize: '0.82rem', 
+            fontWeight: '600', 
+            color: '#1a0f14', 
+            margin: '0 0 4px 0'
+          }}>
+            {item.title}
+          </h4>
+
+          {/* 5 STARS */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+            {[...Array(5)].map((_, i) => (
+              <StarIcon 
+                key={i} 
+                size={12} 
+                color="#e0527f" 
+                fill={i < item.rating ? "#e0527f" : "none"} 
+              />
+            ))}
+          </div>
+
+          {/* PRICE */}
+          <div style={{ fontSize: '0.8rem', fontWeight: '600', color: '#1a0f14', marginTop: '2px' }}>
+            {item.price}
+          </div>
         </div>
-        <button style={cartButtonStyle}>
-          <ShoppingBag01Icon size={24} color="white" />
+
+        {/* AGREGAR CARRITO BUTTON */}
+        <button 
+          style={{
+            width: '100%',
+            padding: '7px 10px',
+            backgroundColor: '#ffffff',
+            border: '1px solid #f3c2d4',
+            borderRadius: '5px',
+            color: '#e0527f',
+            fontSize: '0.65rem',
+            fontWeight: '600',
+            letterSpacing: '0.6px',
+            textTransform: 'uppercase',
+            cursor: 'pointer',
+            marginTop: '8px',
+            transition: 'all 0.2s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#e0527f';
+            e.currentTarget.style.color = '#ffffff';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#ffffff';
+            e.currentTarget.style.color = '#e0527f';
+          }}
+        >
+          AGREGAR CARRITO
         </button>
       </div>
-      <hr style={{ border: 'none', borderTop: '2px solid #e2e8f0', margin: '20px 0' }}></hr>
-    </div>
+    </motion.div>
   );
 }
 
-const btnNavStyle = { width: '50px', height: '50px', borderRadius: '50%', border: '1px solid #e2e8f0', backgroundColor: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' };
-const cartButtonStyle = { backgroundColor: '#0f172a', border: 'none', padding: '12px', borderRadius: '14px', cursor: 'pointer', display: 'flex' };
+const arrowButtonStyle = (direction: 'left' | 'right'): React.CSSProperties => ({
+  position: 'absolute',
+  top: '42%',
+  [direction]: '-16px',
+  transform: 'translateY(-50%)',
+  zIndex: 10,
+  width: '34px',
+  height: '34px',
+  borderRadius: '50%',
+  backgroundColor: '#ffffff',
+  border: '1px solid #e2e8f0',
+  boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  cursor: 'pointer',
+  transition: 'transform 0.2s, background-color 0.2s'
+});

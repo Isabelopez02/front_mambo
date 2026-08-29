@@ -1,20 +1,19 @@
 "use client";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight01Icon, ArrowLeft01Icon, StarIcon } from "hugeicons-react";
+import { ArrowRight01Icon, ArrowLeft01Icon, SparklesIcon } from "hugeicons-react";
 
-const nuevasPrendas = [
-  { id: 101, name: "Urban Capa M1", price: "$120", img: "https://i.pinimg.com/736x/87/97/35/87973582c53b4851c2947bb4812fb441.jpg" },
-  { id: 102, name: "Neo Cargo Pant", price: "$95", img: "https://i.pinimg.com/736x/4a/6f/b6/4a6fb6a7ee2e53f7eb37d85f48410f4e.jpg" },
-  { id: 103, name: "Cyber Hoodie v2", price: "$85", img: "https://i.pinimg.com/736x/38/55/31/385531833eccf3172f2b9ac1cf6684a9.jpg" },
-  { id: 104, name: "Alpha Sneakers", price: "$150", img: "https://i.pinimg.com/1200x/06/a1/03/06a10364ca9d2bdb3f120bc34e708421.jpg" },
+const newArrivalsList = [
+  { id: 101, name: "Rose Gold Chrome Powder", price: "$14.99", img: "https://images.unsplash.com/photo-1607779097040-26e80aa78e66?q=80&w=600&auto=format&fit=crop" },
+  { id: 102, name: "Pastel Gel Collection (6pcs)", price: "$24.99", img: "https://images.unsplash.com/photo-1632345031435-8727f6897d53?q=80&w=600&auto=format&fit=crop" },
+  { id: 103, name: "Precision Ombre Sponge Tool", price: "$9.99", img: "https://images.unsplash.com/photo-1599847996508-410a56208a0d?q=80&w=600&auto=format&fit=crop" },
+  { id: 104, name: "3D Pearl & Crystal Gems", price: "$11.99", img: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=600&auto=format&fit=crop" },
 ];
 
 export function NuevosIngresos() {
   const [index, setIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Detectar si es celular para ajustar el ancho del carrusel
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
@@ -22,26 +21,23 @@ export function NuevosIngresos() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const cardWidth = isMobile ? window.innerWidth * 0.85 : 350; // Ancho dinámico
-
-  const next = () => setIndex((prev) => (prev + 1) % nuevasPrendas.length);
-  const prev = () => setIndex((prev) => (prev - 1 + nuevasPrendas.length) % nuevasPrendas.length);
+  const cardWidth = isMobile ? 260 : 310;
+  const next = () => setIndex((prev) => (prev + 1) % newArrivalsList.length);
+  const prev = () => setIndex((prev) => (prev - 1 + newArrivalsList.length) % newArrivalsList.length);
 
   return (
-    <section style={{ padding: isMobile ? '40px 15px' : '80px 5%', backgroundColor: '#f1f5f9' }}>
+    <section style={{ padding: isMobile ? '40px 20px' : '60px 5%', backgroundColor: '#faf2f5' }}>
       <div style={{ 
-        backgroundColor: '#000', 
-        borderRadius: isMobile ? '30px' : '40px', 
-        padding: isMobile ? '30px 20px' : '60px', 
+        backgroundColor: '#111111', 
+        borderRadius: '24px', 
+        padding: isMobile ? '30px 20px' : '50px', 
         display: 'flex', 
         flexDirection: 'column', 
-        gap: isMobile ? '25px' : '40px',
-        border: '1px solid rgba(255,255,255,0.1)',
+        gap: '30px',
         position: 'relative',
         overflow: 'hidden'
       }}>
-        
-        {/* ENCABEZADO */}
+        {/* HEADER */}
         <div style={{ 
             display: 'flex', 
             flexDirection: isMobile ? 'column' : 'row', 
@@ -50,87 +46,72 @@ export function NuevosIngresos() {
             gap: '20px'
         }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#3b82f6', marginBottom: '10px' }}>
-              <StarIcon size={14} fill="#3b82f6" />
-              <span style={{ fontWeight: '800', fontSize: '0.7rem', letterSpacing: '2px' }}>FEBRERO DROP</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#e0527f', marginBottom: '8px' }}>
+              <SparklesIcon size={14} color="#e0527f" />
+              <span style={{ fontWeight: '800', fontSize: '0.7rem', letterSpacing: '2px' }}>JUST DROPPED</span>
             </div>
             <h2 style={{ 
-                color: '#fff', 
-                fontSize: isMobile ? '2.2rem' : '3.5rem', 
-                fontWeight: '950', 
-                lineHeight: 1, 
+                color: '#ffffff', 
+                fontSize: isMobile ? '2rem' : '2.8rem', 
+                fontFamily: 'Georgia, serif',
+                fontWeight: '600', 
+                lineHeight: 1.1, 
                 margin: 0, 
-                letterSpacing: '-1px' 
+                letterSpacing: '0.5px' 
             }}>
-              NUEVOS <br/> <span style={{ color: '#3b82f6' }}>INGRESOS</span>
+              NEW ARRIVALS
             </h2>
           </div>
           
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <button onClick={prev} style={navBtnStyle}><ArrowLeft01Icon /></button>
-            <button onClick={next} style={navBtnStyle}><ArrowRight01Icon /></button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button onClick={prev} style={navBtnStyle}><ArrowLeft01Icon size={18} color="#fff" /></button>
+            <button onClick={next} style={navBtnStyle}><ArrowRight01Icon size={18} color="#fff" /></button>
           </div>
         </div>
 
-        {/* CONTENEDOR DEL CARRUSEL */}
+        {/* CAROUSEL */}
         <div style={{ overflow: 'hidden', width: '100%' }}>
           <motion.div 
             animate={{ x: -(index * cardWidth) }} 
-            transition={{ type: "spring", stiffness: 200, damping: 25 }}
-            style={{ display: 'flex', gap: isMobile ? '15px' : '30px' }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            style={{ display: 'flex', gap: '20px' }}
           >
-            {nuevasPrendas.map((item) => (
+            {newArrivalsList.map((item) => (
               <motion.div 
                 key={item.id}
-                whileHover={!isMobile ? { y: -10 } : {}}
-                style={{ minWidth: isMobile ? `${cardWidth - 120}px` : '320px' }}
+                whileHover={{ y: -6 }}
+                style={{ minWidth: `${cardWidth - 20}px` }}
               >
                 <div style={{ 
-                  height: isMobile ? '350px' : '420px', 
-                  borderRadius: '24px', 
+                  height: '260px', 
+                  borderRadius: '16px', 
                   overflow: 'hidden', 
                   position: 'relative',
-                  border: '1px solid rgba(255,255,255,0.1)' 
+                  backgroundColor: '#fbf0f4'
                 }}>
                   <img src={item.img} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={item.name} />
                   <div style={tagStyle}>NEW</div>
                 </div>
-                <div style={{ marginTop: '15px', color: '#fff' }}>
-                  <h4 style={{ margin: 0, fontSize: isMobile ? '1rem' : '1.2rem', fontWeight: '700' }}>{item.name}</h4>
-                  <p style={{ margin: 0, color: '#3b82f6', fontWeight: '800', fontSize: '1rem' }}>{item.price}</p>
+                <div style={{ marginTop: '12px', color: '#ffffff' }}>
+                  <h4 style={{ margin: '0 0 4px 0', fontSize: '0.9rem', fontWeight: '700' }}>{item.name}</h4>
+                  <p style={{ margin: 0, color: '#e0527f', fontWeight: '800', fontSize: '0.95rem' }}>{item.price}</p>
                 </div>
               </motion.div>
             ))}
           </motion.div>
-        </div>
-
-        {/* BOTÓN FINAL */}
-        <div style={{ textAlign: 'center' }}>
-          <button style={{
-              ...btnAllStyle,
-              width: isMobile ? '100%' : 'auto',
-              fontSize: isMobile ? '0.8rem' : '0.9rem'
-          }}>
-            VER TODO EL CATÁLOGO
-          </button>
         </div>
       </div>
     </section>
   );
 }
 
-const navBtnStyle = { 
-  width: '45px', height: '45px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', 
-  backgroundColor: 'transparent', color: '#fff', cursor: 'pointer', display: 'flex', 
-  alignItems: 'center', justifyContent: 'center', transition: '0.3s' 
+const navBtnStyle: React.CSSProperties = { 
+  width: '40px', height: '40px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', 
+  backgroundColor: 'transparent', cursor: 'pointer', display: 'flex', 
+  alignItems: 'center', justifyContent: 'center'
 };
 
-const tagStyle = { 
-  position: 'absolute', top: '15px', left: '15px', backgroundColor: '#3b82f6', 
-  color: '#fff', padding: '4px 12px', borderRadius: '50px', fontSize: '0.6rem', fontWeight: '900' 
-};
-
-const btnAllStyle = { 
-  padding: '18px 40px', backgroundColor: '#fff', color: '#000', border: 'none', 
-  borderRadius: '15px', fontWeight: '900', cursor: 'pointer', transition: '0.3s'
+const tagStyle: React.CSSProperties = { 
+  position: 'absolute', top: '12px', left: '12px', backgroundColor: '#e0527f', 
+  color: '#ffffff', padding: '3px 10px', borderRadius: '50px', fontSize: '0.62rem', fontWeight: '800' 
 };

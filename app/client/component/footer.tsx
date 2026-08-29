@@ -1,12 +1,14 @@
 "use client";
+
+import React from "react";
 import { motion } from "framer-motion";
 import { 
   InstagramIcon, 
   Facebook02Icon, 
-  TwitterIcon, 
+  WhatsappIcon,
   Mail01Icon, 
   ArrowRight01Icon,
-  ZapIcon 
+  FavouriteIcon 
 } from "hugeicons-react";
 
 export function Footer() {
@@ -14,119 +16,133 @@ export function Footer() {
 
   return (
     <footer style={{ 
-      backgroundColor: '#000', 
-      color: '#fff', 
-      padding: '80px 5% 40px 5%',
-      borderTop: '1px solid #1a1a1a'
+      backgroundColor: '#ffffff', 
+      color: '#1a0f14', 
+      padding: '60px 6% 30px 6%',
+      borderTop: '1px solid #f3e8ee'
     }}>
       <div style={{ 
         display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
-        gap: '60px',
-        marginBottom: '60px'
+        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', 
+        gap: '40px',
+        marginBottom: '50px'
       }}>
         
-        {/* COLUMNA 1: BRAND & NEWSLETTER */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
-          <h2 style={{ fontSize: '2.5rem', fontWeight: '950', letterSpacing: '-3px', margin: 0 }}>
-            MAMBO
-          </h2>
-          <p style={{ color: '#666', fontSize: '0.95rem', lineHeight: 1.6, maxWidth: '300px' }}>
-            Únete a la nueva era del streetwear digital. Recibe drops exclusivos y acceso anticipado.
+        {/* BRAND & NEWSLETTER */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div>
+            <span style={{ 
+              fontFamily: 'var(--font-dm-serif), Georgia, serif', 
+              fontSize: '1.5rem', 
+              fontWeight: '400', 
+              letterSpacing: '3px', 
+              color: '#1a0f14' 
+            }}>
+              TATY
+            </span>
+            <div style={{ fontSize: '0.6rem', fontWeight: '700', letterSpacing: '2.5px', color: '#9c3552', marginTop: '-2px' }}>
+              IMPORTACIONES
+            </div>
+          </div>
+
+          <p style={{ color: '#55494e', fontSize: '0.82rem', lineHeight: 1.6, maxWidth: '280px', margin: 0 }}>
+            Entérate de las últimas novedades, ofertas relámpago e ingresos semanales.
           </p>
           
-          {/* FORMULARIO DE CORREO */}
-          <div style={{ position: 'relative', marginTop: '10px' }}>
+          {/* EMAIL FORM */}
+          <div style={{ position: 'relative', maxWidth: '300px' }}>
             <input 
               type="email" 
-              placeholder="Tu email" 
+              placeholder="Ingresa tu correo" 
               style={inputStyle} 
             />
             <button style={btnInputStyle}>
-              <ArrowRight01Icon size={20} />
+              <ArrowRight01Icon size={16} color="#ffffff" />
             </button>
           </div>
         </div>
 
-        {/* COLUMNA 2: NAVEGACIÓN */}
+        {/* SHOP LINKS */}
         <div style={colStyle}>
-          <h4 style={titleStyle}>Explorar</h4>
-          <a href="#" style={linkStyle}>Nuevos Ingresos</a>
-          <a href="#" style={linkStyle}>Más Vendidos</a>
-          <a href="#" style={linkStyle}>Clóset Virtual</a>
-          <a href="#" style={linkStyle}>Categorías</a>
+          <h4 style={titleStyle}>Categorías</h4>
+          <a href="#" style={linkStyle}>Carteras</a>
+          <a href="#" style={linkStyle}>Maquillaje</a>
+          <a href="#" style={linkStyle}>Hogar</a>
+          <a href="#" style={linkStyle}>Accesorios</a>
+          <a href="#" style={linkStyle}>Skincare</a>
         </div>
 
-        {/* COLUMNA 3: SOPORTE */}
+        {/* HELP LINKS */}
         <div style={colStyle}>
           <h4 style={titleStyle}>Ayuda</h4>
-          <a href="#" style={linkStyle}>Envíos</a>
-          <a href="#" style={linkStyle}>Devoluciones</a>
-          <a href="#" style={linkStyle}>Guía de Tallas</a>
+          <a href="#" style={linkStyle}>Preguntas Frecuentes</a>
+          <a href="#" style={linkStyle}>Envíos y Seguimiento</a>
+          <a href="#" style={linkStyle}>Términos y Condiciones</a>
           <a href="#" style={linkStyle}>Contacto</a>
         </div>
 
-        {/* COLUMNA 4: CONTACTO & REDES */}
+        {/* SOCIAL & CONTACT */}
         <div style={colStyle}>
-          <h4 style={titleStyle}>Síguenos</h4>
-          <div style={{ display: 'flex', gap: '15px' }}>
-            <motion.a whileHover={{ y: -5, color: '#3b82f6' }} href="#" style={socialLinkStyle}><InstagramIcon size={24} /></motion.a>
-            <motion.a whileHover={{ y: -5, color: '#3b82f6' }} href="#" style={socialLinkStyle}><Facebook02Icon size={24} /></motion.a>
-            <motion.a whileHover={{ y: -5, color: '#3b82f6' }} href="#" style={socialLinkStyle}><TwitterIcon size={24} /></motion.a>
+          <h4 style={titleStyle}>Redes Sociales</h4>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <motion.a whileHover={{ y: -3, color: '#9c3552' }} href="#" style={socialLinkStyle}><InstagramIcon size={20} /></motion.a>
+            <motion.a whileHover={{ y: -3, color: '#9c3552' }} href="#" style={socialLinkStyle}><Facebook02Icon size={20} /></motion.a>
+            <motion.a whileHover={{ y: -3, color: '#9c3552' }} href="#" style={socialLinkStyle}><WhatsappIcon size={20} /></motion.a>
           </div>
-          <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: '#666' }}>
-            <Mail01Icon size={18} />
-            <span style={{ fontSize: '0.9rem' }}>mambo.mambo@gmail.com</span>
+          
+          <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', gap: '8px', color: '#55494e', fontSize: '0.8rem' }}>
+            <Mail01Icon size={16} color="#9c3552" />
+            <span>contacto@tatyimportaciones.com</span>
           </div>
         </div>
       </div>
 
-      {/* LINEA FINAL */}
+      {/* BOTTOM LINE */}
       <div style={{ 
-        borderTop: '1px solid #1a1a1a', 
-        paddingTop: '30px', 
+        borderTop: '1px solid #f3e8ee', 
+        paddingTop: '24px', 
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
         flexWrap: 'wrap',
-        gap: '20px'
+        gap: '15px'
       }}>
-        <p style={{ color: '#444', fontSize: '0.8rem' }}>
-          © {currentYear} MAMBO CLOTHING. Todos los derechos reservados.
+        <p style={{ color: '#887c7e', fontSize: '0.75rem', margin: 0 }}>
+          © {currentYear} TATY IMPORTACIONES. Todos los derechos reservados.
         </p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#444', fontSize: '0.8rem' }}>
-          <ZapIcon size={14} /> <span>POWERED BY MAMBO TECH</span>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#887c7e', fontSize: '0.75rem' }}>
+          <span>Creado con</span> <FavouriteIcon size={12} color="#9c3552" fill="#9c3552" /> <span>para ti.</span>
         </div>
       </div>
     </footer>
   );
 }
 
-// ESTILOS EN LÍNEA
-const colStyle = { display: 'flex', flexDirection: 'column', gap: '15px' };
-const titleStyle = { fontSize: '0.85rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '2px', color: '#fff', marginBottom: '10px' };
-const linkStyle = { color: '#666', textDecoration: 'none', fontSize: '0.95rem', transition: '0.3s' };
-const socialLinkStyle = { color: '#fff', textDecoration: 'none' };
-const inputStyle = {
-  width: '90%',
-  padding: '16px 20px',
-  backgroundColor: '#111',
-  border: '1px solid #222',
-  borderRadius: '12px',
-  color: '#fff',
-  fontSize: '0.9rem',
+const colStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: '12px' };
+const titleStyle: React.CSSProperties = { fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1.5px', color: '#1a0f14', marginBottom: '6px' };
+const linkStyle: React.CSSProperties = { color: '#55494e', textDecoration: 'none', fontSize: '0.82rem', transition: 'color 0.2s' };
+const socialLinkStyle: React.CSSProperties = { color: '#1a0f14', textDecoration: 'none' };
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  padding: '12px 45px 12px 14px',
+  backgroundColor: '#faf7f4',
+  border: '1px solid #f3d4e0',
+  borderRadius: '8px',
+  color: '#1a0f14',
+  fontSize: '0.8rem',
   outline: 'none'
 };
-const btnInputStyle = {
+const btnInputStyle: React.CSSProperties = {
   position: 'absolute',
-  right: '8px',
-  top: '8px',
-  bottom: '8px',
-  backgroundColor: '#3b82f6',
+  right: '4px',
+  top: '4px',
+  bottom: '4px',
+  backgroundColor: '#9c3552',
   border: 'none',
-  borderRadius: '8px',
-  color: '#fff',
-  width: '45px',
+  borderRadius: '6px',
+  color: '#ffffff',
+  width: '36px',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
