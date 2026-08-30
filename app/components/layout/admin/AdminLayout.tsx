@@ -10,7 +10,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       <AdminSidebar />
       <div style={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
         <AdminHeader />
-        <main style={{ padding: "32px", flexGrow: 1 }}>{children}</main>
+        <main style={{ padding: "20px 24px", flexGrow: 1, minWidth: 0 }}>{children}</main>
       </div>
     </div>
   );
