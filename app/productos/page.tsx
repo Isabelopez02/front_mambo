@@ -7,9 +7,11 @@ import {
   FilterIcon, 
   Cancel01Icon, 
   ShoppingBag01Icon,
-  CheckmarkBadge01Icon
+  CheckmarkBadge01Icon,
+  GridIcon,
+  
 } from "hugeicons-react";
-import { CartDrawer, CartItem } from "../client/component/CartDrawer";
+import { useCart } from "../client/context/CartContext";
 
 interface Product {
   id: number;
@@ -65,36 +67,8 @@ export default function ProductosPage() {
   const [ratingsMap, setRatingsMap] = useState<{ [key: number]: number }>({});
   const [hoverRatingsMap, setHoverRatingsMap] = useState<{ [key: number]: number }>({});
 
-  // CARRITO STATE & SIDEBAR
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [cartDrawerOpen, setCartDrawerOpen] = useState<boolean>(false);
-
-  const addToCart = (product: Product) => {
-    setCartItems(prev => {
-      const existing = prev.find(item => item.id === product.id);
-      if (existing) {
-        return prev.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
-      }
-      return [...prev, { ...product, quantity: 1 }];
-    });
-    setCartDrawerOpen(true);
-  };
-
-  const updateQuantity = (id: number, delta: number) => {
-    setCartItems(prev => {
-      return prev.map(item => {
-        if (item.id === id) {
-          const newQty = item.quantity + delta;
-          return newQty > 0 ? { ...item, quantity: newQty } : item;
-        }
-        return item;
-      });
-    });
-  };
-
-  const removeFromCart = (id: number) => {
-    setCartItems(prev => prev.filter(item => item.id !== id));
-  };
+  // GLOBAL CART HOOK
+  const { addToCart, openCart, totalItemsCount } = useCart();
 
   const filteredProducts = useMemo(() => {
     return allProductsData.filter((item) => {
@@ -199,6 +173,8 @@ export default function ProductosPage() {
         {!isMobile && (
           <aside style={{ width: '260px', flexShrink: 0 }}>
             <FilterSidebarContent 
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
               maxPrice={maxPrice}
@@ -221,9 +197,9 @@ export default function ProductosPage() {
             </span>
 
             {/* CART TRIGGER BUTTON IF ITEMS IN CART */}
-            {cartItems.length > 0 && (
+            {totalItemsCount > 0 && (
               <button 
-                onClick={() => setCartDrawerOpen(true)}
+                onClick={openCart}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -238,7 +214,7 @@ export default function ProductosPage() {
                   cursor: 'pointer'
                 }}
               >
-                <ShoppingBag01Icon size={14} color="#fff" /> Ver Carrito ({cartItems.reduce((acc, i) => acc + i.quantity, 0)})
+                <ShoppingBag01Icon size={14} color="#fff" /> Ver Carrito ({totalItemsCount})
               </button>
             )}
           </div>
@@ -470,6 +446,8 @@ export default function ProductosPage() {
               </div>
 
               <FilterSidebarContent 
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
                 maxPrice={maxPrice}
@@ -505,22 +483,14 @@ export default function ProductosPage() {
           </>
         )}
       </AnimatePresence>
-
-      {/* SHOPPING CART RIGHT SIDEBAR MODULAR COMPONENT */}
-      <CartDrawer 
-        isOpen={cartDrawerOpen}
-        onClose={() => setCartDrawerOpen(false)}
-        items={cartItems}
-        onUpdateQuantity={updateQuantity}
-        onRemoveItem={removeFromCart}
-      />
-
     </div>
   );
 }
 
-{/* REUSABLE FILTER CONTENT WITH FIXED SEARCH INPUT SIZE */}
+{/* REUSABLE FILTER CONTENT WITH CATEGORIES SELECTOR AND SEARCH */}
 function FilterSidebarContent({
+  selectedCategory,
+  setSelectedCategory,
   searchQuery,
   setSearchQuery,
   maxPrice,
@@ -532,6 +502,8 @@ function FilterSidebarContent({
   filterPromoOnly,
   setFilterPromoOnly
 }: {
+  selectedCategory: string;
+  setSelectedCategory: (v: string) => void;
   searchQuery: string;
   setSearchQuery: (v: string) => void;
   maxPrice: number;
@@ -560,7 +532,7 @@ function FilterSidebarContent({
         </h3>
       </div>
 
-      {/* SEARCH INPUT ADJUSTED TO PREVENT OVERFLOW */}
+      {/* SEARCH INPUT */}
       <div style={{ marginBottom: '20px', width: '100%' }}>
         <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '700', color: '#9c3552', letterSpacing: '0.8px', textTransform: 'uppercase', marginBottom: '6px' }}>
           Buscador
@@ -568,7 +540,7 @@ function FilterSidebarContent({
         <div style={{ position: 'relative', width: '100%', boxSizing: 'border-box' }}>
           <input 
             type="text" 
-            placeholder="Buscar..." 
+            placeholder="Buscar producto..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{
@@ -584,6 +556,38 @@ function FilterSidebarContent({
           />
           <Search01Icon size={14} color="#9c3552" style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
         </div>
+      </div>
+
+      {/* CATEGORIES FILTER IN SIDEBAR */}
+      <div style={{ marginBottom: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+          <GridIcon size={14} color="#9c3552" />
+          <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: '700', color: '#9c3552', letterSpacing: '0.8px', textTransform: 'uppercase', margin: 0 }}>
+            Categoría
+          </label>
+        </div>
+        <select
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '9px 12px',
+            borderRadius: '6px',
+            border: '1px solid #e0d0d6',
+            fontSize: '0.75rem',
+            backgroundColor: '#faf7f8',
+            color: '#1a0f14',
+            fontWeight: '600',
+            outline: 'none',
+            cursor: 'pointer'
+          }}
+        >
+          {categoriesList.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat === "TODOS" ? "Todas las Categorías" : cat}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* PROMO / NEW TOGGLES */}

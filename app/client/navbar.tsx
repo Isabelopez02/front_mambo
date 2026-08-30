@@ -9,10 +9,24 @@ import {
   Cancel01Icon
 } from "hugeicons-react";
 import { TopBar } from "./component/topBar";
+import { AuthModal } from "./component/AuthModal";
+import { CartDrawer } from "./component/CartDrawer";
+import { useCart } from "./context/CartContext";
 
 export default function Navbar() {
   const [isMobile, setIsMobile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+
+  const {
+    cartItems,
+    isCartOpen,
+    openCart,
+    closeCart,
+    updateQuantity,
+    removeFromCart,
+    totalItemsCount
+  } = useCart();
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 1024);
@@ -22,11 +36,10 @@ export default function Navbar() {
   }, []);
 
   const navLinks = [
+    { label: "PRINCIPAL", href: "/" },
     { label: "PRODUCTOS", href: "/productos" },
-    { label: "CATEGORIAS", href: "/#categorias" },
-    { label: "NUEVOS", href: "/#nuevos" },
-    { label: "HOGAR", href: "/productos?cat=HOGAR" },
-    { label: "ACCESORIOS", href: "/productos?cat=ACCESORIOS" },
+    { label: "LOCALES", href: "/locales" },
+    { label: "NOSOTROS", href: "/nosotros" },
   ];
 
   return (
@@ -43,7 +56,7 @@ export default function Navbar() {
       }}>
         
         {/* LOGO TATY IMPORTACIONES */}
-        <div style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}>
+        <a href="/" style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer', textDecoration: 'none' }}>
           <span style={{ 
             fontFamily: 'var(--font-dm-serif), Georgia, serif', 
             fontSize: '1.25rem', 
@@ -64,7 +77,7 @@ export default function Navbar() {
           }}>
             IMPORTACIONES
           </span>
-        </div>
+        </a>
 
         {/* DESKTOP NAV LINKS */}
         {!isMobile && (
@@ -96,16 +109,26 @@ export default function Navbar() {
             <Search01Icon size={18} color="#1a0f14" />
           </button>
           
-          <button style={iconBtnStyle} title="Mi Cuenta">
+          <button 
+            onClick={() => setIsAuthOpen(true)} 
+            style={iconBtnStyle} 
+            title="Mi Cuenta"
+          >
             <UserIcon size={18} color="#1a0f14" />
           </button>
 
           {/* Cart Icon */}
           <div style={{ position: 'relative' }}>
-            <button style={iconBtnStyle} title="Carrito">
+            <button 
+              onClick={openCart} 
+              style={iconBtnStyle} 
+              title="Carrito"
+            >
               <ShoppingBag01Icon size={18} color="#1a0f14" />
             </button>
-            <span style={badgeStyle}>2</span>
+            {totalItemsCount > 0 && (
+              <span style={badgeStyle}>{totalItemsCount}</span>
+            )}
           </div>
 
           {/* Mobile Toggle */}
@@ -144,7 +167,8 @@ export default function Navbar() {
               {navLinks.map((link) => (
                 <a 
                   key={link.label} 
-                  href="#"
+                  href={link.href}
+                  onClick={() => setMenuOpen(false)}
                   style={{ 
                     fontSize: '0.82rem', 
                     fontWeight: '600', 
@@ -160,6 +184,21 @@ export default function Navbar() {
           )}
         </AnimatePresence>
       </nav>
+
+      {/* AUTH MODAL FOR USER LOGIN / REGISTER */}
+      <AuthModal 
+        isOpen={isAuthOpen} 
+        onClose={() => setIsAuthOpen(false)} 
+      />
+
+      {/* GLOBAL SHOPPING CART DRAWER */}
+      <CartDrawer 
+        isOpen={isCartOpen}
+        onClose={closeCart}
+        items={cartItems}
+        onUpdateQuantity={updateQuantity}
+        onRemoveItem={removeFromCart}
+      />
     </header>
   );
 }

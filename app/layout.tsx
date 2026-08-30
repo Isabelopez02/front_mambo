@@ -24,6 +24,8 @@ export const metadata: Metadata = {
   description: "Descubre los ingresos más recientes en maquillaje, skincare, carteras y hogar.",
 };
 
+import { CartProvider } from "./client/context/CartContext";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" className={`${outfit.variable} ${dmSerif.variable}`}>
@@ -37,9 +39,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           fontFamily: 'var(--font-outfit), sans-serif'
         }}
       >
-        <Navbar />
-        <main>{children}</main>
-        <Footer />
+        <CartProvider>
+          <Navbar />
+          <main>{children}</main>
+          <Footer />
+        </CartProvider>
       </body>
     </html>
   );
