@@ -18,34 +18,14 @@ interface ProductSectionProps {
 }
 
 const ultimosIngresos: Product[] = [
-  {
-    id: 1,
-    title: "Cartera Último",
-    price: "S/. 20.00",
-    rating: 3,
-    img: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=600&auto=format&fit=crop"
-  },
-  {
-    id: 2,
-    title: "Cartera Último",
-    price: "S/. 20.00",
-    rating: 3,
-    img: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?q=80&w=600&auto=format&fit=crop"
-  },
-  {
-    id: 3,
-    title: "Cartera Último",
-    price: "S/. 20.00",
-    rating: 3,
-    img: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=600&auto=format&fit=crop"
-  },
-  {
-    id: 4,
-    title: "Cartera Último",
-    price: "S/. 20.00",
-    rating: 3,
-    img: "https://images.unsplash.com/photo-1608248597261-833257647000?q=80&w=600&auto=format&fit=crop"
-  }
+  { id: 1, title: "Cartera Chic Luxe", price: "S/. 59.00", rating: 5, img: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=600&auto=format&fit=crop" },
+  { id: 2, title: "Bolso Shoulder Nude", price: "S/. 49.00", rating: 4, img: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?q=80&w=600&auto=format&fit=crop" },
+  { id: 3, title: "Kit Maquillaje Glow", price: "S/. 35.00", rating: 5, img: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=600&auto=format&fit=crop" },
+  { id: 4, title: "Serum Hidratante", price: "S/. 29.90", rating: 4, img: "https://images.unsplash.com/photo-1608248597261-833257647000?q=80&w=600&auto=format&fit=crop" },
+  { id: 5, title: "Mini Backpack Velvet", price: "S/. 62.00", rating: 5, img: "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?q=80&w=600&auto=format&fit=crop" },
+  { id: 6, title: "Paleta Sombras Rose", price: "S/. 39.90", rating: 4, img: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?q=80&w=600&auto=format&fit=crop" },
+  { id: 7, title: "Jarrón Cerámica Deco", price: "S/. 42.00", rating: 5, img: "https://images.unsplash.com/photo-1616046229478-9901c5536a45?q=80&w=600&auto=format&fit=crop" },
+  { id: 8, title: "Reloj Minimal Gold", price: "S/. 75.00", rating: 5, img: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=600&auto=format&fit=crop" }
 ];
 
 const maquillajeSkincare: Product[] = [
@@ -180,9 +160,9 @@ export function SectionVendidos() {
   return (
     <div style={{ backgroundColor: '#ffffff' }}>
       <UltimosIngresosSection />
+      <DecoracionHogarSection />
       <MaquillajeSkincareSection />
       <CarterasTendenciaSection />
-      <DecoracionHogarSection />
     </div>
   );
 }
@@ -281,14 +261,15 @@ function ProductSection({ subtitle, title, products }: ProductSectionProps) {
           </button>
         )}
 
-        {/* SCROLLABLE CAROUSEL CONTAINER */}
+        {/* SCROLLABLE CAROUSEL CONTAINER / RESPONSIVE GRID */}
         <div 
           ref={scrollRef}
+          className="product-scroll-grid"
           style={{ 
             display: 'grid',
             gridAutoFlow: 'column',
-            gridAutoColumns: isMobile ? 'calc(50% - 5px)' : 'calc(25% - 12px)',
-            gap: isMobile ? '10px' : '16px',
+            gridAutoColumns: isMobile ? 'calc(50% - 5px)' : 'calc(16.666% - 10px)',
+            gap: isMobile ? '10px' : '12px',
             overflowX: 'auto',
             scrollBehavior: 'smooth',
             width: '100%',

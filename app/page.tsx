@@ -17,9 +17,9 @@ export default function Home() {
       <FullCategorias />
       <UltimosIngresosSection />
       <BannerEnvios />
+      <DecoracionHogarSection />
       <MaquillajeSkincareSection />
       <CarterasTendenciaSection />
-      <DecoracionHogarSection />
     </div>
   );
 }

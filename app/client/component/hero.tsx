@@ -18,14 +18,16 @@ export default function Hero() {
     <section 
       style={{ 
         position: 'relative',
-        minHeight: isMobile ? '380px' : '340px',
+        minHeight: isMobile ? '400px' : '340px',
         display: 'flex',
         alignItems: 'center',
         overflow: 'hidden',
-        backgroundImage: `linear-gradient(90deg, rgba(250, 247, 244, 0.96) 0%, rgba(250, 247, 244, 0.88) 0%, rgba(250, 247, 244, 0.05) 80%), url('fondo-header.jpg')`,
+        backgroundImage: isMobile 
+          ? `linear-gradient(180deg, rgba(250, 247, 244, 0.94) 0%, rgba(250, 247, 244, 0.85) 60%, rgba(250, 247, 244, 0.4) 100%), url('fondo-header.jpg')`
+          : `linear-gradient(90deg, rgba(250, 247, 244, 0.96) 0%, rgba(250, 247, 244, 0.88) 45%, rgba(250, 247, 244, 0.05) 80%), url('fondo-header.jpg')`,
         backgroundSize: 'cover',
-        backgroundPosition: 'center right',
-        padding: isMobile ? '30px 20px' : '40px 6%'
+        backgroundPosition: isMobile ? 'top center' : 'center right',
+        padding: isMobile ? '36px 20px 30px 20px' : '40px 6%'
       }}
     >
       {/* LEFT CONTENT CONTAINER */}
