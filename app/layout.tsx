@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Serif_Display, Outfit } from "next/font/google";
 import "./globals.css";
-import Navbar from "./components/client/navbar";
-import { Footer } from "./components/client/footer";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -24,8 +22,6 @@ export const metadata: Metadata = {
   description: "Descubre los ingresos más recientes en maquillaje, skincare, carteras y hogar.",
 };
 
-import { CartProvider } from "./components/context/CartContext";
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" className={`${outfit.variable} ${dmSerif.variable}`}>
@@ -39,11 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           fontFamily: 'var(--font-outfit), sans-serif'
         }}
       >
-        <CartProvider>
-          <Navbar />
-          <main>{children}</main>
-          <Footer />
-        </CartProvider>
+        {children}
       </body>
     </html>
   );
