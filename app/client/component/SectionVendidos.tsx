@@ -122,14 +122,20 @@ const decoracionHogar: Product[] = [
 ];
 
 export function UltimosIngresosSection() {
-  return <ProductSection subtitle="¡Recién Llegados!" 
-      title="Últimos Ingresos" products={ultimosIngresos} />;
+  return (
+    <ProductSection 
+      subtitle="¡RECIÉN LLEGADOS!" 
+      title="Últimos Ingresos" 
+      products={ultimosIngresos} 
+    />
+  );
 }
 
 export function MaquillajeSkincareSection() {
   return (
     <ProductSection 
-      subtitle="Maquillaje y Skincare" 
+      subtitle="BELLEZA & GLOW" 
+      title="Maquillaje y Skincare" 
       products={maquillajeSkincare} 
     />
   );
@@ -138,7 +144,8 @@ export function MaquillajeSkincareSection() {
 export function CarterasTendenciaSection() {
   return (
     <ProductSection 
-      subtitle="Carteras en Tendencia" 
+      subtitle="ESTILO & ELEGANCIA" 
+      title="Carteras en Tendencia" 
       products={carterasTendencia} 
     />
   );
@@ -147,7 +154,8 @@ export function CarterasTendenciaSection() {
 export function DecoracionHogarSection() {
   return (
     <ProductSection 
-      subtitle="Decoración de Hogar" 
+      subtitle="CONFORT & DISEÑO" 
+      title="Decoración de Hogar" 
       products={decoracionHogar} 
     />
   );
