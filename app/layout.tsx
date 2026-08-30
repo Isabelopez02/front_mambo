@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   description: "Descubre los ingresos más recientes en maquillaje, skincare, carteras y hogar.",
 };
 
-import { CartProvider } from "./client/context/CartContext";
+import { CartProvider } from "./components/context/CartContext";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

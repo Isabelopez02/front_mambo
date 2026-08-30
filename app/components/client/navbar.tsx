@@ -9,9 +9,9 @@ import {
   Cancel01Icon
 } from "hugeicons-react";
 import { TopBar } from "./topBar";
-import { AuthModal } from "../../client/component/AuthModal";
-import { CartDrawer } from "../../client/component/CartDrawer";
-import { useCart } from "../../client/context/CartContext";
+import { AuthModal } from "./AuthModal";
+import { CartDrawer } from "./CartDrawer";
+import { useCart } from "../context/CartContext";
 
 export default function Navbar() {
   const [isMobile, setIsMobile] = useState(false);
