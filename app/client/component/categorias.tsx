@@ -24,12 +24,44 @@ export function FullCategorias() {
 
   return (
     <section style={{ 
-      padding: isMobile ? '24px 16px' : '20px 6%', 
+      padding: isMobile ? '24px 16px' : '28px 6% 20px 6%', 
       backgroundColor: '#ffffff',
       borderBottom: '1px solid #f5eaee'
     }}>
-
-      {/* CATEGORIES WITH LARGE TRANSPARENT PNG IMAGES (NO BACKGROUND CONTAINER) */}
+      {/* CENTERED HEADER VISUAL PATTERN EXACT MATCH */}
+      <div style={{ 
+        textAlign: 'center', 
+        marginBottom: isMobile ? '24px' : '36px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%'
+      }}>
+        <p style={{ 
+          fontSize: '0.68rem', 
+          letterSpacing: '0.3em', 
+          textTransform: 'uppercase', 
+          color: '#9c3552', 
+          fontWeight: '500', 
+          marginBottom: '8px',
+          margin: '0 0 8px 0',
+          textAlign: 'center'
+        }}>
+          EXPLORA NUESTRA TIENDA
+        </p>
+        <h2 style={{ 
+          fontSize: isMobile ? '1.5rem' : '2.2rem', 
+          color: '#1a0f14', 
+          fontFamily: "'DM Serif Display', var(--font-dm-serif), Georgia, serif",
+          fontWeight: '400',
+          lineHeight: '1.2',
+          margin: 0,
+          textAlign: 'center'
+        }}>
+          Nuestras Categorías
+        </h2>
+      </div>
       <div style={{ 
         display: 'flex',
         justifyContent: isMobile ? 'flex-start' : 'center',

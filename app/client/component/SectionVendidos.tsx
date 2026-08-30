@@ -129,8 +129,7 @@ export function UltimosIngresosSection() {
 export function MaquillajeSkincareSection() {
   return (
     <ProductSection 
-      subtitle="TENDENCIA EN MODA" 
-      title="Maquillaje y Skincare" 
+      subtitle="Maquillaje y Skincare" 
       products={maquillajeSkincare} 
     />
   );
@@ -139,8 +138,7 @@ export function MaquillajeSkincareSection() {
 export function CarterasTendenciaSection() {
   return (
     <ProductSection 
-      subtitle="MODA CARTERA" 
-      title="Carteras en Tendencia" 
+      subtitle="Carteras en Tendencia" 
       products={carterasTendencia} 
     />
   );
@@ -149,8 +147,7 @@ export function CarterasTendenciaSection() {
 export function DecoracionHogarSection() {
   return (
     <ProductSection 
-      subtitle="MODA HOGAR" 
-      title="Decoración de Hogar" 
+      subtitle="Decoración de Hogar" 
       products={decoracionHogar} 
     />
   );
@@ -195,57 +192,30 @@ function ProductSection({ subtitle, title, products }: ProductSectionProps) {
       padding: isMobile ? '16px 14px' : '20px 6%', 
       backgroundColor: '#ffffff' 
     }}>
-      {/* HEADER */}
+      {/* CENTERED HEADER VISUAL PATTERN EXACT MATCH */}
       <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'flex-end', 
-        marginBottom: '12px' 
+        textAlign: 'center', 
+        marginBottom: isMobile ? '20px' : '32px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%'
       }}>
-        <div>
-          {subtitle && (
-            <span style={{ 
-              fontSize: '0.6rem', 
-              fontWeight: '700', 
-              letterSpacing: '2px',
-              color: '#e0527f',
-              textTransform: 'uppercase',
-              display: 'block',
-              marginBottom: '2px'
-            }}>
-              {subtitle}
-            </span>
-          )}
-          
-          <h2 style={{ 
-            fontSize: isMobile ? '1rem' : (subtitle ? '1.45rem' : '0.92rem'), 
-            fontFamily: subtitle ? 'var(--font-dm-serif), Georgia, serif' : 'inherit',
-            fontWeight: subtitle ? '400' : '600', 
-            letterSpacing: subtitle ? '0px' : '2.5px',
-            color: '#1a0f14',
-            textTransform: subtitle ? 'none' : 'uppercase',
-            margin: 0
+        {subtitle && (
+          <p style={{ 
+            fontSize: '0.80rem', 
+            letterSpacing: '0.3em', 
+            textTransform: 'uppercase', 
+            color: '#9c3552', 
+            fontWeight: '600', 
+            marginBottom: '8px',
+            margin: '0 0 8px 0',
+            textAlign: 'center'
           }}>
-            {title}
-          </h2>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <a href="#" style={{ 
-            fontSize: '0.68rem', 
-            fontWeight: '500', 
-            color: '#1a0f14', 
-            textDecoration: 'none',
-            letterSpacing: '1px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            textTransform: 'uppercase',
-            opacity: 0.8
-          }}>
-            VER TODO →
-          </a>
-        </div>
+            {subtitle}
+          </p>
+        )}
       </div>
 
       {/* CAROUSEL WRAPPER WITH CIRCLE ARROW BUTTONS */}
@@ -299,6 +269,9 @@ function ProductSection({ subtitle, title, products }: ProductSectionProps) {
 }
 
 function ProductCard({ item, isMobile }: { item: Product; isMobile: boolean }) {
+  const [userRating, setUserRating] = useState<number>(item.rating);
+  const [hoverRating, setHoverRating] = useState<number>(0);
+
   return (
     <motion.div
       whileHover={{ y: -3 }}
@@ -352,15 +325,24 @@ function ProductCard({ item, isMobile }: { item: Product; isMobile: boolean }) {
             {item.title}
           </h4>
 
-          {/* 5 STARS */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-            {[...Array(5)].map((_, i) => (
-              <StarIcon 
-                key={i} 
-                size={isMobile ? 10 : 11} 
-                color="#e0527f" 
-                fill={i < item.rating ? "#e0527f" : "none"} 
-              />
+          {/* INTERACTIVE 5 STARS */}
+          <div 
+            style={{ display: 'flex', alignItems: 'center', gap: '2px', cursor: 'pointer' }}
+            onMouseLeave={() => setHoverRating(0)}
+          >
+            {[1, 2, 3, 4, 5].map((starIndex) => (
+              <span
+                key={starIndex}
+                onMouseEnter={() => setHoverRating(starIndex)}
+                onClick={() => setUserRating(starIndex)}
+                style={{ transition: 'transform 0.1s', display: 'inline-flex' }}
+              >
+                <StarIcon 
+                  size={isMobile ? 12 : 13} 
+                  color="#e0527f" 
+                  fill={starIndex <= (hoverRating || userRating) ? "#e0527f" : "none"} 
+                />
+              </span>
             ))}
           </div>
 

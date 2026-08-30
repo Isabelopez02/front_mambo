@@ -22,11 +22,11 @@ export default function Navbar() {
   }, []);
 
   const navLinks = [
-    { label: "PRODUCTOS" },
-    { label: "CATEGORIAS" },
-    { label: "NUEVOS" },
-    { label: "HOGAR" },
-    { label: "ACCESORIOS" },
+    { label: "PRODUCTOS", href: "/productos" },
+    { label: "CATEGORIAS", href: "/#categorias" },
+    { label: "NUEVOS", href: "/#nuevos" },
+    { label: "HOGAR", href: "/productos?cat=HOGAR" },
+    { label: "ACCESORIOS", href: "/productos?cat=ACCESORIOS" },
   ];
 
   return (
@@ -72,7 +72,7 @@ export default function Navbar() {
             {navLinks.map((link) => (
               <a
                 key={link.label}
-                href="#"
+                href={link.href}
                 style={{
                   fontSize: '0.75rem',
                   fontWeight: '600',
