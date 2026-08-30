@@ -3,17 +3,15 @@
 import React, { useState, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  DeliveryTruck01Icon, 
-  Add01Icon, 
-  Cancel01Icon, 
   Search01Icon, 
   Building01Icon, 
-  ShoppingBag01Icon, 
   CalculatorIcon, 
   BarCode02Icon, 
   Calendar01Icon,
   CheckmarkBadge01Icon,
-  Delete02Icon
+  Cancel01Icon,
+  FilterIcon,
+  Download01Icon
 } from "hugeicons-react";
 
 // Existing products in system
@@ -177,39 +175,40 @@ export default function ComprasAdminPage() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       
-      {/* HEADER SECTION */}
+      {/* HEADER SECTION WITH REFINED SINGLE-ICON PRIMARY BUTTON */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
         <div>
-          <span style={{ fontSize: "0.58rem", fontWeight: "700", color: "#9c3552", letterSpacing: "1.8px", textTransform: "uppercase" }}>
+          <span style={{ fontSize: "0.58rem", fontWeight: "700", color: "#d97706", letterSpacing: "1.8px", textTransform: "uppercase" }}>
             GESTIÓN DE COMPRAS E INVENTARIO
           </span>
-          <h1 style={{ fontFamily: "var(--font-dm-serif), Georgia, serif", fontSize: "1.35rem", color: "#1a0f14", margin: "2px 0 0 0", fontWeight: "400" }}>
-            Escaneo de Códigos de Proveedor & Registro de Costo Total Pagado
+          <h1 style={{ fontFamily: "var(--font-dm-serif), Georgia, serif", fontSize: "1.35rem", color: "#0f172a", margin: "2px 0 0 0", fontWeight: "400" }}>
+            Escaneo de Códigos de Proveedor & Control de Compras
           </h1>
         </div>
 
+        {/* REFINED PRIMARY BUTTON: NO DOUBLE ++, SINGLE SCANNER ICON */}
         <button
           onClick={() => setIsNewPurchaseModalOpen(true)}
           style={{
-            padding: "9px 16px",
-            backgroundColor: "#9c3552",
+            padding: "9px 18px",
+            backgroundColor: "#0f172a",
             color: "#ffffff",
             border: "none",
             borderRadius: "8px",
-            fontSize: "0.74rem",
+            fontSize: "0.76rem",
             fontWeight: "600",
             cursor: "pointer",
             display: "inline-flex",
             alignItems: "center",
-            gap: "6px",
-            boxShadow: "0 4px 12px rgba(156,53,82,0.2)"
+            gap: "8px",
+            boxShadow: "0 4px 12px rgba(15,23,42,0.15)"
           }}
         >
-          <Add01Icon size={16} color="#fff" /> + Registrar Nueva Compra (Escanear)
+          <BarCode02Icon size={16} color="#ffffff" /> Registrar Nueva Compra (Escanear)
         </button>
       </div>
 
-      {/* SEARCH BAR & METRICS SUMMARY */}
+      {/* TABLE HEADER OPTIMIZATION: SEARCH ON LEFT, OUTLINE ACTION BUTTONS (FILTRAR & EXPORTAR) ON RIGHT */}
       <div style={{
         display: "flex",
         justifyContent: "space-between",
@@ -217,11 +216,12 @@ export default function ComprasAdminPage() {
         backgroundColor: "#ffffff",
         padding: "12px 16px",
         borderRadius: "12px",
-        border: "1px solid #f3e2e8",
+        border: "1px solid #e2e8f0",
         flexWrap: "wrap",
         gap: "12px"
       }}>
-        <div style={{ position: "relative", width: "280px" }}>
+        {/* SEARCH BAR LEFT ALIGNED */}
+        <div style={{ position: "relative", width: "300px" }}>
           <input
             type="text"
             placeholder="Buscar por ID de compra, producto o proveedor..."
@@ -232,32 +232,69 @@ export default function ComprasAdminPage() {
               boxSizing: "border-box",
               padding: "7px 32px 7px 12px",
               borderRadius: "6px",
-              border: "1px solid #e0d0d6",
+              border: "1px solid #cbd5e1",
               fontSize: "0.75rem",
-              backgroundColor: "#faf7f8",
+              backgroundColor: "#f8fafc",
               outline: "none"
             }}
           />
-          <Search01Icon size={14} color="#9c3552" style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)" }} />
+          <Search01Icon size={14} color="#64748b" style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)" }} />
         </div>
 
-        <span style={{ fontSize: "0.75rem", color: "#66585e" }}>
-          Mostrando <strong>{filteredPurchases.length}</strong> órdenes de compra registradas
-        </span>
+        {/* SECONDARY OUTLINE ACTION BUTTONS ON THE RIGHT (FILTRAR & EXPORTAR) */}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <button
+            type="button"
+            style={{
+              padding: "7px 14px",
+              backgroundColor: "#ffffff",
+              color: "#334155",
+              border: "1px solid #cbd5e1",
+              borderRadius: "6px",
+              fontSize: "0.74rem",
+              fontWeight: "600",
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px"
+            }}
+          >
+            <FilterIcon size={14} color="#475569" /> Filtrar
+          </button>
+
+          <button
+            type="button"
+            style={{
+              padding: "7px 14px",
+              backgroundColor: "#ffffff",
+              color: "#334155",
+              border: "1px solid #cbd5e1",
+              borderRadius: "6px",
+              fontSize: "0.74rem",
+              fontWeight: "600",
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px"
+            }}
+          >
+            <Download01Icon size={14} color="#475569" /> Exportar
+          </button>
+        </div>
       </div>
 
-      {/* PURCHASES HISTORIAL TABLE */}
+      {/* PURCHASES HISTORIAL TABLE WITH ACCESSIBLE HIGH-CONTRAST GREEN */}
       <div style={{
         backgroundColor: "#ffffff",
         borderRadius: "16px",
         padding: "20px 24px",
-        border: "1px solid #f3e2e8",
-        boxShadow: "0 2px 10px rgba(26, 15, 20, 0.02)"
+        border: "1px solid #e2e8f0",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.02)"
       }}>
-        <div style={{ border: "1px solid #f3e2e8", borderRadius: "10px", overflow: "hidden" }}>
+        <div style={{ border: "1px solid #e2e8f0", borderRadius: "10px", overflow: "hidden" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.76rem" }}>
             <thead>
-              <tr style={{ backgroundColor: "#faf7f8", borderBottom: "1px solid #f3e2e8", textAlign: "left" }}>
+              <tr style={{ backgroundColor: "#f8fafc", borderBottom: "1px solid #e2e8f0", textAlign: "left" }}>
                 <th style={thStyle}>ID COMPRA & FECHA</th>
                 <th style={thStyle}>PRODUCTO SELECCIONADO</th>
                 <th style={thStyle}>PROVEEDOR</th>
@@ -269,13 +306,13 @@ export default function ComprasAdminPage() {
             </thead>
             <tbody>
               {filteredPurchases.map((p) => (
-                <tr key={p.id} style={{ borderBottom: "1px solid #f5eaee" }}>
+                <tr key={p.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
                   {/* ID COMPRA & FECHA */}
                   <td style={tdStyle}>
                     <div>
-                      <strong style={{ color: "#9c3552", fontSize: "0.78rem" }}>{p.id}</strong>
-                      <div style={{ display: "flex", alignItems: "center", gap: "4px", marginTop: "2px", color: "#66585e", fontSize: "0.68rem" }}>
-                        <Calendar01Icon size={12} color="#9c3552" />
+                      <strong style={{ color: "#0f172a", fontSize: "0.78rem" }}>{p.id}</strong>
+                      <div style={{ display: "flex", alignItems: "center", gap: "4px", marginTop: "2px", color: "#64748b", fontSize: "0.68rem" }}>
+                        <Calendar01Icon size={12} color="#64748b" />
                         <span>{p.fecha}</span>
                       </div>
                     </div>
@@ -283,38 +320,38 @@ export default function ComprasAdminPage() {
 
                   {/* PRODUCTO */}
                   <td style={tdStyle}>
-                    <strong style={{ color: "#1a0f14", fontSize: "0.82rem" }}>{p.productoNombre}</strong>
+                    <strong style={{ color: "#0f172a", fontSize: "0.82rem" }}>{p.productoNombre}</strong>
                   </td>
 
                   {/* PROVEEDOR */}
                   <td style={tdStyle}>
                     <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                      <Building01Icon size={14} color="#9c3552" />
-                      <span style={{ color: "#55494e", fontWeight: "600" }}>{p.proveedorNombre}</span>
+                      <Building01Icon size={14} color="#64748b" />
+                      <span style={{ color: "#334155", fontWeight: "600" }}>{p.proveedorNombre}</span>
                     </div>
                   </td>
 
                   {/* CÓDIGOS ESCANEADOS */}
                   <td style={tdStyle}>
-                    <span style={{ padding: "3px 8px", borderRadius: "6px", fontSize: "0.72rem", fontWeight: "800", backgroundColor: "#fcf0f4", color: "#9c3552" }}>
+                    <span style={{ padding: "3px 8px", borderRadius: "6px", fontSize: "0.72rem", fontWeight: "800", backgroundColor: "#fffbeb", color: "#b45309" }}>
                       {p.codigosEscaneadosCount} códigos
                     </span>
                   </td>
 
                   {/* COSTO TOTAL PAGADO */}
-                  <td style={{ ...tdStyle, fontWeight: "800", color: "#1a0f14", fontSize: "0.84rem" }}>
+                  <td style={{ ...tdStyle, fontWeight: "800", color: "#0f172a", fontSize: "0.84rem" }}>
                     S/ {p.costoTotalPagado.toFixed(2)}
                   </td>
 
-                  {/* COSTO UNITARIO PROMEDIO */}
-                  <td style={{ ...tdStyle, fontWeight: "700", color: "#15803d" }}>
+                  {/* COSTO UNITARIO PROMEDIO (ACCESSIBLE HIGH-CONTRAST DARK GREEN #15803D / TEXT-GREEN-700) */}
+                  <td style={{ ...tdStyle, fontWeight: "800", color: "#15803d" }}>
                     S/ {p.costoUnitarioPromedio.toFixed(2)} /un.
                   </td>
 
-                  {/* ESTADO */}
+                  {/* ESTADO (ACCESSIBLE BG-GREEN-50 #F0FDF4 & TEXT-GREEN-800 #166534) */}
                   <td style={tdStyle}>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "0.68rem", fontWeight: "700", backgroundColor: "#ecfdf5", color: "#047857", padding: "3px 8px", borderRadius: "4px" }}>
-                      <CheckmarkBadge01Icon size={12} color="#047857" /> {p.estado}
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "0.68rem", fontWeight: "800", backgroundColor: "#f0fdf4", color: "#166534", padding: "4px 9px", borderRadius: "6px", border: "1px solid #bbf7d0" }}>
+                      <CheckmarkBadge01Icon size={13} color="#166534" /> {p.estado}
                     </span>
                   </td>
                 </tr>
@@ -333,7 +370,7 @@ export default function ComprasAdminPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsNewPurchaseModalOpen(false)}
-              style={{ position: "fixed", inset: 0, backgroundColor: "rgba(26, 15, 20, 0.5)", zIndex: 1200, backdropFilter: "blur(2px)" }}
+              style={{ position: "fixed", inset: 0, backgroundColor: "rgba(15, 23, 42, 0.5)", zIndex: 1200, backdropFilter: "blur(2px)" }}
             />
 
             <motion.div
@@ -352,19 +389,19 @@ export default function ComprasAdminPage() {
                 padding: "24px",
                 zIndex: 1201,
                 boxShadow: "0 25px 50px rgba(0,0,0,0.25)",
-                border: "1px solid #f3e2e8",
+                border: "1px solid #e2e8f0",
                 display: "flex",
                 flexDirection: "column"
               }}
             >
               {/* MODAL HEADER */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px", borderBottom: "1px solid #f5eaee", paddingBottom: "10px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px", borderBottom: "1px solid #f1f5f9", paddingBottom: "10px" }}>
                 <div>
-                  <span style={{ fontSize: "0.58rem", fontWeight: "700", color: "#9c3552", textTransform: "uppercase" }}>REGISTRO DE INVENTARIO</span>
-                  <h3 style={{ fontSize: "1.05rem", fontWeight: "700", color: "#1a0f14", margin: "2px 0 0 0" }}>Registrar Nueva Compra</h3>
+                  <span style={{ fontSize: "0.58rem", fontWeight: "700", color: "#d97706", textTransform: "uppercase" }}>REGISTRO DE INVENTARIO</span>
+                  <h3 style={{ fontSize: "1.05rem", fontWeight: "700", color: "#0f172a", margin: "2px 0 0 0" }}>Registrar Nueva Compra</h3>
                 </div>
                 <button onClick={() => setIsNewPurchaseModalOpen(false)} style={{ background: "none", border: "none", cursor: "pointer" }}>
-                  <Cancel01Icon size={20} color="#1a0f14" />
+                  <Cancel01Icon size={20} color="#0f172a" />
                 </button>
               </div>
 
@@ -373,7 +410,7 @@ export default function ComprasAdminPage() {
                 
                 {/* 1. SELECCIONAR PRODUCTO */}
                 <div>
-                  <label style={{ display: "block", fontSize: "0.68rem", fontWeight: "700", color: "#9c3552", textTransform: "uppercase", marginBottom: "4px" }}>
+                  <label style={{ display: "block", fontSize: "0.68rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
                     1. Seleccionar Producto de la Lista
                   </label>
                   <select
@@ -389,7 +426,7 @@ export default function ComprasAdminPage() {
 
                 {/* 2. SELECCIONAR PROVEEDOR */}
                 <div>
-                  <label style={{ display: "block", fontSize: "0.68rem", fontWeight: "700", color: "#9c3552", textTransform: "uppercase", marginBottom: "4px" }}>
+                  <label style={{ display: "block", fontSize: "0.68rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
                     2. Seleccionar Proveedor
                   </label>
                   <select
@@ -406,7 +443,7 @@ export default function ComprasAdminPage() {
                 {/* 3. ESCANEAR CÓDIGOS DEL PROVEEDOR */}
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-                    <label style={{ fontSize: "0.68rem", fontWeight: "700", color: "#9c3552", textTransform: "uppercase" }}>
+                    <label style={{ fontSize: "0.68rem", fontWeight: "700", color: "#475569", textTransform: "uppercase" }}>
                       3. Escanear Código del Proveedor
                     </label>
                     <button
@@ -414,7 +451,7 @@ export default function ComprasAdminPage() {
                       onClick={handleSimulateScanCode}
                       style={{
                         padding: "3px 8px",
-                        backgroundColor: "#9c3552",
+                        backgroundColor: "#0f172a",
                         color: "#ffffff",
                         border: "none",
                         borderRadius: "4px",
@@ -451,7 +488,7 @@ export default function ComprasAdminPage() {
                       onClick={handleAddScannedCode}
                       style={{
                         padding: "7px 12px",
-                        backgroundColor: "#1a0f14",
+                        backgroundColor: "#0f172a",
                         color: "#ffffff",
                         border: "none",
                         borderRadius: "6px",
@@ -468,22 +505,22 @@ export default function ComprasAdminPage() {
                 {/* LISTA DE CÓDIGOS ESCANEADOS */}
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-                    <span style={{ fontSize: "0.68rem", fontWeight: "700", color: "#1a0f14", textTransform: "uppercase" }}>
+                    <span style={{ fontSize: "0.68rem", fontWeight: "700", color: "#0f172a", textTransform: "uppercase" }}>
                       Lista de Códigos Escaneados
                     </span>
-                    <span style={{ fontSize: "0.72rem", fontWeight: "800", color: "#9c3552", backgroundColor: "#fcf0f4", padding: "2px 8px", borderRadius: "10px" }}>
+                    <span style={{ fontSize: "0.72rem", fontWeight: "800", color: "#b45309", backgroundColor: "#fffbeb", padding: "2px 8px", borderRadius: "10px" }}>
                       {totalScannedCodesCount} códigos escaneados
                     </span>
                   </div>
 
                   {scannedCodesList.length === 0 ? (
-                    <div style={{ padding: "16px", textAlign: "center", backgroundColor: "#faf7f8", borderRadius: "8px", border: "1px dashed #e0d0d6", color: "#887980", fontSize: "0.74rem" }}>
+                    <div style={{ padding: "16px", textAlign: "center", backgroundColor: "#f8fafc", borderRadius: "8px", border: "1px dashed #cbd5e1", color: "#64748b", fontSize: "0.74rem" }}>
                       No has escaneado ningún código todavía. Usa el botón "📷 Escanear" o escribe el código.
                     </div>
                   ) : (
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", maxHeight: "120px", overflowY: "auto", backgroundColor: "#faf7f8", padding: "8px", borderRadius: "8px", border: "1px solid #e0d0d6" }}>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", maxHeight: "120px", overflowY: "auto", backgroundColor: "#f8fafc", padding: "8px", borderRadius: "8px", border: "1px solid #cbd5e1" }}>
                       {scannedCodesList.map((code, idx) => (
-                        <span key={idx} style={{ display: "inline-flex", alignItems: "center", gap: "4px", backgroundColor: "#ffffff", padding: "3px 8px", borderRadius: "4px", border: "1px solid #f3e2e8", fontSize: "0.68rem", fontFamily: "monospace", color: "#9c3552", fontWeight: "700" }}>
+                        <span key={idx} style={{ display: "inline-flex", alignItems: "center", gap: "4px", backgroundColor: "#ffffff", padding: "3px 8px", borderRadius: "4px", border: "1px solid #e2e8f0", fontSize: "0.68rem", fontFamily: "monospace", color: "#0f172a", fontWeight: "700" }}>
                           {code}
                           <button type="button" onClick={() => handleRemoveCode(idx)} style={{ background: "none", border: "none", cursor: "pointer", padding: "0 2px" }}>
                             <Cancel01Icon size={12} color="#dc2626" />
@@ -496,7 +533,7 @@ export default function ComprasAdminPage() {
 
                 {/* COSTO TOTAL PAGADO Y COSTO UNITARIO AUTOMÁTICO */}
                 <div>
-                  <label style={{ display: "block", fontSize: "0.68rem", fontWeight: "700", color: "#9c3552", textTransform: "uppercase", marginBottom: "4px" }}>
+                  <label style={{ display: "block", fontSize: "0.68rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
                     Costo Total Pagado en la Compra (S/.)
                   </label>
                   <input
@@ -506,33 +543,33 @@ export default function ComprasAdminPage() {
                     placeholder="120.00"
                     value={totalCostPaidInput}
                     onChange={(e) => setTotalCostPaidInput(e.target.value)}
-                    style={{ ...inputStyle, fontSize: "0.85rem", fontWeight: "700", color: "#1a0f14" }}
+                    style={{ ...inputStyle, fontSize: "0.85rem", fontWeight: "700", color: "#0f172a" }}
                   />
                 </div>
 
-                {/* AUTOMATIC CALCULATION SUMMARY */}
+                {/* AUTOMATIC CALCULATION SUMMARY WITH ACCESSIBLE GREEN */}
                 <div style={{
-                  backgroundColor: "#fcf0f4",
+                  backgroundColor: "#f0fdf4",
                   borderRadius: "12px",
                   padding: "12px 14px",
-                  border: "1px solid #f3c2d4",
+                  border: "1px solid #bbf7d0",
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center"
                 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <CalculatorIcon size={18} color="#9c3552" />
+                    <CalculatorIcon size={18} color="#15803d" />
                     <div>
-                      <span style={{ fontSize: "0.62rem", fontWeight: "700", color: "#9c3552", textTransform: "uppercase", display: "block" }}>
+                      <span style={{ fontSize: "0.62rem", fontWeight: "800", color: "#166534", textTransform: "uppercase", display: "block" }}>
                         COSTO UNITARIO PROMEDIO CALCULADO
                       </span>
-                      <span style={{ fontSize: "0.65rem", color: "#66585e" }}>
+                      <span style={{ fontSize: "0.65rem", color: "#15803d" }}>
                         Fórmula: S/ {totalCostPaidInput || "0"} ÷ {totalScannedCodesCount} códigos
                       </span>
                     </div>
                   </div>
 
-                  <span style={{ fontSize: "1.15rem", fontWeight: "800", color: "#9c3552" }}>
+                  <span style={{ fontSize: "1.15rem", fontWeight: "800", color: "#15803d" }}>
                     S/ {calculatedUnitCost}
                   </span>
                 </div>
@@ -543,7 +580,7 @@ export default function ComprasAdminPage() {
                   style={{
                     width: "100%",
                     padding: "11px",
-                    backgroundColor: scannedCodesList.length === 0 ? "#e0d0d6" : "#9c3552",
+                    backgroundColor: scannedCodesList.length === 0 ? "#cbd5e1" : "#0f172a",
                     color: "#ffffff",
                     border: "none",
                     borderRadius: "8px",
@@ -570,23 +607,23 @@ const inputStyle: React.CSSProperties = {
   boxSizing: "border-box",
   padding: "8px 10px",
   borderRadius: "6px",
-  border: "1px solid #e0d0d6",
+  border: "1px solid #cbd5e1",
   fontSize: "0.75rem",
   outline: "none",
-  backgroundColor: "#faf7f8",
-  color: "#1a0f14"
+  backgroundColor: "#f8fafc",
+  color: "#0f172a"
 };
 
 const thStyle: React.CSSProperties = {
   padding: "10px 12px",
   fontSize: "0.65rem",
   fontWeight: "700",
-  color: "#9c3552",
+  color: "#475569",
   letterSpacing: "0.5px"
 };
 
 const tdStyle: React.CSSProperties = {
   padding: "12px",
   fontSize: "0.76rem",
-  color: "#1a0f14"
+  color: "#0f172a"
 };
