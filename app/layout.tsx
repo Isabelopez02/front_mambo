@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { DM_Serif_Display, Outfit } from "next/font/google";
 import "./globals.css";
-import Navbar from "./client/navbar";
-import { Footer } from "./client/component/footer";
+import Navbar from "./components/client/navbar";
+import { Footer } from "./components/client/footer";
 
 const outfit = Outfit({
   subsets: ["latin"],

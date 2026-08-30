@@ -161,17 +161,6 @@ export function DecoracionHogarSection() {
   );
 }
 
-export function SectionVendidos() {
-  return (
-    <div style={{ backgroundColor: '#ffffff' }}>
-      <UltimosIngresosSection />
-      <DecoracionHogarSection />
-      <MaquillajeSkincareSection />
-      <CarterasTendenciaSection />
-    </div>
-  );
-}
-
 function ProductSection({ subtitle, title, products }: ProductSectionProps) {
   const [isMobile, setIsMobile] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);

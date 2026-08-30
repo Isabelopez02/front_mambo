@@ -11,7 +11,7 @@ import {
   GridIcon,
   
 } from "hugeicons-react";
-import { useCart } from "../client/context/CartContext";
+import { useCart } from "../../client/context/CartContext";
 
 interface Product {
   id: number;

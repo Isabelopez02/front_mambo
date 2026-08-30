@@ -1,14 +1,14 @@
 "use client";
 
-import Hero from "./client/component/hero";
-import { FullCategorias } from "./client/component/categorias";
+import Hero from "./components/client/hero";
+import { FullCategorias } from "./components/client/categorias";
 import { 
   UltimosIngresosSection, 
   MaquillajeSkincareSection, 
   CarterasTendenciaSection,
   DecoracionHogarSection
-} from "./client/component/SectionVendidos";
-import { BannerEnvios } from "./client/component/banerEnvios";
+} from "./components/client/SectionVendidos";
+import { BannerEnvios } from "./components/client/banerEnvios";
 
 export default function Home() {
   return (

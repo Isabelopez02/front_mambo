@@ -8,10 +8,10 @@ import {
   Menu01Icon,
   Cancel01Icon
 } from "hugeicons-react";
-import { TopBar } from "./component/topBar";
-import { AuthModal } from "./component/AuthModal";
-import { CartDrawer } from "./component/CartDrawer";
-import { useCart } from "./context/CartContext";
+import { TopBar } from "./topBar";
+import { AuthModal } from "../../client/component/AuthModal";
+import { CartDrawer } from "../../client/component/CartDrawer";
+import { useCart } from "../../client/context/CartContext";
 
 export default function Navbar() {
   const [isMobile, setIsMobile] = useState(false);
