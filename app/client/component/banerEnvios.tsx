@@ -15,8 +15,8 @@ export function BannerEnvios() {
   }, []);
 
   return (
-    <section style={{ 
-      padding: isMobile ? '20px 16px 40px 16px' : '24px 6% 50px 6%',
+    <section  className="grid grid-cols-1 md:grid-cols-2"style={{ 
+      padding: isMobile ? '20px 16px 40px 16px' : '2px 6% 2px 6%',
       backgroundColor: '#ffffff'
     }}>
       <div style={{
@@ -36,19 +36,18 @@ export function BannerEnvios() {
             alignItems: 'center',
             justifyContent: 'space-between',
             overflow: 'hidden',
-            border: '1px solid #f7d6e2',
-            backgroundImage: `linear-gradient(90deg, rgba(253, 236, 242, 0.95) 0%, rgba(253, 236, 242, 0.82) 55%, rgba(253, 236, 242, 0.3) 100%), url('https://images.unsplash.com/photo-1608248597261-833257647000?q=80&w=1200&auto=format&fit=crop')`,
+           backgroundImage: `url('/banner1.jpg')`,
             backgroundSize: 'cover',
             backgroundPosition: 'center right',
-            minHeight: '200px'
+            minHeight: isMobile ? '200px' : '300px'
           }}
         >
           {/* LEFT TEXT CONTENT */}
           <div style={{ maxWidth: '62%', zIndex: 2 }}>
             <h3 style={{ 
               fontSize: isMobile ? '1.3rem' : '1.6rem', 
-              fontFamily: 'var(--font-outfit), sans-serif',
-              fontWeight: '600', 
+              fontFamily: 'var(--font-dm-serif), Georgia, serif',
+              fontWeight: '200', 
               color: '#1a0f14', 
               margin: '0 0 8px 0',
               lineHeight: '1.2'
@@ -70,7 +69,7 @@ export function BannerEnvios() {
               color: '#55494e', 
               lineHeight: 1.45,
               marginBottom: '18px',
-              maxWidth: '230px'
+              maxWidth: '200px'
             }}>
               Renueva tu cosmetiquero con nuestros kits de maquillaje a precios especiales.
             </p>
@@ -107,23 +106,22 @@ export function BannerEnvios() {
             alignItems: 'center',
             justifyContent: 'space-between',
             overflow: 'hidden',
-            border: '1px solid #f7d6e2',
-            backgroundImage: `linear-gradient(90deg, rgba(253, 236, 242, 0.95) 0%, rgba(253, 236, 242, 0.82) 55%, rgba(253, 236, 242, 0.3) 100%), url('https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=1200&auto=format&fit=crop')`,
+            backgroundImage: ` url('/banner2.jpg')`,
             backgroundSize: 'cover',
             backgroundPosition: 'center right',
             minHeight: '200px'
           }}
         >
           {/* LEFT TEXT CONTENT */}
-          <div style={{ maxWidth: '62%', zIndex: 2 }}>
+          <div style={{ maxWidth: '42%', zIndex: 2 }}>
             <h3 style={{ 
               fontSize: isMobile ? '1.3rem' : '1.6rem', 
-              fontFamily: 'var(--font-outfit), sans-serif',
-              fontWeight: '600', 
+              fontFamily: 'var(--font-dm-serif), sans-serif',
+              fontWeight: '200', 
               color: '#1a0f14', 
               margin: '0 0 8px 0',
               lineHeight: '1.2'
-            }}>
+              }}>
               <span style={{ 
                 fontFamily: 'var(--font-dm-serif), Georgia, serif',
                 fontStyle: 'italic', 
@@ -132,8 +130,8 @@ export function BannerEnvios() {
               }}>
                 Especial
               </span>{" "}
-              Carteras y <br />
-              Accesorios
+              Carteras <br />
+              y Accesorios
             </h3>
 
             <p style={{ 

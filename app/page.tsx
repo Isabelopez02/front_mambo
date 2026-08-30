@@ -2,7 +2,12 @@
 
 import Hero from "./client/component/hero";
 import { FullCategorias } from "./client/component/categorias";
-import { SectionVendidos } from "./client/component/SectionVendidos";
+import { 
+  UltimosIngresosSection, 
+  MaquillajeSkincareSection, 
+  CarterasTendenciaSection,
+  DecoracionHogarSection
+} from "./client/component/SectionVendidos";
 import { BannerEnvios } from "./client/component/banerEnvios";
 
 export default function Home() {
@@ -10,8 +15,11 @@ export default function Home() {
     <div>
       <Hero />
       <FullCategorias />
-      <SectionVendidos />
+      <UltimosIngresosSection />
       <BannerEnvios />
+      <MaquillajeSkincareSection />
+      <CarterasTendenciaSection />
+      <DecoracionHogarSection />
     </div>
   );
 }
