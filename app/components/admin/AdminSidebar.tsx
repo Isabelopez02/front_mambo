@@ -33,7 +33,7 @@ export function AdminSidebar() {
   const menuItems = [
     { label: "Dashboard", href: "/admin", icon: <DashboardSquare01Icon size={17} /> },
     { label: "Productos", href: "/admin/productos", icon: <ShoppingBag01Icon size={17} /> },
-    { label: "Categorías", href: "/admin/categorias", icon: <GridIcon size={17} /> },
+    { label: "Compras", href: "/admin/compras", icon: <DeliveryTruck01Icon size={17} /> },
     { label: "Proveedores", href: "/admin/proveedores", icon: <Building01Icon size={17} /> },
     { label: "Clientes", href: "/admin/clientes", icon: <UserGroupIcon size={17} /> },
     { label: "Comprobantes", href: "/admin/comprobantes", icon: <Invoice01Icon size={17} /> },
