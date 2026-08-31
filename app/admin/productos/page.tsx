@@ -37,7 +37,6 @@ export default function ProductosAdminPage() {
   const [costoCompraInput, setCostoCompraInput] = useState<string>("20.00");
   const [gainMinPct, setGainMinPct] = useState<number>(30); // 30%
   const [gainMaxPct, setGainMaxPct] = useState<number>(50); // 50%
-  const [generated5DCode, setGenerated5DCode] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -73,17 +72,11 @@ export default function ProductosAdminPage() {
   }, []);
 
   const filteredProducts = products.filter(p => {
-    const matchesSearch = p.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          (p.codigoBase5D && p.codigoBase5D.includes(searchQuery));
+    const matchesSearch = p.nombre.toLowerCase().includes(searchQuery.toLowerCase());
     const catName = p.categoriaNombre || p.categoria || "";
     const matchesCategory = selectedCategory === "TODAS" || catName === selectedCategory;
     return matchesSearch && matchesCategory;
   });
-
-  const handleAutoGenerate5DCode = () => {
-    const randomBase5 = Math.floor(10000 + Math.random() * 90000).toString();
-    setGenerated5DCode(randomBase5);
-  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -118,8 +111,7 @@ export default function ProductosAdminPage() {
         precioCompraProveedor: numCostoCompra,
         porcentajeGananciaMin: gainMinPct,
         porcentajeGananciaMax: gainMaxPct,
-        imagenUrl: imageFile,
-        codigoBase5D: generated5DCode || Math.floor(10000 + Math.random() * 90000).toString()
+        imagenUrl: imageFile
       });
 
       await fetchProducts(); // Sincroniza desde la Base de Datos
@@ -130,7 +122,6 @@ export default function ProductosAdminPage() {
       setGainMaxPct(50);
       setImageFile(null);
       setImagePreview(null);
-      setGenerated5DCode("");
     } catch (err: any) {
       alert("Error al conectar con la base de datos backend: " + err.message);
     }
@@ -201,10 +192,7 @@ export default function ProductosAdminPage() {
         </div>
 
         <button
-          onClick={() => {
-            setIsAddModalOpen(true);
-            handleAutoGenerate5DCode();
-          }}
+          onClick={() => setIsAddModalOpen(true)}
           style={{
             padding: "9px 18px",
             backgroundColor: "#0f172a",
@@ -348,10 +336,7 @@ export default function ProductosAdminPage() {
             <ShoppingBag01Icon size={32} color="#cbd5e1" style={{ margin: "0 auto 10px auto", display: "block" }} />
             <p style={{ fontSize: "0.85rem", margin: "0 0 10px 0" }}>No existen productos guardados en la Base de Datos.</p>
             <button
-              onClick={() => {
-                setIsAddModalOpen(true);
-                handleAutoGenerate5DCode();
-              }}
+              onClick={() => setIsAddModalOpen(true)}
               style={{ padding: "6px 14px", backgroundColor: "#0f172a", color: "#fff", border: "none", borderRadius: "6px", fontSize: "0.72rem", fontWeight: "600", cursor: "pointer" }}
             >
               + Registrar Producto en Base de Datos
@@ -373,7 +358,7 @@ export default function ProductosAdminPage() {
               </thead>
               <tbody>
                 {filteredProducts.map((prod) => {
-                  const costoCompra = prod.precioCompraProveedor || prod.precio * 0.6 || 20.00;
+                  const costoCompra = prod.precioCompraProveedor || (prod.precio || 0) * 0.6 || 20.00;
                   const marginMin = prod.porcentajeGananciaMin || 30;
                   const marginMax = prod.porcentajeGananciaMax || 50;
                   const vMin = prod.precioVentaMin || (costoCompra * (1 + marginMin / 100));
@@ -409,9 +394,6 @@ export default function ProductosAdminPage() {
                           <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "2px" }}>
                             <span style={{ fontSize: "0.62rem", color: "#64748b" }}>
                               {prod.categoriaNombre || prod.categoria || "General"}
-                            </span>
-                            <span style={{ fontFamily: "monospace", fontSize: "0.74rem", fontWeight: "800", color: "#059669", backgroundColor: "#ecfdf5", padding: "1px 6px", borderRadius: "4px", border: "1px solid #a7f3d0" }}>
-                              Cód 5D: {prod.codigoBase5D || "12343"}
                             </span>
                           </div>
                         </div>
@@ -523,45 +505,6 @@ export default function ProductosAdminPage() {
 
               <form onSubmit={handleAddProductSubmit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 
-                {/* 5-DIGIT BASE CODE GENERATOR DISPLAY */}
-                <div style={{
-                  backgroundColor: "#ecfdf5",
-                  borderRadius: "10px",
-                  padding: "10px 14px",
-                  border: "1px solid #a7f3d0",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center"
-                }}>
-                  <div>
-                    <span style={{ fontSize: "0.58rem", fontWeight: "700", color: "#047857", textTransform: "uppercase", display: "block" }}>CÓDIGO BASE PRODUCTO (5 DÍGITOS)</span>
-                    <span style={{ fontSize: "0.62rem", color: "#065f46" }}>Se guardará en la Base de Datos</span>
-                  </div>
-
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <strong style={{ fontFamily: "monospace", fontSize: "1.1rem", color: "#047857" }}>
-                      {generated5DCode || "58491"}
-                    </strong>
-
-                    <button
-                      type="button"
-                      onClick={handleAutoGenerate5DCode}
-                      style={{
-                        padding: "3px 8px",
-                        backgroundColor: "#047857",
-                        color: "#ffffff",
-                        border: "none",
-                        borderRadius: "4px",
-                        fontSize: "0.62rem",
-                        fontWeight: "700",
-                        cursor: "pointer"
-                      }}
-                    >
-                      ⚡ Regenerar
-                    </button>
-                  </div>
-                </div>
-
                 {/* IMAGE UPLOAD FIELD WITH PREVIEW */}
                 <div>
                   <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
@@ -707,18 +650,7 @@ export default function ProductosAdminPage() {
               <form onSubmit={handleUpdateProductSubmit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 
                 {/* 5-DIGIT BASE CODE READONLY */}
-                <div style={{
-                  backgroundColor: "#f8fafc",
-                  borderRadius: "8px",
-                  padding: "8px 12px",
-                  border: "1px solid #cbd5e1",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center"
-                }}>
-                  <span style={{ fontSize: "0.62rem", fontWeight: "700", color: "#475569", textTransform: "uppercase" }}>CÓDIGO BASE 5D:</span>
-                  <strong style={{ fontFamily: "monospace", fontSize: "0.95rem", color: "#059669" }}>{editingProduct.codigoBase5D || "12343"}</strong>
-                </div>
+
 
                 {/* EDIT IMAGE UPLOAD FIELD */}
                 <div>

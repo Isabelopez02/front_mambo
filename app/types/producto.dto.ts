@@ -1,5 +1,5 @@
 /**
- * Data Transfer Objects (DTOs) alineados con Spring Boot Backend y cálculo por % de Ganancia
+ * DTO de Producto alineado con Spring Boot Backend (ProductoDTO.java)
  */
 
 export interface ProductoDTO {
@@ -8,18 +8,17 @@ export interface ProductoDTO {
   categoriaNombre?: string;
   categoria?: string;
   icono?: string;
-  precio: number;
-  precioCompraProveedor: number; // Extraído del precio mayor de los proveedores
-  porcentajeGananciaMin: number; // ej. 30%
-  porcentajeGananciaMax: number; // ej. 50%
-  precioVentaMin: number; // Calculado: precioCompra * (1 + %Min/100)
-  precioVentaMax: number; // Calculado: precioCompra * (1 + %Max/100)
+  precio?: number;
+  precioCompraProveedor?: number;
+  porcentajeGananciaMin?: number;
+  porcentajeGananciaMax?: number;
+  precioVentaMin?: number;
+  precioVentaMax?: number;
   stock?: number;
   descripcion?: string;
-  img?: string; // URL o vista previa
-  imagenUrl?: File | string | null; // Archivo de imagen o URL
+  img?: string;
+  imagenUrl?: File | string | null;
   estadoStock?: string;
-  codigoBase5D?: string;
   activo?: boolean;
 }
 
@@ -28,17 +27,16 @@ export interface CreateProductoDTO {
   categoriaNombre: string;
   precio?: number;
   precioCompraProveedor?: number;
-  porcentajeGananciaMin: number;
-  porcentajeGananciaMax: number;
+  porcentajeGananciaMin?: number;
+  porcentajeGananciaMax?: number;
   precioVentaMin?: number;
   precioVentaMax?: number;
   descripcion?: string;
   imagenUrl?: File | string | null;
-  codigoBase5D?: string;
 }
 
 export interface UpdateProductoDTO {
-  id: number | string;
+  id?: number | string;
   nombre?: string;
   categoriaNombre?: string;
   precio?: number;

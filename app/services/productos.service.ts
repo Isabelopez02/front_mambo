@@ -1,81 +1,28 @@
 /**
- * Servicio API Axios conectado STRICTAMENTE con la Base de Datos vía Spring Boot Backend
- * Con cabecera de autenticación JWT Bearer Token (Authorization: Bearer <token>)
+ * Servicio de Productos conectado con Controller Spring Boot (/lista/productos)
  */
 
-import { ProductoDTO, CreateProductoDTO, UpdateProductoDTO } from "../types/producto.dto";
+import { ProductoDTO, CreateProductoDTO, UpdateProductoDTO } from "../types";
 import { authService } from "./auth.service";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/lista/productos";
 
-const axiosClient = {
-  async get<T>(url: string): Promise<{ data: T }> {
-    const headers: Record<string, string> = {
-      "Accept": "application/json",
-      ...authService.getAuthHeader()
-    };
-
-    const res = await fetch(`${API_BASE_URL}${url}`, {
+export const productosService = {
+  // GET /lista/productos
+  async getProductos(): Promise<ProductoDTO[]> {
+    const authHeaders = authService.getAuthHeader();
+    const res = await fetch(API_BASE_URL, {
       method: "GET",
-      headers,
+      headers: { "Accept": "application/json", ...authHeaders },
       cache: "no-store"
     });
-
-    if (!res.ok) throw new Error(`HTTP Error ${res.status}: Fallo al consultar la Base de Datos Backend`);
-    const data = await res.json();
-    return { data };
+    if (!res.ok) throw new Error(`Error ${res.status}: Fallo al consultar productos`);
+    return await res.json();
   },
 
-  async post<T>(url: string, body: FormData): Promise<{ data: T }> {
-    const headers = { ...authService.getAuthHeader() };
-
-    const res = await fetch(`${API_BASE_URL}${url}`, {
-      method: "POST",
-      headers,
-      body
-    });
-
-    if (!res.ok) throw new Error(`HTTP Error ${res.status}: Fallo al guardar en la Base de Datos Backend`);
-    const data = await res.json();
-    return { data };
-  },
-
-  async put<T>(url: string, body: FormData): Promise<{ data: T }> {
-    const headers = { ...authService.getAuthHeader() };
-
-    const res = await fetch(`${API_BASE_URL}${url}`, {
-      method: "PUT",
-      headers,
-      body
-    });
-
-    if (!res.ok) throw new Error(`HTTP Error ${res.status}: Fallo al actualizar en la Base de Datos Backend`);
-    const data = await res.json();
-    return { data };
-  },
-
-  async delete(url: string): Promise<{ status: number }> {
-    const headers = { ...authService.getAuthHeader() };
-
-    const res = await fetch(`${API_BASE_URL}${url}`, {
-      method: "DELETE",
-      headers
-    });
-
-    if (!res.ok) throw new Error(`HTTP Error ${res.status}: Fallo al eliminar en la Base de Datos Backend`);
-    return { status: res.status };
-  }
-};
-
-export const productosService = {
-  // GET ALL DIRECTO DE LA BASE DE DATOS
-  async getProductos(): Promise<ProductoDTO[]> {
-    const response = await axiosClient.get<ProductoDTO[]>("");
-    return response.data;
-  },
-
-  // CREAR PRODUCTO CON TOKEN JWT (POST /lista/productos)
+  // POST /lista/productos (Multipart Form Data)
   async createProducto(dto: CreateProductoDTO): Promise<ProductoDTO> {
+    const authHeaders = authService.getAuthHeader();
     const marginMin = dto.porcentajeGananciaMin || 30;
     const marginMax = dto.porcentajeGananciaMax || 50;
     const costPrice = dto.precioCompraProveedor || 20.00;
@@ -85,7 +32,6 @@ export const productosService = {
     const formData = new FormData();
     formData.append("nombre", dto.nombre);
     formData.append("categoriaNombre", dto.categoriaNombre);
-    if (dto.codigoBase5D) formData.append("codigoBase5D", dto.codigoBase5D);
     formData.append("precio", pMin.toFixed(2));
     formData.append("precioCompraProveedor", costPrice.toString());
     formData.append("porcentajeGananciaMin", marginMin.toString());
@@ -95,12 +41,18 @@ export const productosService = {
     if (dto.descripcion) formData.append("descripcion", dto.descripcion);
     if (dto.imagenUrl instanceof File) formData.append("imagenUrl", dto.imagenUrl);
 
-    const response = await axiosClient.post<ProductoDTO>("", formData);
-    return response.data;
+    const res = await fetch(API_BASE_URL, {
+      method: "POST",
+      headers: { ...authHeaders },
+      body: formData
+    });
+    if (!res.ok) throw new Error(`Error ${res.status}: Fallo al guardar producto`);
+    return await res.json();
   },
 
-  // ACTUALIZAR PRODUCTO CON TOKEN JWT (PUT /lista/productos/{id})
+  // PUT /lista/productos/{id} (Multipart Form Data)
   async updateProducto(id: number | string, dto: UpdateProductoDTO): Promise<ProductoDTO> {
+    const authHeaders = authService.getAuthHeader();
     const marginMin = dto.porcentajeGananciaMin || 30;
     const marginMax = dto.porcentajeGananciaMax || 50;
     const costPrice = dto.precioCompraProveedor || 20.00;
@@ -119,12 +71,22 @@ export const productosService = {
     if (dto.descripcion) formData.append("descripcion", dto.descripcion);
     if (dto.imagenUrl instanceof File) formData.append("imagenUrl", dto.imagenUrl);
 
-    const response = await axiosClient.put<ProductoDTO>(`/${id}`, formData);
-    return response.data;
+    const res = await fetch(`${API_BASE_URL}/${id}`, {
+      method: "PUT",
+      headers: { ...authHeaders },
+      body: formData
+    });
+    if (!res.ok) throw new Error(`Error ${res.status}: Fallo al actualizar producto`);
+    return await res.json();
   },
 
-  // ELIMINAR PRODUCTO CON TOKEN JWT (DELETE /lista/productos/{id})
+  // DELETE /lista/productos/{id}
   async deleteProducto(id: number | string): Promise<void> {
-    await axiosClient.delete(`/${id}`);
+    const authHeaders = authService.getAuthHeader();
+    const res = await fetch(`${API_BASE_URL}/${id}`, {
+      method: "DELETE",
+      headers: { ...authHeaders }
+    });
+    if (!res.ok) throw new Error(`Error ${res.status}: Fallo al eliminar producto`);
   }
 };

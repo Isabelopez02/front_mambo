@@ -1,28 +1,49 @@
 /**
- * Data Transfer Objects (DTOs) para Gestión de Compras & Escaneo de Inventario
+ * DTOs de Compra alineados con Spring Boot Backend (CompraDTO, CompraRequestDTO, DetalleCompraDto)
  */
 
+import { TipoComprobante, TipoEnvio, TipoEstado, TipoPago } from "./enums.dto";
+import { EnvioDTO } from "./envio.dto";
+import { DestinatarioDTO } from "./destinatario.dto";
+import { PagoDTO } from "./pago.dto";
+
+export interface DetalleCompraDto {
+  id?: number;
+  productoId?: number;
+  compraId?: number;
+  nombreProducto?: string;
+  precioUnitario?: number;
+  cantidad?: number;
+  subtotal?: number;
+}
+
 export interface CompraDTO {
-  id: string; // ej. "COMP-2026-001"
-  fechaCompra: string;
-  productoId: string;
-  productoNombre: string;
-  codigoBase5D: string;
-  proveedorId: number;
-  proveedorNombre: string;
-  codigosEscaneadosCount: number;
-  codigosProveedorLista: string[];
-  costoTotalPagado: number;
-  costoUnitarioPromedio: number; // Calculado: costoTotalPagado / codigosEscaneadosCount
-  estado: "Completado" | "Pendiente" | "Cancelado";
-  observaciones?: string;
+  id?: number;
+  numDocumento?: string;
+  tipoEnvio?: TipoEnvio | string;
+  nombreDestinario?: string;
+  contactoDestinatario?: string;
+  tipoPago?: TipoPago | string;
+  total?: number;
+  estado?: TipoEstado | string;
+  fechaCreacion?: string;
+  tipoComprobante?: TipoComprobante | string;
+  detalles?: DetalleCompraDto[];
+}
+
+export interface CompraRequestDTO {
+  envio?: EnvioDTO;
+  destinatario?: DestinatarioDTO;
+  pago?: PagoDTO;
+  tipoComprobante?: TipoComprobante | string;
+  detalles?: DetalleCompraDto[];
 }
 
 export interface CreateCompraDTO {
-  productoId: string;
-  proveedorId: number;
-  codigosProveedorLista: string[]; // Lista de códigos de barras/QR escaneados uno a uno
-  costoTotalPagado: number;
+  productoId?: string | number;
+  proveedorId?: number;
+  codigosProveedorLista?: string[];
+  costoTotalPagado?: number;
   observaciones?: string;
 }
 

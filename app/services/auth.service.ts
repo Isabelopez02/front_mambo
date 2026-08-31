@@ -1,7 +1,8 @@
 /**
- * Servicio de Autenticación JWT con Validación por Email & Contraseña en Base de Datos
- * Endpoint: http://localhost:8080/auth/login y /auth/register
+ * Servicio de Autenticación JWT con Backend Spring Boot (/auth)
  */
+
+import { LoginRequest, RegisterRequest, AuthResponse } from "../types";
 
 const AUTH_API_URL = process.env.NEXT_PUBLIC_AUTH_API_URL || "http://localhost:8080/auth";
 
@@ -13,99 +14,73 @@ export interface AuthUser {
 }
 
 export const authService = {
-  // LOGIN ADMINISTRADOR POR EMAIL Y CONTRASEÑA
-  async login(email: string, password: string): Promise<AuthUser> {
-    try {
-      const response = await fetch(`${AUTH_API_URL}/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
-      });
+  // LOGIN ADMINISTRADOR / USUARIO (Acepta DTO o (numeroDocumento, password))
+  async login(requestOrDoc: LoginRequest | string, password?: string): Promise<AuthUser> {
+    const payload: LoginRequest = typeof requestOrDoc === "string"
+      ? { numeroDocumento: requestOrDoc, password: password || "" }
+      : requestOrDoc;
 
-      if (!response.ok) {
-        throw new Error("El correo o la contraseña no coinciden en la base de datos");
-      }
+    const response = await fetch(`${AUTH_API_URL}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-      const data = await response.json();
-      const user: AuthUser = {
-        token: data.token,
-        numeroDocumento: data.numeroDocumento || email,
-        nombre: data.nombre || "Administrador",
-        rol: data.rol || "ADMIN"
-      };
-
-      if (typeof window !== "undefined") {
-        document.cookie = `admin_token=${user.token}; path=/; max-age=86400; SameSite=Lax`;
-        localStorage.setItem("admin_token", user.token);
-        localStorage.setItem("admin_user", JSON.stringify(user));
-      }
-
-      return user;
-    } catch (err: any) {
-      // Local fallback for dev if backend server is restarted
-      if (email === "admin@gmail.com" && password === "admin1234") {
-        const user: AuthUser = {
-          token: "admin-jwt-token-admin@gmail.com",
-          numeroDocumento: "admin@gmail.com",
-          nombre: "Administrador General",
-          rol: "ADMIN"
-        };
-        if (typeof window !== "undefined") {
-          document.cookie = `admin_token=${user.token}; path=/; max-age=86400; SameSite=Lax`;
-          localStorage.setItem("admin_token", user.token);
-          localStorage.setItem("admin_user", JSON.stringify(user));
-        }
-        return user;
-      }
-      throw err;
+    if (!response.ok) {
+      throw new Error("El correo o documento y la contraseña no coinciden en la base de datos");
     }
+
+    const data: AuthResponse & { numeroDocumento?: string; nombre?: string; rol?: string } = await response.json();
+    const user: AuthUser = {
+      token: data.token,
+      numeroDocumento: data.numeroDocumento || payload.numeroDocumento,
+      nombre: data.nombre || "Administrador",
+      rol: data.rol || "ADMIN"
+    };
+
+    if (typeof window !== "undefined") {
+      document.cookie = `admin_token=${user.token}; path=/; max-age=86400; SameSite=Lax`;
+      localStorage.setItem("admin_token", user.token);
+      localStorage.setItem("admin_user", JSON.stringify(user));
+    }
+
+    return user;
   },
 
-  // REGISTRAR NUEVO ADMINISTRADOR POR EMAIL Y CONTRASEÑA
-  async register(email: string, password: string, nombre?: string): Promise<AuthUser> {
-    try {
-      const response = await fetch(`${AUTH_API_URL}/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, nombre })
-      });
+  // REGISTRAR NUEVO USUARIO (Acepta DTO o (numeroDocumento, password, nombre))
+  async register(requestOrDoc: RegisterRequest | string, password?: string, nombre?: string): Promise<AuthUser> {
+    const payload: RegisterRequest = typeof requestOrDoc === "string"
+      ? { numeroDocumento: requestOrDoc, password: password || "" }
+      : requestOrDoc;
 
-      if (!response.ok) {
-        throw new Error("Error al registrar el correo en la base de datos");
-      }
+    const response = await fetch(`${AUTH_API_URL}/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-      const data = await response.json();
-      const user: AuthUser = {
-        token: data.token,
-        numeroDocumento: data.numeroDocumento || email,
-        nombre: data.nombre || nombre || "Administrador",
-        rol: data.rol || "ADMIN"
-      };
-
-      if (typeof window !== "undefined") {
-        document.cookie = `admin_token=${user.token}; path=/; max-age=86400; SameSite=Lax`;
-        localStorage.setItem("admin_token", user.token);
-        localStorage.setItem("admin_user", JSON.stringify(user));
-      }
-
-      return user;
-    } catch (err: any) {
-      const user: AuthUser = {
-        token: `admin-jwt-token-${email}`,
-        numeroDocumento: email,
-        nombre: nombre || "Administrador",
-        rol: "ADMIN"
-      };
-      if (typeof window !== "undefined") {
-        document.cookie = `admin_token=${user.token}; path=/; max-age=86400; SameSite=Lax`;
-        localStorage.setItem("admin_token", user.token);
-        localStorage.setItem("admin_user", JSON.stringify(user));
-      }
-      return user;
+    if (!response.ok) {
+      throw new Error("Error al registrar el usuario en la base de datos");
     }
+
+    const data: AuthResponse & { numeroDocumento?: string; nombre?: string; rol?: string } = await response.json();
+    const user: AuthUser = {
+      token: data.token,
+      numeroDocumento: data.numeroDocumento || payload.numeroDocumento,
+      nombre: data.nombre || nombre || "Administrador",
+      rol: data.rol || "ADMIN"
+    };
+
+    if (typeof window !== "undefined") {
+      document.cookie = `admin_token=${user.token}; path=/; max-age=86400; SameSite=Lax`;
+      localStorage.setItem("admin_token", user.token);
+      localStorage.setItem("admin_user", JSON.stringify(user));
+    }
+
+    return user;
   },
 
-  // CERRAR SESIÓN Y LIMPIAR COOKIES Y LOCALSTORAGE
+  // CERRAR SESIÓN
   logout() {
     if (typeof window !== "undefined") {
       document.cookie = "admin_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
@@ -119,13 +94,22 @@ export const authService = {
     if (typeof window === "undefined") return false;
     const tokenCookie = document.cookie.split("; ").find(row => row.startsWith("admin_token="));
     const tokenLocal = localStorage.getItem("admin_token");
-    return !!(tokenCookie || tokenLocal);
+    const token = tokenLocal || (tokenCookie ? tokenCookie.split("=")[1] : null);
+    return !!(token && token.split(".").length === 3);
   },
 
   getAuthHeader(): Record<string, string> {
     if (typeof window === "undefined") return {};
-    const token = localStorage.getItem("admin_token");
-    return token ? { "Authorization": `Bearer ${token}` } : {};
+    const tokenLocal = localStorage.getItem("admin_token");
+    const cookieRow = document.cookie.split("; ").find(row => row.startsWith("admin_token="));
+    const tokenCookie = cookieRow ? cookieRow.split("=")[1] : null;
+    const token = tokenLocal || tokenCookie;
+
+    if (token && token.split(".").length === 3) {
+      return { "Authorization": `Bearer ${token}` };
+    }
+
+    return {};
   },
 
   getCurrentUser(): AuthUser | null {

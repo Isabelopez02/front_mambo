@@ -1,31 +1,33 @@
 /**
- * Data Transfer Objects (DTOs) para Clientes & Entregas
+ * DTO de Cliente alineado con Spring Boot Backend (ClienteDTO.java)
  */
 
+import { TipoDocumento } from "./enums.dto";
+
 export interface ClienteDTO {
-  id: string;
-  nombres: string;
-  apellidos: string;
-  tipoDocumento: "DNI" | "RUC" | "CE";
-  documentoIdentidad: string;
-  telefono: string;
-  email: string;
-  direccion: string;
-  ciudad: string;
-  totalComprasCount: number;
-  totalGastado: number;
-  fechaRegistro: string;
+  id?: number;
+  tipoDocumento?: TipoDocumento | string;
+  numDocumento?: string;
+  rol?: string;
+  numeroDocumento?: string;
+  nombreCompleto?: string;
+  email?: string;
+  telefono?: string;
+  contra?: string;
 }
 
 export interface CreateClienteDTO {
-  nombres: string;
-  apellidos: string;
-  tipoDocumento: "DNI" | "RUC" | "CE";
-  documentoIdentidad: string;
-  telefono: string;
-  email: string;
-  direccion: string;
-  ciudad: string;
+  nombres?: string;
+  apellidos?: string;
+  nombreCompleto?: string;
+  tipoDocumento?: TipoDocumento | string;
+  numeroDocumento?: string;
+  numDocumento?: string;
+  telefono?: string;
+  email?: string;
+  direccion?: string;
+  ciudad?: string;
+  contra?: string;
 }
 
 export interface EntregaDTO {
