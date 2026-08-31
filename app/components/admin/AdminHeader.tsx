@@ -10,6 +10,7 @@ import {
   Logout01Icon,
   ArrowDown01Icon
 } from "hugeicons-react";
+import { authService } from "../../services/auth.service";
 
 export function AdminHeader() {
   const [formattedDate, setFormattedDate] = useState("");
@@ -198,10 +199,10 @@ export function AdminHeader() {
 
             <div style={{ textAlign: "left", paddingRight: "4px" }}>
               <h4 style={{ fontSize: "0.76rem", fontWeight: "700", color: "#0f172a", margin: 0, lineHeight: 1.1 }}>
-                Admin Taty
+                {authService.getCurrentUser()?.nombre || "Admin Taty"}
               </h4>
               <span style={{ fontSize: "0.6rem", color: "#64748b", fontWeight: "600" }}>
-                admin@tatyimport.com
+                Rol: {authService.getCurrentUser()?.rol || "ADMIN"}
               </span>
             </div>
 
@@ -226,8 +227,12 @@ export function AdminHeader() {
               gap: "2px"
             }}>
               <div style={{ padding: "8px 12px", borderBottom: "1px solid #f1f5f9" }}>
-                <strong style={{ fontSize: "0.78rem", color: "#0f172a", display: "block" }}>Admin Taty</strong>
-                <span style={{ fontSize: "0.62rem", color: "#059669", fontWeight: "700" }}>● En línea (Super Admin)</span>
+                <strong style={{ fontSize: "0.78rem", color: "#0f172a", display: "block" }}>
+                  {authService.getCurrentUser()?.nombre || "Admin Taty"}
+                </strong>
+                <span style={{ fontSize: "0.62rem", color: "#059669", fontWeight: "700" }}>
+                  ● En línea ({authService.getCurrentUser()?.rol || "ADMIN"})
+                </span>
               </div>
 
               <a
@@ -249,13 +254,17 @@ export function AdminHeader() {
               </a>
 
               <div style={{ borderTop: "1px solid #f1f5f9", marginTop: "4px", paddingTop: "4px" }}>
-                <a
-                  href="/locales"
-                  style={{ ...dropdownItemStyle, color: "#dc2626" }}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowUserDropdown(false);
+                    authService.logout();
+                  }}
+                  style={{ ...dropdownItemStyle, color: "#dc2626", width: "100%", border: "none", backgroundColor: "transparent" }}
                 >
                   <Logout01Icon size={15} color="#dc2626" />
                   <span>Cerrar Sesión</span>
-                </a>
+                </button>
               </div>
             </div>
           )}
