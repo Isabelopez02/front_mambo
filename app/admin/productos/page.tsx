@@ -60,7 +60,7 @@ export default function ProductosAdminPage() {
       setProducts(data);
     } catch (err: any) {
       console.error("Error backend API:", err);
-      setErrorMsg("No hay conexión con el servidor backend Spring Boot (http://localhost:8080/lista/productos). Asegúrate de iniciar tu backend en Java.");
+      setErrorMsg("No hay conexión con el servidor backend Spring Boot. Asegúrate de iniciar tu backend en Java.");
       setProducts([]);
     } finally {
       setLoading(false);
@@ -184,7 +184,7 @@ export default function ProductosAdminPage() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
         <div>
           <span style={{ fontSize: "0.58rem", fontWeight: "700", color: "#059669", letterSpacing: "1.8px", textTransform: "uppercase" }}>
-            SINCRONIZACIÓN BASE DE DATOS BACKEND (http://localhost:8080/lista/productos)
+            SINCRONIZACIÓN BASE DE DATOS BACKEND
           </span>
           <h1 style={{ fontFamily: "var(--font-dm-serif), Georgia, serif", fontSize: "1.35rem", color: "#0f172a", margin: "2px 0 0 0", fontWeight: "400" }}>
             Administración de Productos & Base de Datos Backend
@@ -318,7 +318,7 @@ export default function ProductosAdminPage() {
       }}>
         {loading ? (
           <div style={{ padding: "40px 20px", textAlign: "center", color: "#64748b", fontSize: "0.85rem" }}>
-            ⏳ Consultando la base de datos backend en http://localhost:8080/lista/productos...
+            ⏳ Consultando la base de datos backend...
           </div>
         ) : errorMsg ? (
           <div style={{ padding: "30px 20px", textAlign: "center", backgroundColor: "#fef2f2", borderRadius: "10px", border: "1px solid #fecaca", color: "#991b1b", fontSize: "0.8rem" }}>

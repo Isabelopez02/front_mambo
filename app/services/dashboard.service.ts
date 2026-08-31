@@ -1,15 +1,16 @@
 /**
- * Servicio de Dashboard conectado con DashboardController (/api/dashboard) vía Interceptor
+ * Servicio de Dashboard conectado con DashboardController (/api/dashboard)
+ * Usando la URL Base centralizada desde apiClient (NEXT_PUBLIC_API_URL en .env)
  */
 
 import { DashboardDTO } from "../types";
 import { apiClient } from "./apiClient";
 
-const API_DASHBOARD_URL = process.env.NEXT_PUBLIC_DASHBOARD_URL || "http://localhost:8080/api/dashboard";
+const ENDPOINT = "/api/dashboard";
 
 export const dashboardService = {
   // GET /api/dashboard/resumen
   async obtenerResumen(): Promise<DashboardDTO> {
-    return await apiClient.get<DashboardDTO>(`${API_DASHBOARD_URL}/resumen`);
+    return await apiClient.get<DashboardDTO>(`${ENDPOINT}/resumen`);
   }
 };

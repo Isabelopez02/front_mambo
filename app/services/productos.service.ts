@@ -1,16 +1,17 @@
 /**
- * Servicio de Productos conectado con Controller Spring Boot (/lista/productos) vía Interceptor
+ * Servicio de Productos conectado con Controller Spring Boot (/lista/productos)
+ * Usando la URL Base centralizada desde apiClient (NEXT_PUBLIC_API_URL en .env)
  */
 
 import { ProductoDTO, CreateProductoDTO, UpdateProductoDTO } from "../types";
 import { apiClient } from "./apiClient";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/lista/productos";
+const ENDPOINT = "/lista/productos";
 
 export const productosService = {
   // GET /lista/productos
   async getProductos(): Promise<ProductoDTO[]> {
-    return await apiClient.get<ProductoDTO[]>(API_BASE_URL);
+    return await apiClient.get<ProductoDTO[]>(ENDPOINT);
   },
 
   // POST /lista/productos (Multipart Form Data)
@@ -33,7 +34,7 @@ export const productosService = {
     if (dto.descripcion) formData.append("descripcion", dto.descripcion);
     if (dto.imagenUrl instanceof File) formData.append("imagenUrl", dto.imagenUrl);
 
-    return await apiClient.post<ProductoDTO>(API_BASE_URL, formData);
+    return await apiClient.post<ProductoDTO>(ENDPOINT, formData);
   },
 
   // PUT /lista/productos/{id} (Multipart Form Data)
@@ -56,11 +57,11 @@ export const productosService = {
     if (dto.descripcion) formData.append("descripcion", dto.descripcion);
     if (dto.imagenUrl instanceof File) formData.append("imagenUrl", dto.imagenUrl);
 
-    return await apiClient.put<ProductoDTO>(`${API_BASE_URL}/${id}`, formData);
+    return await apiClient.put<ProductoDTO>(`${ENDPOINT}/${id}`, formData);
   },
 
   // DELETE /lista/productos/{id}
   async deleteProducto(id: number | string): Promise<void> {
-    await apiClient.delete(`${API_BASE_URL}/${id}`);
+    await apiClient.delete(`${ENDPOINT}/${id}`);
   }
 };

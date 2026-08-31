@@ -1,8 +1,15 @@
 /**
  * Cliente HTTP Interceptor Centralizado para Frontend (Next.js)
- * Adiciona automáticamente el token JWT Bearer a todas las peticiones a rutas protegidas
+ * Toma la URL Base desde la variable de entorno NEXT_PUBLIC_API_URL o API_URL (.env)
+ * Adiciona automáticamente el token JWT Bearer a todas las peticiones
  * y maneja la expiración / desautenticación (401/403) enviando al login.
  */
+
+const BASE_URL = (
+  process.env.NEXT_PUBLIC_API_URL ||
+  process.env.API_URL ||
+  "http://localhost:8080"
+).replace(/\/+$/, "");
 
 export interface RequestOptions extends Omit<RequestInit, "body"> {
   body?: any;
@@ -34,8 +41,17 @@ export const clearToken = () => {
   }
 };
 
+export function getFullUrl(endpoint: string): string {
+  if (endpoint.startsWith("http://") || endpoint.startsWith("https://")) {
+    return endpoint;
+  }
+  const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+  return `${BASE_URL}${cleanEndpoint}`;
+}
+
 // INTERCEPTOR DE PETICIONES FETCH
 export async function apiFetch<T = any>(endpoint: string, options: RequestOptions = {}): Promise<T> {
+  const fullUrl = getFullUrl(endpoint);
   const token = getToken();
 
   const headers: Record<string, string> = {
@@ -43,13 +59,12 @@ export async function apiFetch<T = any>(endpoint: string, options: RequestOption
     ...(options.headers as Record<string, string> || {})
   };
 
-  // Si hay token JWT válido, adjuntarlo como Bearer Header (Interceptor de Salida)
+  // Si hay token JWT válido, adjuntarlo como Bearer Header
   if (token && token.split(".").length === 3) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
   let body = options.body;
-  // Si el cuerpo es un objeto plano y no es FormData, convertir a JSON y colocar header
   if (body && !(body instanceof FormData) && typeof body === "object") {
     headers["Content-Type"] = "application/json";
     body = JSON.stringify(body);
@@ -61,11 +76,10 @@ export async function apiFetch<T = any>(endpoint: string, options: RequestOption
     body
   };
 
-  const response = await fetch(endpoint, config);
+  const response = await fetch(fullUrl, config);
 
-  // INTERCEPTOR DE RESPUESTAS: Manejo centralizado de 401 Unauthorized y 403 Forbidden
+  // INTERCEPTOR DE RESPUESTAS: 401 y 403
   if (response.status === 401 || response.status === 403) {
-    // Si no es la ruta de login propia, limpiar token y redirigir
     if (typeof window !== "undefined" && !window.location.pathname.includes("/admin/login")) {
       clearToken();
       window.location.href = "/admin/login";
@@ -99,7 +113,6 @@ export async function apiFetch<T = any>(endpoint: string, options: RequestOption
   return (await response.text()) as unknown as T;
 }
 
-// CLIENTE CON MÉTODOS HTTP CONVENIENTES
 export const apiClient = {
   get: <T = any>(url: string, options?: RequestOptions) =>
     apiFetch<T>(url, { ...options, method: "GET" }),
@@ -111,5 +124,7 @@ export const apiClient = {
     apiFetch<T>(url, { ...options, method: "PUT", body }),
 
   delete: <T = any>(url: string, options?: RequestOptions) =>
-    apiFetch<T>(url, { ...options, method: "DELETE" })
+    apiFetch<T>(url, { ...options, method: "DELETE" }),
+
+  baseUrl: BASE_URL
 };

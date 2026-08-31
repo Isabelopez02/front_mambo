@@ -1,20 +1,21 @@
 /**
- * Servicio de Usuarios conectado con UsuarioController (/usuarios) vía Interceptor
+ * Servicio de Usuarios conectado con UsuarioController (/usuarios)
+ * Usando la URL Base centralizada desde apiClient (NEXT_PUBLIC_API_URL en .env)
  */
 
 import { VendedorDTO } from "../types";
 import { apiClient } from "./apiClient";
 
-const API_USUARIOS_URL = process.env.NEXT_PUBLIC_USUARIOS_URL || "http://localhost:8080/usuarios";
+const ENDPOINT = "/usuarios";
 
 export const usuariosService = {
   // GET /usuarios
   async listar(): Promise<VendedorDTO[]> {
-    return await apiClient.get<VendedorDTO[]>(API_USUARIOS_URL);
+    return await apiClient.get<VendedorDTO[]>(ENDPOINT);
   },
 
   // POST /usuarios
   async crearUsuario(dto: VendedorDTO): Promise<VendedorDTO> {
-    return await apiClient.post<VendedorDTO>(API_USUARIOS_URL, dto);
+    return await apiClient.post<VendedorDTO>(ENDPOINT, dto);
   }
 };

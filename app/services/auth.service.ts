@@ -1,12 +1,10 @@
 /**
  * Servicio de Autenticación JWT con Backend Spring Boot (/auth)
- * Integrado con el Interceptor apiClient para guardar token y manejar la sesión
+ * Usando la URL Base centralizada desde apiClient (NEXT_PUBLIC_API_URL en .env)
  */
 
 import { LoginRequest, RegisterRequest, AuthResponse } from "../types";
 import { apiClient, getToken, setToken, clearToken } from "./apiClient";
-
-const AUTH_API_URL = process.env.NEXT_PUBLIC_AUTH_API_URL || "http://localhost:8080/auth";
 
 export interface AuthUser {
   token: string;
@@ -23,7 +21,7 @@ export const authService = {
       : requestOrDoc;
 
     const data: AuthResponse & { numeroDocumento?: string; nombre?: string; rol?: string } = 
-      await apiClient.post(`${AUTH_API_URL}/login`, payload);
+      await apiClient.post("/auth/login", payload);
 
     const user: AuthUser = {
       token: data.token,
@@ -43,7 +41,7 @@ export const authService = {
       : requestOrDoc;
 
     const data: AuthResponse & { numeroDocumento?: string; nombre?: string; rol?: string } = 
-      await apiClient.post(`${AUTH_API_URL}/register`, payload);
+      await apiClient.post("/auth/register", payload);
 
     const user: AuthUser = {
       token: data.token,

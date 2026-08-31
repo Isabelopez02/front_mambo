@@ -1,11 +1,12 @@
 /**
- * Servicio de Clientes conectado con ClienteRestController (/api/clientes) vía Interceptor
+ * Servicio de Clientes conectado con ClienteRestController (/api/clientes)
+ * Usando la URL Base centralizada desde apiClient (NEXT_PUBLIC_API_URL en .env)
  */
 
 import { ClienteDTO } from "../types";
 import { apiClient } from "./apiClient";
 
-const API_CLIENTES_URL = process.env.NEXT_PUBLIC_CLIENTES_URL || "http://localhost:8080/api/clientes";
+const ENDPOINT = "/api/clientes";
 
 function buildFormData(dto: ClienteDTO): FormData {
   const formData = new FormData();
@@ -24,28 +25,28 @@ function buildFormData(dto: ClienteDTO): FormData {
 export const clientesService = {
   // GET /api/clientes
   async listar(): Promise<ClienteDTO[]> {
-    return await apiClient.get<ClienteDTO[]>(API_CLIENTES_URL);
+    return await apiClient.get<ClienteDTO[]>(ENDPOINT);
   },
 
   // GET /api/clientes/buscar/{id}
   async obtenerPorId(id: number): Promise<ClienteDTO> {
-    return await apiClient.get<ClienteDTO>(`${API_CLIENTES_URL}/buscar/${id}`);
+    return await apiClient.get<ClienteDTO>(`${ENDPOINT}/buscar/${id}`);
   },
 
   // POST /api/clientes
   async crear(dto: ClienteDTO): Promise<ClienteDTO> {
     const formData = buildFormData(dto);
-    return await apiClient.post<ClienteDTO>(API_CLIENTES_URL, formData);
+    return await apiClient.post<ClienteDTO>(ENDPOINT, formData);
   },
 
   // PUT /api/clientes/actualizar/{id}
   async actualizar(id: number, dto: ClienteDTO): Promise<ClienteDTO> {
     const formData = buildFormData(dto);
-    return await apiClient.put<ClienteDTO>(`${API_CLIENTES_URL}/actualizar/${id}`, formData);
+    return await apiClient.put<ClienteDTO>(`${ENDPOINT}/actualizar/${id}`, formData);
   },
 
   // DELETE /api/clientes/eliminar/{id}
   async eliminar(id: number): Promise<string> {
-    return await apiClient.delete<string>(`${API_CLIENTES_URL}/eliminar/${id}`);
+    return await apiClient.delete<string>(`${ENDPOINT}/eliminar/${id}`);
   }
 };
