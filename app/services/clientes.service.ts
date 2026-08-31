@@ -1,9 +1,9 @@
 /**
- * Servicio de Clientes conectado con ClienteRestController (/api/clientes)
+ * Servicio de Clientes conectado con ClienteRestController (/api/clientes) vía Interceptor
  */
 
 import { ClienteDTO } from "../types";
-import { authService } from "./auth.service";
+import { apiClient } from "./apiClient";
 
 const API_CLIENTES_URL = process.env.NEXT_PUBLIC_CLIENTES_URL || "http://localhost:8080/api/clientes";
 
@@ -24,55 +24,28 @@ function buildFormData(dto: ClienteDTO): FormData {
 export const clientesService = {
   // GET /api/clientes
   async listar(): Promise<ClienteDTO[]> {
-    const res = await fetch(API_CLIENTES_URL, {
-      method: "GET",
-      headers: { "Accept": "application/json", ...authService.getAuthHeader() }
-    });
-    if (!res.ok) throw new Error("Error al obtener los clientes");
-    return await res.json();
+    return await apiClient.get<ClienteDTO[]>(API_CLIENTES_URL);
   },
 
   // GET /api/clientes/buscar/{id}
   async obtenerPorId(id: number): Promise<ClienteDTO> {
-    const res = await fetch(`${API_CLIENTES_URL}/buscar/${id}`, {
-      method: "GET",
-      headers: { "Accept": "application/json", ...authService.getAuthHeader() }
-    });
-    if (!res.ok) throw new Error("Error al obtener el cliente");
-    return await res.json();
+    return await apiClient.get<ClienteDTO>(`${API_CLIENTES_URL}/buscar/${id}`);
   },
 
   // POST /api/clientes
   async crear(dto: ClienteDTO): Promise<ClienteDTO> {
     const formData = buildFormData(dto);
-    const res = await fetch(API_CLIENTES_URL, {
-      method: "POST",
-      headers: { ...authService.getAuthHeader() },
-      body: formData
-    });
-    if (!res.ok) throw new Error("Error al crear el cliente");
-    return await res.json();
+    return await apiClient.post<ClienteDTO>(API_CLIENTES_URL, formData);
   },
 
   // PUT /api/clientes/actualizar/{id}
   async actualizar(id: number, dto: ClienteDTO): Promise<ClienteDTO> {
     const formData = buildFormData(dto);
-    const res = await fetch(`${API_CLIENTES_URL}/actualizar/${id}`, {
-      method: "PUT",
-      headers: { ...authService.getAuthHeader() },
-      body: formData
-    });
-    if (!res.ok) throw new Error("Error al actualizar el cliente");
-    return await res.json();
+    return await apiClient.put<ClienteDTO>(`${API_CLIENTES_URL}/actualizar/${id}`, formData);
   },
 
   // DELETE /api/clientes/eliminar/{id}
   async eliminar(id: number): Promise<string> {
-    const res = await fetch(`${API_CLIENTES_URL}/eliminar/${id}`, {
-      method: "DELETE",
-      headers: { ...authService.getAuthHeader() }
-    });
-    if (!res.ok) throw new Error("Error al eliminar el cliente");
-    return await res.text();
+    return await apiClient.delete<string>(`${API_CLIENTES_URL}/eliminar/${id}`);
   }
 };

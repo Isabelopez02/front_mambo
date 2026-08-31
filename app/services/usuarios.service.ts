@@ -1,31 +1,20 @@
 /**
- * Servicio de Usuarios conectado con UsuarioController (/usuarios)
+ * Servicio de Usuarios conectado con UsuarioController (/usuarios) vía Interceptor
  */
 
 import { VendedorDTO } from "../types";
-import { authService } from "./auth.service";
+import { apiClient } from "./apiClient";
 
 const API_USUARIOS_URL = process.env.NEXT_PUBLIC_USUARIOS_URL || "http://localhost:8080/usuarios";
 
 export const usuariosService = {
   // GET /usuarios
   async listar(): Promise<VendedorDTO[]> {
-    const res = await fetch(API_USUARIOS_URL, {
-      method: "GET",
-      headers: { "Accept": "application/json", ...authService.getAuthHeader() }
-    });
-    if (!res.ok) throw new Error("Error al listar usuarios");
-    return await res.json();
+    return await apiClient.get<VendedorDTO[]>(API_USUARIOS_URL);
   },
 
   // POST /usuarios
   async crearUsuario(dto: VendedorDTO): Promise<VendedorDTO> {
-    const res = await fetch(API_USUARIOS_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...authService.getAuthHeader() },
-      body: JSON.stringify(dto)
-    });
-    if (!res.ok) throw new Error("Error al crear usuario");
-    return await res.json();
+    return await apiClient.post<VendedorDTO>(API_USUARIOS_URL, dto);
   }
 };
