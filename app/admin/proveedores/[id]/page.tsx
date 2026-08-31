@@ -19,7 +19,8 @@ import {
   ArrowDown01Icon,
   Tag01Icon
 } from "hugeicons-react";
-import { initialSuppliers } from "../page";
+import { ProveedorDTO } from "../../../types";
+import { proveedoresService } from "../../../services/proveedores.service";
 
 // Existing system products with their 10-digit internal store codes
 const existingSystemProducts = [
@@ -83,12 +84,26 @@ export default function ProveedorDetailPage() {
   const params = useParams();
   const supplierId = params?.id ? Number(params.id) : 1;
 
-  const baseSupplier = useMemo(() => {
-    return initialSuppliers.find(s => s.id === supplierId) || initialSuppliers[0];
+  const [dbSupplier, setDbSupplier] = useState<ProveedorDTO | null>(null);
+
+  React.useEffect(() => {
+    if (supplierId) {
+      proveedoresService.obtenerPorId(supplierId)
+        .then(data => setDbSupplier(data))
+        .catch(err => console.error("Error al cargar detalle del proveedor:", err));
+    }
   }, [supplierId]);
 
+  const baseSupplier = {
+    nombre: dbSupplier?.nombre || "Proveedor",
+    ruc: dbSupplier?.ruc || "Sin RUC",
+    contacto: dbSupplier?.contacto || "Por asignar",
+    telefono: dbSupplier?.telefono || "Sin teléfono",
+    email: dbSupplier?.email || "Sin email"
+  };
+
   const [groupedProducts, setGroupedProducts] = useState<GroupedProduct[]>(() => {
-    return initialGroupedProductsMap[supplierId] || initialGroupedProductsMap[1];
+    return initialGroupedProductsMap[supplierId] || [];
   });
 
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);

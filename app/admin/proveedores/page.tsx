@@ -1,123 +1,144 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Building01Icon, 
   Add01Icon, 
   Cancel01Icon, 
   Search01Icon, 
-  ShoppingBag01Icon, 
   SmartPhone01Icon, 
   Mail01Icon, 
-  ArrowRight01Icon
+  ArrowRight01Icon,
+  Delete02Icon,
+  PencilEdit01Icon,
+  Location01Icon
 } from "hugeicons-react";
-
-export interface SupplierProduct {
-  id: string;
-  qrCode: string;
-  nombre: string;
-  categoria: string;
-  precioCosto: number;
-  precioVenta: number;
-  stock: number;
-}
-
-export interface Supplier {
-  id: number;
-  nombre: string;
-  ruc: string;
-  contacto: string;
-  telefono: string;
-  email: string;
-  categoriaPrincipal: string;
-  productos: SupplierProduct[];
-}
-
-export const initialSuppliers: Supplier[] = [
-  {
-    id: 1,
-    nombre: "Cosméticos Global S.A.C.",
-    ruc: "20601234567",
-    contacto: "Elena Ramos",
-    telefono: "+51 987 111 222",
-    email: "ventas@cosmeticosglobal.pe",
-    categoriaPrincipal: "Maquillaje & Skincare",
-    productos: [
-      { id: "PROD-8801", qrCode: "880199201", nombre: "Kit Maquillaje Glow", categoria: "Maquillaje", precioCosto: 18.00, precioVenta: 35.00, stock: 150 },
-      { id: "PROD-8802", qrCode: "880299302", nombre: "Serum Hidratante Skincare", categoria: "Skincare", precioCosto: 14.50, precioVenta: 29.90, stock: 80 }
-    ]
-  },
-  {
-    id: 2,
-    nombre: "Importaciones Moda Luxe E.I.R.L.",
-    ruc: "20549876543",
-    contacto: "Carlos Mendoza",
-    telefono: "+51 912 333 444",
-    email: "contacto@modaluxe.pe",
-    categoriaPrincipal: "Carteras & Calzado",
-    productos: [
-      { id: "PROD-7701", qrCode: "770144501", nombre: "Cartera Chic Luxe", categoria: "Carteras", precioCosto: 32.00, precioVenta: 59.00, stock: 45 },
-      { id: "PROD-7702", qrCode: "770244602", nombre: "Bolso Shoulder Nude", categoria: "Carteras", precioCosto: 25.00, precioVenta: 49.00, stock: 60 }
-    ]
-  },
-  {
-    id: 3,
-    nombre: "DecoHogar Import Perú",
-    ruc: "20491827364",
-    contacto: "Sofía Torres",
-    telefono: "+51 955 777 888",
-    email: "pedidos@deconogarimport.pe",
-    categoriaPrincipal: "Hogar & Decoración",
-    productos: [
-      { id: "PROD-6601", qrCode: "660122301", nombre: "Jarrón Cerámica Deco", categoria: "Hogar", precioCosto: 22.00, precioVenta: 42.00, stock: 30 }
-    ]
-  }
-];
+import { ProveedorDTO } from "../../types";
+import { proveedoresService } from "../../services/proveedores.service";
 
 export default function ProveedoresAdminListPage() {
-  const [suppliers, setSuppliers] = useState<Supplier[]>(initialSuppliers);
+  const [suppliers, setSuppliers] = useState<ProveedorDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isAddSupplierOpen, setIsAddSupplierOpen] = useState(false);
 
-  // New Supplier Form State
-  const [newSupplierName, setNewSupplierName] = useState("");
-  const [newSupplierRuc, setNewSupplierRuc] = useState("");
-  const [newSupplierContact, setNewSupplierContact] = useState("");
-  const [newSupplierPhone, setNewSupplierPhone] = useState("");
-  const [newSupplierEmail, setNewSupplierEmail] = useState("");
-  const [newSupplierCategory, setNewSupplierCategory] = useState("Maquillaje");
+  // Modal States
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingSupplier, setEditingSupplier] = useState<ProveedorDTO | null>(null);
+
+  // Form Fields State
+  const [name, setName] = useState("");
+  const [ruc, setRuc] = useState("");
+  const [contact, setContact] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const fetchSuppliers = async () => {
+    setLoading(true);
+    setErrorMsg(null);
+    try {
+      const data = await proveedoresService.listar();
+      setSuppliers(data);
+    } catch (err: any) {
+      console.error("Error al consultar proveedores:", err);
+      setErrorMsg(err.message || "Error al conectar con la base de datos de proveedores");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSuppliers();
+  }, []);
+
+  const openCreateModal = () => {
+    setEditingSupplier(null);
+    setName("");
+    setRuc("");
+    setContact("");
+    setPhone("");
+    setEmail("");
+    setAddress("");
+    setCity("");
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (sup: ProveedorDTO) => {
+    setEditingSupplier(sup);
+    setName(sup.nombre || "");
+    setRuc(sup.ruc || "");
+    setContact(sup.contacto || "");
+    setPhone(sup.telefono || "");
+    setEmail(sup.email || "");
+    setAddress(sup.direccion || "");
+    setCity(sup.ciudad || "");
+    setIsModalOpen(true);
+  };
+
+  const handleSaveSupplier = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name || !ruc) return;
+
+    setSaving(true);
+    try {
+      if (editingSupplier && editingSupplier.id) {
+        // ACTUALIZAR PROVEEDOR EXISTENTE
+        const updated = await proveedoresService.actualizar(editingSupplier.id, {
+          nombre: name,
+          ruc,
+          contacto: contact,
+          telefono: phone,
+          email,
+          direccion: address,
+          ciudad: city
+        });
+        setSuppliers(prev => prev.map(s => s.id === updated.id ? updated : s));
+      } else {
+        // CREAR NUEVO PROVEEDOR
+        const created = await proveedoresService.crear({
+          nombre: name,
+          ruc,
+          contacto: contact,
+          telefono: phone,
+          email,
+          direccion: address,
+          ciudad: city
+        });
+        setSuppliers(prev => [created, ...prev]);
+      }
+      setIsModalOpen(false);
+    } catch (err: any) {
+      alert("Error al guardar proveedor: " + (err.message || "Verifica los datos ingresados"));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteSupplier = async (e: React.MouseEvent, id?: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!id) return;
+
+    if (confirm("¿Estás seguro de que deseas eliminar este proveedor?")) {
+      try {
+        await proveedoresService.eliminar(id);
+        setSuppliers(prev => prev.filter(s => s.id !== id));
+      } catch (err: any) {
+        alert("Error al eliminar proveedor: " + (err.message || "No se pudo completar la acción"));
+      }
+    }
+  };
 
   const filteredSuppliers = suppliers.filter(s =>
-    s.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.ruc.includes(searchQuery) ||
-    s.categoriaPrincipal.toLowerCase().includes(searchQuery.toLowerCase())
+    (s.nombre || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (s.ruc || "").includes(searchQuery) ||
+    (s.contacto || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (s.ciudad || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const handleAddSupplier = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newSupplierName || !newSupplierRuc) return;
-
-    const created: Supplier = {
-      id: Date.now(),
-      nombre: newSupplierName,
-      ruc: newSupplierRuc,
-      contacto: newSupplierContact || "Por asignar",
-      telefono: newSupplierPhone || "+51 900 000 000",
-      email: newSupplierEmail || "contacto@proveedor.pe",
-      categoriaPrincipal: newSupplierCategory,
-      productos: []
-    };
-
-    setSuppliers([created, ...suppliers]);
-    setIsAddSupplierOpen(false);
-
-    setNewSupplierName("");
-    setNewSupplierRuc("");
-    setNewSupplierContact("");
-    setNewSupplierPhone("");
-    setNewSupplierEmail("");
-  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -134,7 +155,7 @@ export default function ProveedoresAdminListPage() {
         </div>
 
         <button
-          onClick={() => setIsAddSupplierOpen(true)}
+          onClick={openCreateModal}
           style={{
             padding: "9px 16px",
             backgroundColor: "#9c3552",
@@ -167,7 +188,7 @@ export default function ProveedoresAdminListPage() {
         <div style={{ position: "relative", width: "280px" }}>
           <input
             type="text"
-            placeholder="Buscar por proveedor, RUC o categoría..."
+            placeholder="Buscar por proveedor, RUC o ciudad..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{
@@ -189,15 +210,28 @@ export default function ProveedoresAdminListPage() {
         </span>
       </div>
 
-      {/* SUPPLIER CARDS GRID (CLICK REDIRECTS TO /admin/proveedores/[id]) */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
-        {filteredSuppliers.map((sup) => (
-          <a
-            key={sup.id}
-            href={`/admin/proveedores/${sup.id}`}
-            style={{ textDecoration: "none" }}
-          >
+      {/* ERROR BANNER */}
+      {errorMsg && (
+        <div style={{ backgroundColor: "#fef2f2", border: "1px solid #fecaca", color: "#991b1b", padding: "12px 16px", borderRadius: "10px", fontSize: "0.78rem" }}>
+          ⚠️ {errorMsg}
+        </div>
+      )}
+
+      {/* LOADING STATE */}
+      {loading ? (
+        <div style={{ padding: "40px", textAlign: "center", color: "#66585e", fontSize: "0.85rem" }}>
+          ⏳ Cargando proveedores desde la base de datos backend...
+        </div>
+      ) : filteredSuppliers.length === 0 ? (
+        <div style={{ padding: "40px", textAlign: "center", color: "#66585e", backgroundColor: "#ffffff", borderRadius: "14px", border: "1px dashed #e0d0d6" }}>
+          No se encontraron proveedores registrados. ¡Crea el primero haciendo clic en <strong>+ Nuevo Proveedor</strong>!
+        </div>
+      ) : (
+        /* SUPPLIER CARDS GRID */
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
+          {filteredSuppliers.map((sup) => (
             <motion.div
+              key={sup.id}
               whileHover={{ y: -3 }}
               style={{
                 backgroundColor: "#ffffff",
@@ -226,28 +260,43 @@ export default function ProveedoresAdminListPage() {
                     </div>
                   </div>
 
-                  <span style={{
-                    fontSize: "0.58rem",
-                    fontWeight: "700",
-                    backgroundColor: "#fcf0f4",
-                    color: "#9c3552",
-                    padding: "3px 8px",
-                    borderRadius: "4px",
-                    textTransform: "uppercase"
-                  }}>
-                    {sup.categoriaPrincipal.split(" ")[0]}
-                  </span>
+                  <div style={{ display: "flex", gap: "4px" }}>
+                    <button
+                      onClick={(e) => { e.preventDefault(); openEditModal(sup); }}
+                      title="Editar Proveedor"
+                      style={{ background: "#faf7f8", border: "1px solid #e0d0d6", borderRadius: "6px", padding: "4px 6px", cursor: "pointer" }}
+                    >
+                      <PencilEdit01Icon size={13} color="#9c3552" />
+                    </button>
+                    <button
+                      onClick={(e) => handleDeleteSupplier(e, sup.id)}
+                      title="Eliminar Proveedor"
+                      style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "6px", padding: "4px 6px", cursor: "pointer" }}
+                    >
+                      <Delete02Icon size={13} color="#dc2626" />
+                    </button>
+                  </div>
                 </div>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginTop: "10px", fontSize: "0.72rem", color: "#55494e" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                    <SmartPhone01Icon size={13} color="#9c3552" />
-                    <span>Contacto: {sup.contacto} ({sup.telefono})</span>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                    <Mail01Icon size={13} color="#9c3552" />
-                    <span>{sup.email}</span>
-                  </div>
+                  {sup.contacto && (
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <SmartPhone01Icon size={13} color="#9c3552" />
+                      <span>Contacto: {sup.contacto} {sup.telefono ? `(${sup.telefono})` : ''}</span>
+                    </div>
+                  )}
+                  {sup.email && (
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <Mail01Icon size={13} color="#9c3552" />
+                      <span>{sup.email}</span>
+                    </div>
+                  )}
+                  {(sup.direccion || sup.ciudad) && (
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <Location01Icon size={13} color="#9c3552" />
+                      <span>{sup.direccion ? `${sup.direccion}, ` : ''}{sup.ciudad}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -260,31 +309,31 @@ export default function ProveedoresAdminListPage() {
                 borderTop: "1px solid #f5eaee",
                 marginTop: "4px"
               }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  <ShoppingBag01Icon size={14} color="#10b981" />
-                  <span style={{ fontSize: "0.72rem", fontWeight: "600", color: "#1a0f14" }}>
-                    {sup.productos.length} productos
-                  </span>
-                </div>
-
-                <span style={{ fontSize: "0.68rem", fontWeight: "700", color: "#9c3552", display: "inline-flex", alignItems: "center", gap: "2px" }}>
-                  Ver Detalle <ArrowRight01Icon size={12} color="#9c3552" />
+                <span style={{ fontSize: "0.68rem", color: "#887980" }}>
+                  ID: #{sup.id}
                 </span>
+
+                <a
+                  href={`/admin/proveedores/${sup.id}`}
+                  style={{ fontSize: "0.68rem", fontWeight: "700", color: "#9c3552", display: "inline-flex", alignItems: "center", gap: "2px", textDecoration: "none" }}
+                >
+                  Ver Detalle <ArrowRight01Icon size={12} color="#9c3552" />
+                </a>
               </div>
             </motion.div>
-          </a>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
-      {/* MODAL NUEVO PROVEEDOR (CENTERED IN MIDDLE OF SCREEN) */}
+      {/* MODAL CREAR / EDITAR PROVEEDOR */}
       <AnimatePresence>
-        {isAddSupplierOpen && (
+        {isModalOpen && (
           <>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setIsAddSupplierOpen(false)}
+              onClick={() => setIsModalOpen(false)}
               style={{ position: "fixed", inset: 0, backgroundColor: "rgba(26, 15, 20, 0.5)", zIndex: 1100, backdropFilter: "blur(2px)" }}
             />
             <motion.div
@@ -306,53 +355,69 @@ export default function ProveedoresAdminListPage() {
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid #f5eaee", paddingBottom: "10px" }}>
-                <h3 style={{ fontSize: "0.95rem", fontWeight: "700", color: "#1a0f14", margin: 0 }}>Registrar Nuevo Proveedor</h3>
-                <button onClick={() => setIsAddSupplierOpen(false)} style={{ background: "none", border: "none", cursor: "pointer" }}>
+                <h3 style={{ fontSize: "0.95rem", fontWeight: "700", color: "#1a0f14", margin: 0 }}>
+                  {editingSupplier ? "Editar Proveedor" : "Registrar Nuevo Proveedor"}
+                </h3>
+                <button onClick={() => setIsModalOpen(false)} style={{ background: "none", border: "none", cursor: "pointer" }}>
                   <Cancel01Icon size={18} color="#1a0f14" />
                 </button>
               </div>
 
-              <form onSubmit={handleAddSupplier} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              <form onSubmit={handleSaveSupplier} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 <div>
                   <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#9c3552", textTransform: "uppercase", marginBottom: "4px" }}>Nombre o Razón Social</label>
-                  <input type="text" required placeholder="Ej. Cosméticos Global S.A.C." value={newSupplierName} onChange={(e) => setNewSupplierName(e.target.value)} style={inputStyle} />
+                  <input type="text" required placeholder="Ej. Cosméticos Global S.A.C." value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
                 </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                   <div>
                     <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#9c3552", textTransform: "uppercase", marginBottom: "4px" }}>RUC / DNI</label>
-                    <input type="text" required placeholder="20601234567" value={newSupplierRuc} onChange={(e) => setNewSupplierRuc(e.target.value)} style={inputStyle} />
+                    <input type="text" required placeholder="20601234567" value={ruc} onChange={(e) => setRuc(e.target.value)} style={inputStyle} />
                   </div>
                   <div>
-                    <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#9c3552", textTransform: "uppercase", marginBottom: "4px" }}>Categoría Principal</label>
-                    <select value={newSupplierCategory} onChange={(e) => setNewSupplierCategory(e.target.value)} style={inputStyle}>
-                      <option value="Maquillaje">Maquillaje</option>
-                      <option value="Skincare">Skincare</option>
-                      <option value="Carteras & Accesorios">Carteras & Accesorios</option>
-                      <option value="Hogar & Decoración">Hogar & Decoración</option>
-                      <option value="Calzado">Calzado</option>
-                    </select>
+                    <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#9c3552", textTransform: "uppercase", marginBottom: "4px" }}>Ciudad</label>
+                    <input type="text" placeholder="Ej. Lima" value={city} onChange={(e) => setCity(e.target.value)} style={inputStyle} />
                   </div>
                 </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                   <div>
                     <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#9c3552", textTransform: "uppercase", marginBottom: "4px" }}>Nombre de Contacto</label>
-                    <input type="text" placeholder="Ej. Elena Ramos" value={newSupplierContact} onChange={(e) => setNewSupplierContact(e.target.value)} style={inputStyle} />
+                    <input type="text" placeholder="Ej. Elena Ramos" value={contact} onChange={(e) => setContact(e.target.value)} style={inputStyle} />
                   </div>
                   <div>
                     <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#9c3552", textTransform: "uppercase", marginBottom: "4px" }}>Teléfono / WhatsApp</label>
-                    <input type="text" placeholder="+51 987 111 222" value={newSupplierPhone} onChange={(e) => setNewSupplierPhone(e.target.value)} style={inputStyle} />
+                    <input type="text" placeholder="+51 987 111 222" value={phone} onChange={(e) => setPhone(e.target.value)} style={inputStyle} />
                   </div>
                 </div>
 
                 <div>
                   <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#9c3552", textTransform: "uppercase", marginBottom: "4px" }}>Correo Electrónico</label>
-                  <input type="email" placeholder="ventas@proveedor.pe" value={newSupplierEmail} onChange={(e) => setNewSupplierEmail(e.target.value)} style={inputStyle} />
+                  <input type="email" placeholder="ventas@proveedor.pe" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} />
                 </div>
 
-                <button type="submit" style={{ width: "100%", padding: "10px", backgroundColor: "#1a0f14", color: "#ffffff", border: "none", borderRadius: "8px", fontSize: "0.75rem", fontWeight: "700", cursor: "pointer", marginTop: "8px" }}>
-                  GUARDAR PROVEEDOR
+                <div>
+                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#9c3552", textTransform: "uppercase", marginBottom: "4px" }}>Dirección</label>
+                  <input type="text" placeholder="Av. Los Olivos 123" value={address} onChange={(e) => setAddress(e.target.value)} style={inputStyle} />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={saving}
+                  style={{
+                    width: "100%",
+                    padding: "10px",
+                    backgroundColor: "#1a0f14",
+                    color: "#ffffff",
+                    border: "none",
+                    borderRadius: "8px",
+                    fontSize: "0.75rem",
+                    fontWeight: "700",
+                    cursor: saving ? "wait" : "pointer",
+                    marginTop: "8px"
+                  }}
+                >
+                  {saving ? "Guardando..." : editingSupplier ? "ACTUALIZAR PROVEEDOR" : "GUARDAR PROVEEDOR"}
                 </button>
               </form>
             </motion.div>
