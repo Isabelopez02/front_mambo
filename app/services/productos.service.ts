@@ -23,7 +23,6 @@ export const productosService = {
     const pMax = costPrice * (1 + marginMax / 100);
 
     const formData = new FormData();
-    if (dto.sku) formData.append("sku", dto.sku);
     formData.append("nombre", dto.nombre);
     formData.append("categoriaNombre", dto.categoriaNombre);
     formData.append("precio", pMin.toFixed(2));
@@ -32,6 +31,7 @@ export const productosService = {
     formData.append("porcentajeGananciaMax", marginMax.toString());
     formData.append("precioVentaMin", pMin.toFixed(2));
     formData.append("precioVentaMax", pMax.toFixed(2));
+    if (dto.stock !== undefined) formData.append("stock", dto.stock.toString());
     if (dto.descripcion) formData.append("descripcion", dto.descripcion);
     if (dto.imagenUrl instanceof File) formData.append("imagenUrl", dto.imagenUrl);
 
@@ -47,7 +47,6 @@ export const productosService = {
     const pMax = costPrice * (1 + marginMax / 100);
 
     const formData = new FormData();
-    if (dto.sku) formData.append("sku", dto.sku);
     if (dto.nombre) formData.append("nombre", dto.nombre);
     if (dto.categoriaNombre) formData.append("categoriaNombre", dto.categoriaNombre);
     formData.append("precio", pMin.toFixed(2));
@@ -56,6 +55,7 @@ export const productosService = {
     formData.append("porcentajeGananciaMax", marginMax.toString());
     formData.append("precioVentaMin", pMin.toFixed(2));
     formData.append("precioVentaMax", pMax.toFixed(2));
+    if (dto.stock !== undefined) formData.append("stock", dto.stock.toString());
     if (dto.descripcion) formData.append("descripcion", dto.descripcion);
     if (dto.imagenUrl instanceof File) formData.append("imagenUrl", dto.imagenUrl);
 

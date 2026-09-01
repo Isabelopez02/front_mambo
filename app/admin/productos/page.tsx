@@ -46,8 +46,8 @@ export default function ProductosAdminPage() {
   const [savingCat, setSavingCat] = useState(false);
 
   // CREATE FORM STATE
-  const [skuInput, setSkuInput] = useState("");
   const [nombreInput, setNombreInput] = useState("");
+  const [descripcionInput, setDescripcionInput] = useState("");
   const [catInput, setCatInput] = useState("Maquillaje");
   const [costoCompraInput, setCostoCompraInput] = useState<string>("20.00");
   const [gainMinPct, setGainMinPct] = useState<number>(30); // 30%
@@ -56,14 +56,17 @@ export default function ProductosAdminPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   // EDIT FORM STATE
-  const [editSku, setEditSku] = useState("");
   const [editNombre, setEditNombre] = useState("");
+  const [editDescripcion, setEditDescripcion] = useState("");
   const [editCat, setEditCat] = useState("Maquillaje");
   const [editCostoCompra, setEditCostoCompra] = useState<string>("20.00");
   const [editGainMinPct, setEditGainMinPct] = useState<number>(30);
   const [editGainMaxPct, setEditGainMaxPct] = useState<number>(50);
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
   const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
+
+  // VIEW PHYSICAL UNITS MODAL STATE
+  const [viewUnitsProduct, setViewUnitsProduct] = useState<ProductoDTO | null>(null);
 
   const categories = ["TODAS", "Carteras", "Maquillaje", "Skincare", "Hogar", "Accesorios"];
 
@@ -186,8 +189,8 @@ export default function ProductosAdminPage() {
 
     try {
       await productosService.createProducto({
-        sku: skuInput,
         nombre: nombreInput,
+        descripcion: descripcionInput,
         categoriaNombre: catInput,
         precioCompraProveedor: numCostoCompra,
         porcentajeGananciaMin: gainMinPct,
@@ -197,8 +200,8 @@ export default function ProductosAdminPage() {
 
       await fetchProducts(); // Sincroniza desde la Base de Datos
       setIsAddModalOpen(false);
-      setSkuInput("");
       setNombreInput("");
+      setDescripcionInput("");
       setCostoCompraInput("20.00");
       setGainMinPct(30);
       setGainMaxPct(50);
@@ -212,8 +215,8 @@ export default function ProductosAdminPage() {
   // OPEN EDIT MODAL
   const handleOpenEdit = (prod: ProductoDTO) => {
     setEditingProduct(prod);
-    setEditSku(prod.sku || "");
     setEditNombre(prod.nombre);
+    setEditDescripcion(prod.descripcion || "");
     setEditCat(prod.categoriaNombre || prod.categoria || "Maquillaje");
     setEditCostoCompra((prod.precioCompraProveedor || 20.00).toString());
     setEditGainMinPct(prod.porcentajeGananciaMin || 30);
@@ -233,8 +236,8 @@ export default function ProductosAdminPage() {
     try {
       await productosService.updateProducto(editingProduct.id, {
         id: editingProduct.id,
-        sku: editSku,
         nombre: editNombre,
+        descripcion: editDescripcion,
         categoriaNombre: editCat,
         precioCompraProveedor: editNumCostoCompra,
         porcentajeGananciaMin: editGainMinPct,
@@ -454,7 +457,8 @@ export default function ProductosAdminPage() {
               <thead>
                 <tr style={{ backgroundColor: "#f8fafc", borderBottom: "1px solid #e2e8f0", textAlign: "left" }}>
                   <th style={thStyle}>IMAGEN</th>
-                  <th style={thStyle}>PRODUCTO & CÓDIGO 5D</th>
+                  <th style={thStyle}>PRODUCTO & SKU (5D)</th>
+                  <th style={thStyle}>UNIDADES / SERIES</th>
                   <th style={thStyle}>P. COMPRA PROVEEDOR</th>
                   <th style={thStyle}>MARGEN GANANCIA (%)</th>
                   <th style={thStyle}>P. VENTA MÍN.</th>
@@ -469,6 +473,7 @@ export default function ProductosAdminPage() {
                   const marginMax = prod.porcentajeGananciaMax || 50;
                   const vMin = prod.precioVentaMin || (costoCompra * (1 + marginMin / 100));
                   const vMax = prod.precioVentaMax || (costoCompra * (1 + marginMax / 100));
+                  const totalStock = prod.stock != null ? prod.stock : (prod.series?.length || 0);
 
                   return (
                     <tr key={prod.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
@@ -493,13 +498,18 @@ export default function ProductosAdminPage() {
                         </div>
                       </td>
 
-                      {/* PRODUCTO & CÓDIGO SKU */}
+                      {/* PRODUCTO & CÓDIGO SKU 5D */}
                       <td style={tdStyle}>
                         <div>
                           <strong style={{ color: "#0f172a", fontSize: "0.84rem" }}>{prod.nombre}</strong>
-                          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "2px" }}>
+                          {prod.descripcion && (
+                            <p style={{ margin: "2px 0 0 0", fontSize: "0.66rem", color: "#64748b", display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                              {prod.descripcion}
+                            </p>
+                          )}
+                          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "3px" }}>
                             {prod.sku && (
-                              <span style={{ fontSize: "0.62rem", fontWeight: "700", backgroundColor: "#f1f5f9", color: "#475569", padding: "1px 5px", borderRadius: "4px" }}>
+                              <span style={{ fontSize: "0.64rem", fontWeight: "800", backgroundColor: "#e2e8f0", color: "#0f172a", padding: "1px 6px", borderRadius: "4px", fontFamily: "monospace" }}>
                                 SKU: {prod.sku}
                               </span>
                             )}
@@ -508,6 +518,29 @@ export default function ProductosAdminPage() {
                             </span>
                           </div>
                         </div>
+                      </td>
+
+                      {/* STOCK Y VER SERIES INDIVIDUALES */}
+                      <td style={tdStyle}>
+                        <button
+                          type="button"
+                          onClick={() => setViewUnitsProduct(prod)}
+                          style={{
+                            padding: "4px 8px",
+                            backgroundColor: totalStock > 0 ? "#eff6ff" : "#fef2f2",
+                            border: totalStock > 0 ? "1px solid #bfdbfe" : "1px solid #fecaca",
+                            borderRadius: "6px",
+                            fontSize: "0.7rem",
+                            fontWeight: "700",
+                            color: totalStock > 0 ? "#1d4ed8" : "#dc2626",
+                            cursor: "pointer",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "4px"
+                          }}
+                        >
+                          📦 {totalStock} Unidades (Series 5D)
+                        </button>
                       </td>
 
                       {/* P. COMPRA PROVEEDOR */}
@@ -649,15 +682,14 @@ export default function ProductosAdminPage() {
                   </div>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "10px" }}>
-                  <div>
-                    <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Código SKU</label>
-                    <input type="text" placeholder="Ej. PROD-001" value={skuInput} onChange={(e) => setSkuInput(e.target.value)} style={inputStyle} />
-                  </div>
-                  <div>
-                    <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Nombre del Producto</label>
-                    <input type="text" required placeholder="Ej. Lentes Sun Luxe" value={nombreInput} onChange={(e) => setNombreInput(e.target.value)} style={inputStyle} />
-                  </div>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Nombre del Producto</label>
+                  <input type="text" required placeholder="Ej. Bolso Americano" value={nombreInput} onChange={(e) => setNombreInput(e.target.value)} style={inputStyle} />
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Descripción del Producto</label>
+                  <textarea placeholder="Ingresa la descripción del producto..." value={descripcionInput} onChange={(e) => setDescripcionInput(e.target.value)} style={{ ...inputStyle, height: "55px", resize: "none" }} />
                 </div>
 
                 <div>
@@ -675,6 +707,10 @@ export default function ProductosAdminPage() {
                       </>
                     )}
                   </select>
+                </div>
+
+                <div style={{ backgroundColor: "#f8fafc", padding: "8px 12px", borderRadius: "8px", border: "1px solid #e2e8f0", fontSize: "0.66rem", color: "#475569" }}>
+                  ℹ️ El <strong>SKU único de 5 dígitos</strong> (ej. 23212) será asignado automáticamente por el backend. Las <strong>unidades físicas y series de 5 dígitos</strong> se generarán únicamente cuando registres una compra/ingreso de mercadería.
                 </div>
 
                 {/* COST PRICE INPUT */}
@@ -808,15 +844,21 @@ export default function ProductosAdminPage() {
                   </div>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "10px" }}>
-                  <div>
-                    <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Código SKU</label>
-                    <input type="text" placeholder="Ej. PROD-001" value={editSku} onChange={(e) => setEditSku(e.target.value)} style={inputStyle} />
-                  </div>
-                  <div>
-                    <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Nombre del Producto</label>
-                    <input type="text" required value={editNombre} onChange={(e) => setEditNombre(e.target.value)} style={inputStyle} />
-                  </div>
+                <div style={{ backgroundColor: "#f8fafc", padding: "8px 12px", borderRadius: "8px", border: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: "0.68rem", fontWeight: "700", color: "#475569" }}>CÓDIGO SKU (MODELO 5D)</span>
+                  <span style={{ fontSize: "0.85rem", fontWeight: "800", color: "#0f172a", fontFamily: "monospace", backgroundColor: "#e2e8f0", padding: "2px 8px", borderRadius: "4px" }}>
+                    {editingProduct.sku || "AUTO"}
+                  </span>
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Nombre del Producto</label>
+                  <input type="text" required value={editNombre} onChange={(e) => setEditNombre(e.target.value)} style={inputStyle} />
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Descripción del Producto</label>
+                  <textarea placeholder="Ingresa la descripción del producto..." value={editDescripcion} onChange={(e) => setEditDescripcion(e.target.value)} style={{ ...inputStyle, height: "55px", resize: "none" }} />
                 </div>
 
                 <div>
@@ -953,6 +995,102 @@ export default function ProductosAdminPage() {
                   Confirmar DELETE BD
                 </button>
               </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* MODAL UNIDADES FÍSICAS (SERIES DE 5 DÍGITOS) */}
+      <AnimatePresence>
+        {viewUnitsProduct && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setViewUnitsProduct(null)}
+              style={{ position: "fixed", inset: 0, backgroundColor: "rgba(15, 23, 42, 0.5)", zIndex: 1100, backdropFilter: "blur(2px)" }}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: "-50%", x: "-50%" }}
+              animate={{ opacity: 1, scale: 1, y: "-50%", x: "-50%" }}
+              exit={{ opacity: 0, scale: 0.92, y: "-50%", x: "-50%" }}
+              style={{
+                position: "fixed",
+                top: "50%",
+                left: "50%",
+                width: "90%",
+                maxWidth: "520px",
+                maxHeight: "85vh",
+                overflowY: "auto",
+                backgroundColor: "#ffffff",
+                borderRadius: "16px",
+                padding: "24px",
+                zIndex: 1101,
+                boxShadow: "0 20px 40px rgba(0,0,0,0.25)",
+                border: "1px solid #e2e8f0"
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid #f1f5f9", paddingBottom: "12px" }}>
+                <div>
+                  <h3 style={{ fontSize: "1.05rem", fontWeight: "700", color: "#0f172a", margin: 0 }}>
+                    Unidades Físicas Registradas
+                  </h3>
+                  <span style={{ fontSize: "0.7rem", color: "#64748b" }}>
+                    Modelo: <strong>{viewUnitsProduct.nombre}</strong> | SKU: <strong style={{ fontFamily: "monospace" }}>{viewUnitsProduct.sku}</strong>
+                  </span>
+                </div>
+                <button onClick={() => setViewUnitsProduct(null)} style={{ background: "none", border: "none", cursor: "pointer" }}>
+                  <Cancel01Icon size={20} color="#0f172a" />
+                </button>
+              </div>
+
+              <p style={{ fontSize: "0.72rem", color: "#475569", marginBottom: "16px" }}>
+                Cada registro representa una <strong>unidad física individual</strong> del producto. La <strong>Serie (5D)</strong> identifica de forma única la unidad para ventas y control de stock.
+              </p>
+
+              {(!viewUnitsProduct.unidades || viewUnitsProduct.unidades.length === 0) && (!viewUnitsProduct.series || viewUnitsProduct.series.length === 0) ? (
+                <div style={{ padding: "24px", textAlign: "center", backgroundColor: "#f8fafc", borderRadius: "10px", border: "1px dashed #cbd5e1", color: "#64748b", fontSize: "0.78rem" }}>
+                  No hay unidades físicas registradas para este producto.
+                </div>
+              ) : (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "10px", maxHeight: "360px", overflowY: "auto" }}>
+                  {(viewUnitsProduct.unidades && viewUnitsProduct.unidades.length > 0
+                    ? viewUnitsProduct.unidades
+                    : (viewUnitsProduct.series || []).map((s, idx) => ({ id: idx + 1, serie: s, estado: "DISPONIBLE" }))
+                  ).map((unit, index) => (
+                    <div
+                      key={unit.id || index}
+                      style={{
+                        backgroundColor: "#f8fafc",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "8px",
+                        padding: "10px",
+                        textAlign: "center"
+                      }}
+                    >
+                      <span style={{ display: "block", fontSize: "0.6rem", fontWeight: "700", color: "#94a3b8", textTransform: "uppercase" }}>
+                        Unidad #{index + 1}
+                      </span>
+                      <strong style={{ fontSize: "1rem", fontWeight: "800", color: "#0f172a", fontFamily: "monospace", letterSpacing: "1px", margin: "2px 0" }}>
+                        {unit.serie}
+                      </strong>
+                      <span style={{
+                        display: "inline-block",
+                        fontSize: "0.6rem",
+                        fontWeight: "700",
+                        backgroundColor: unit.estado === "VENDIDO" ? "#fef2f2" : "#f0fdf4",
+                        color: unit.estado === "VENDIDO" ? "#dc2626" : "#166534",
+                        padding: "1px 6px",
+                        borderRadius: "4px",
+                        marginTop: "4px"
+                      }}>
+                        {unit.estado || "DISPONIBLE"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </motion.div>
           </>
         )}

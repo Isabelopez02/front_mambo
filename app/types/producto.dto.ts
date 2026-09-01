@@ -2,9 +2,17 @@
  * DTO de Producto alineado con Spring Boot Backend (ProductoDTO.java)
  */
 
+export interface ProductoUnitarioDTO {
+  id?: number;
+  productoId?: number;
+  serie: string; // 5 dígitos (ej. 00001, 00002)
+  estado?: string; // DISPONIBLE, VENDIDO, etc.
+  fechaRegistro?: string;
+}
+
 export interface ProductoDTO {
   id?: number | string;
-  sku?: string;
+  sku?: string; // 5 dígitos generado por backend (ej. 23212)
   nombre: string;
   categoriaNombre?: string;
   categoria?: string;
@@ -21,10 +29,11 @@ export interface ProductoDTO {
   imagenUrl?: File | string | null;
   estadoStock?: string;
   activo?: boolean;
+  series?: string[];
+  unidades?: ProductoUnitarioDTO[];
 }
 
 export interface CreateProductoDTO {
-  sku?: string;
   nombre: string;
   categoriaNombre: string;
   precioCompraProveedor: number;
@@ -40,7 +49,6 @@ export interface CreateProductoDTO {
 
 export interface UpdateProductoDTO {
   id?: number | string;
-  sku?: string;
   nombre?: string;
   categoriaNombre?: string;
   precioCompraProveedor?: number;
