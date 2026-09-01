@@ -17,7 +17,9 @@ import {
   CalculatorIcon
 } from "hugeicons-react";
 import { productosService } from "../../services/productos.service";
+import { categoriasService } from "../../services/categorias.service";
 import { ProductoDTO } from "../../types/producto.dto";
+import { CategoriaDTO } from "../../types/categoria.dto";
 
 export default function ProductosAdminPage() {
   const [products, setProducts] = useState<ProductoDTO[]>([]);
@@ -31,7 +33,20 @@ export default function ProductosAdminPage() {
   const [editingProduct, setEditingProduct] = useState<ProductoDTO | null>(null);
   const [toggleStatusProduct, setToggleStatusProduct] = useState<ProductoDTO | null>(null);
 
-  // CREATE FORM STATE (STRICT BACKEND API - NO TEMPORARY MOCK DATA)
+  // CATEGORIES MODAL STATE
+  const [isCatModalOpen, setIsCatModalOpen] = useState(false);
+  const [dbCategories, setDbCategories] = useState<CategoriaDTO[]>([]);
+  const [loadingCats, setLoadingCats] = useState(false);
+
+  // CATEGORY FORM STATE (LEFT SIDE OF MODAL)
+  const [editingCatId, setEditingCatId] = useState<number | null>(null);
+  const [catNombreForm, setCatNombreForm] = useState("");
+  const [catImageFile, setCatImageFile] = useState<File | null>(null);
+  const [catImagePreview, setCatImagePreview] = useState<string | null>(null);
+  const [savingCat, setSavingCat] = useState(false);
+
+  // CREATE FORM STATE
+  const [skuInput, setSkuInput] = useState("");
   const [nombreInput, setNombreInput] = useState("");
   const [catInput, setCatInput] = useState("Maquillaje");
   const [costoCompraInput, setCostoCompraInput] = useState<string>("20.00");
@@ -41,6 +56,7 @@ export default function ProductosAdminPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   // EDIT FORM STATE
+  const [editSku, setEditSku] = useState("");
   const [editNombre, setEditNombre] = useState("");
   const [editCat, setEditCat] = useState("Maquillaje");
   const [editCostoCompra, setEditCostoCompra] = useState<string>("20.00");
@@ -67,9 +83,73 @@ export default function ProductosAdminPage() {
     }
   };
 
+  // Fetch Categories from Backend API (/api/categorias)
+  const fetchCategories = async () => {
+    setLoadingCats(true);
+    try {
+      const data = await categoriasService.listar();
+      setDbCategories(data);
+    } catch (err: any) {
+      console.error("Error al cargar categorías:", err);
+    } finally {
+      setLoadingCats(false);
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
+    fetchCategories();
   }, []);
+
+  const resetCatForm = () => {
+    setEditingCatId(null);
+    setCatNombreForm("");
+    setCatImageFile(null);
+    setCatImagePreview(null);
+  };
+
+  const handleSelectCatForEdit = (cat: CategoriaDTO) => {
+    if (cat.id) {
+      setEditingCatId(cat.id);
+      setCatNombreForm(cat.nombre || "");
+      setCatImagePreview(cat.icono || null);
+      setCatImageFile(null);
+    }
+  };
+
+  const handleSaveCategorySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!catNombreForm.trim()) return;
+
+    setSavingCat(true);
+    try {
+      if (editingCatId) {
+        await categoriasService.actualizar(editingCatId, catNombreForm, catImageFile);
+      } else {
+        await categoriasService.crear(catNombreForm, catImageFile);
+      }
+      resetCatForm();
+      await fetchCategories();
+    } catch (err: any) {
+      alert("Error al guardar categoría: " + (err.message || "No se pudo procesar la solicitud"));
+    } finally {
+      setSavingCat(false);
+    }
+  };
+
+  const handleDeleteCategory = async (id?: number) => {
+    if (!id) return;
+    if (confirm("¿Estás seguro de que deseas eliminar esta categoría?")) {
+      try {
+        await categoriasService.eliminar(id);
+        await fetchCategories();
+      } catch (err: any) {
+        alert("Error al eliminar categoría: " + (err.message || "No se pudo completar la acción"));
+      }
+    }
+  };
+
+  const dynamicCategories = ["TODAS", ...Array.from(new Set(dbCategories.map(c => c.nombre)))];
 
   const filteredProducts = products.filter(p => {
     const matchesSearch = p.nombre.toLowerCase().includes(searchQuery.toLowerCase());
@@ -99,13 +179,14 @@ export default function ProductosAdminPage() {
   const calcPMin = numCostoCompra * (1 + gainMinPct / 100);
   const calcPMax = numCostoCompra * (1 + gainMaxPct / 100);
 
-  // CREATE PRODUCT STRICTLY ON BACKEND DATABASE (POST /lista/productos)
+  // CREATE PRODUCT STRICTLY ON BACKEND DATABASE
   const handleAddProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nombreInput) return;
 
     try {
       await productosService.createProducto({
+        sku: skuInput,
         nombre: nombreInput,
         categoriaNombre: catInput,
         precioCompraProveedor: numCostoCompra,
@@ -116,6 +197,7 @@ export default function ProductosAdminPage() {
 
       await fetchProducts(); // Sincroniza desde la Base de Datos
       setIsAddModalOpen(false);
+      setSkuInput("");
       setNombreInput("");
       setCostoCompraInput("20.00");
       setGainMinPct(30);
@@ -130,6 +212,7 @@ export default function ProductosAdminPage() {
   // OPEN EDIT MODAL
   const handleOpenEdit = (prod: ProductoDTO) => {
     setEditingProduct(prod);
+    setEditSku(prod.sku || "");
     setEditNombre(prod.nombre);
     setEditCat(prod.categoriaNombre || prod.categoria || "Maquillaje");
     setEditCostoCompra((prod.precioCompraProveedor || 20.00).toString());
@@ -142,7 +225,7 @@ export default function ProductosAdminPage() {
   const editCalcPMin = editNumCostoCompra * (1 + editGainMinPct / 100);
   const editCalcPMax = editNumCostoCompra * (1 + editGainMaxPct / 100);
 
-  // UPDATE PRODUCT STRICTLY ON BACKEND DATABASE (PUT /lista/productos/{id})
+  // UPDATE PRODUCT STRICTLY ON BACKEND DATABASE
   const handleUpdateProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingProduct || !editingProduct.id) return;
@@ -150,6 +233,7 @@ export default function ProductosAdminPage() {
     try {
       await productosService.updateProducto(editingProduct.id, {
         id: editingProduct.id,
+        sku: editSku,
         nombre: editNombre,
         categoriaNombre: editCat,
         precioCompraProveedor: editNumCostoCompra,
@@ -191,25 +275,47 @@ export default function ProductosAdminPage() {
           </h1>
         </div>
 
-        <button
-          onClick={() => setIsAddModalOpen(true)}
-          style={{
-            padding: "9px 18px",
-            backgroundColor: "#0f172a",
-            color: "#ffffff",
-            border: "none",
-            borderRadius: "8px",
-            fontSize: "0.76rem",
-            fontWeight: "600",
-            cursor: "pointer",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "8px",
-            boxShadow: "0 4px 12px rgba(15,23,42,0.15)"
-          }}
-        >
-          <Add01Icon size={16} color="#ffffff" /> Registrar Nuevo Producto
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <button
+            onClick={() => { resetCatForm(); setIsCatModalOpen(true); }}
+            style={{
+              padding: "9px 16px",
+              backgroundColor: "#ffffff",
+              color: "#0f172a",
+              border: "1px solid #cbd5e1",
+              borderRadius: "8px",
+              fontSize: "0.76rem",
+              fontWeight: "600",
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.03)"
+            }}
+          >
+            <Tag01Icon size={16} color="#059669" /> Categorías
+          </button>
+
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            style={{
+              padding: "9px 18px",
+              backgroundColor: "#0f172a",
+              color: "#ffffff",
+              border: "none",
+              borderRadius: "8px",
+              fontSize: "0.76rem",
+              fontWeight: "600",
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              boxShadow: "0 4px 12px rgba(15,23,42,0.15)"
+            }}
+          >
+            <Add01Icon size={16} color="#ffffff" /> Registrar Nuevo Producto
+          </button>
+        </div>
       </div>
 
       {/* TABLE HEADER OPTIMIZATION: SEARCH LEFT, OUTLINE ACTIONS RIGHT */}
@@ -387,11 +493,16 @@ export default function ProductosAdminPage() {
                         </div>
                       </td>
 
-                      {/* PRODUCTO & CÓDIGO BASE 5D */}
+                      {/* PRODUCTO & CÓDIGO SKU */}
                       <td style={tdStyle}>
                         <div>
                           <strong style={{ color: "#0f172a", fontSize: "0.84rem" }}>{prod.nombre}</strong>
                           <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "2px" }}>
+                            {prod.sku && (
+                              <span style={{ fontSize: "0.62rem", fontWeight: "700", backgroundColor: "#f1f5f9", color: "#475569", padding: "1px 5px", borderRadius: "4px" }}>
+                                SKU: {prod.sku}
+                              </span>
+                            )}
                             <span style={{ fontSize: "0.62rem", color: "#64748b" }}>
                               {prod.categoriaNombre || prod.categoria || "General"}
                             </span>
@@ -538,19 +649,31 @@ export default function ProductosAdminPage() {
                   </div>
                 </div>
 
-                <div>
-                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Nombre del Producto</label>
-                  <input type="text" required placeholder="Ej. Lentes Sun Luxe" value={nombreInput} onChange={(e) => setNombreInput(e.target.value)} style={inputStyle} />
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "10px" }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Código SKU</label>
+                    <input type="text" placeholder="Ej. PROD-001" value={skuInput} onChange={(e) => setSkuInput(e.target.value)} style={inputStyle} />
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Nombre del Producto</label>
+                    <input type="text" required placeholder="Ej. Lentes Sun Luxe" value={nombreInput} onChange={(e) => setNombreInput(e.target.value)} style={inputStyle} />
+                  </div>
                 </div>
 
                 <div>
                   <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Categoría</label>
                   <select value={catInput} onChange={(e) => setCatInput(e.target.value)} style={inputStyle}>
-                    <option value="Carteras">Carteras</option>
-                    <option value="Maquillaje">Maquillaje</option>
-                    <option value="Skincare">Skincare</option>
-                    <option value="Hogar">Hogar</option>
-                    <option value="Accesorios">Accesorios</option>
+                    {dbCategories.length > 0 ? (
+                      dbCategories.map(c => <option key={c.id || c.nombre} value={c.nombre}>{c.nombre}</option>)
+                    ) : (
+                      <>
+                        <option value="Carteras">Carteras</option>
+                        <option value="Maquillaje">Maquillaje</option>
+                        <option value="Skincare">Skincare</option>
+                        <option value="Hogar">Hogar</option>
+                        <option value="Accesorios">Accesorios</option>
+                      </>
+                    )}
                   </select>
                 </div>
 
@@ -685,19 +808,31 @@ export default function ProductosAdminPage() {
                   </div>
                 </div>
 
-                <div>
-                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Nombre del Producto</label>
-                  <input type="text" required value={editNombre} onChange={(e) => setEditNombre(e.target.value)} style={inputStyle} />
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "10px" }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Código SKU</label>
+                    <input type="text" placeholder="Ej. PROD-001" value={editSku} onChange={(e) => setEditSku(e.target.value)} style={inputStyle} />
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Nombre del Producto</label>
+                    <input type="text" required value={editNombre} onChange={(e) => setEditNombre(e.target.value)} style={inputStyle} />
+                  </div>
                 </div>
 
                 <div>
                   <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Categoría</label>
                   <select value={editCat} onChange={(e) => setEditCat(e.target.value)} style={inputStyle}>
-                    <option value="Carteras">Carteras</option>
-                    <option value="Maquillaje">Maquillaje</option>
-                    <option value="Skincare">Skincare</option>
-                    <option value="Hogar">Hogar</option>
-                    <option value="Accesorios">Accesorios</option>
+                    {dbCategories.length > 0 ? (
+                      dbCategories.map(c => <option key={c.id || c.nombre} value={c.nombre}>{c.nombre}</option>)
+                    ) : (
+                      <>
+                        <option value="Carteras">Carteras</option>
+                        <option value="Maquillaje">Maquillaje</option>
+                        <option value="Skincare">Skincare</option>
+                        <option value="Hogar">Hogar</option>
+                        <option value="Accesorios">Accesorios</option>
+                      </>
+                    )}
                   </select>
                 </div>
 
@@ -817,6 +952,236 @@ export default function ProductosAdminPage() {
                 >
                   Confirmar DELETE BD
                 </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* MODAL CATEGORÍAS VISTA DIVIDIDA (IZQUIERDA: FORMULARIO CREAR/EDITAR | DERECHA: LISTA CATEGORÍAS) */}
+      <AnimatePresence>
+        {isCatModalOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsCatModalOpen(false)}
+              style={{ position: "fixed", inset: 0, backgroundColor: "rgba(15, 23, 42, 0.5)", zIndex: 1100, backdropFilter: "blur(2px)" }}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.94, y: "-50%", x: "-50%" }}
+              animate={{ opacity: 1, scale: 1, y: "-50%", x: "-50%" }}
+              exit={{ opacity: 0, scale: 0.94, y: "-50%", x: "-50%" }}
+              style={{
+                position: "fixed",
+                top: "50%",
+                left: "50%",
+                width: "92%",
+                maxWidth: "960px",
+                maxHeight: "90vh",
+                overflowY: "auto",
+                backgroundColor: "#ffffff",
+                borderRadius: "16px",
+                padding: "24px",
+                zIndex: 1101,
+                boxShadow: "0 25px 50px rgba(0,0,0,0.25)",
+                border: "1px solid #e2e8f0"
+              }}
+            >
+              {/* MODAL HEADER */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", borderBottom: "1px solid #f1f5f9", paddingBottom: "12px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <Tag01Icon size={20} color="#059669" />
+                  <div>
+                    <h3 style={{ fontSize: "1.05rem", fontWeight: "700", color: "#0f172a", margin: 0 }}>Gestión de Categorías</h3>
+                    <span style={{ fontSize: "0.68rem", color: "#64748b" }}>Crea, edita o elimina las categorías sincronizadas con la Base de Datos</span>
+                  </div>
+                </div>
+                <button onClick={() => setIsCatModalOpen(false)} style={{ background: "none", border: "none", cursor: "pointer" }}>
+                  <Cancel01Icon size={20} color="#0f172a" />
+                </button>
+              </div>
+
+              {/* GRID DOS COLUMNAS: FORMULARIO IZQUIERDA (~28%) | LISTA DERECHA (~72%) */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 2.4fr", gap: "24px" }}>
+                
+                {/* COLUMNA IZQUIERDA: FORMULARIO PARA CREAR / EDITAR */}
+                <div style={{ backgroundColor: "#f8fafc", padding: "16px", borderRadius: "12px", border: "1px solid #e2e8f0", display: "flex", flexDirection: "column", gap: "12px", height: "fit-content" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <h4 style={{ fontSize: "0.86rem", fontWeight: "700", color: "#0f172a", margin: 0 }}>
+                      {editingCatId ? "✏️ Editar Categoría" : "➕ Crear Categoría"}
+                    </h4>
+                    {editingCatId && (
+                      <button
+                        onClick={resetCatForm}
+                        style={{ fontSize: "0.62rem", color: "#dc2626", border: "none", background: "none", cursor: "pointer", fontWeight: "700" }}
+                      >
+                        Cancelar
+                      </button>
+                    )}
+                  </div>
+
+                  <form onSubmit={handleSaveCategorySubmit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
+                        Nombre de Categoría
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Ej. Maquillaje, Skincare..."
+                        value={catNombreForm}
+                        onChange={(e) => setCatNombreForm(e.target.value)}
+                        style={inputStyle}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
+                        Imagen de Categoría
+                      </label>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <div style={{
+                          width: "50px",
+                          height: "50px",
+                          borderRadius: "8px",
+                          backgroundColor: "#ffffff",
+                          border: "1px dashed #cbd5e1",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          overflow: "hidden"
+                        }}>
+                          {catImagePreview ? (
+                            <img src={catImagePreview} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          ) : (
+                            <Image01Icon size={20} color="#94a3b8" />
+                          )}
+                        </div>
+
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              const f = e.target.files[0];
+                              setCatImageFile(f);
+                              setCatImagePreview(URL.createObjectURL(f));
+                            }
+                          }}
+                          style={{ fontSize: "0.68rem", color: "#334155", width: "130px" }}
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={savingCat}
+                      style={{
+                        width: "100%",
+                        padding: "9px",
+                        backgroundColor: editingCatId ? "#0284c7" : "#059669",
+                        color: "#ffffff",
+                        border: "none",
+                        borderRadius: "8px",
+                        fontSize: "0.74rem",
+                        fontWeight: "700",
+                        cursor: savingCat ? "wait" : "pointer",
+                        marginTop: "6px"
+                      }}
+                    >
+                      {savingCat ? "Guardando..." : editingCatId ? "ACTUALIZAR CATEGORÍA" : "GUARDAR CATEGORÍA"}
+                    </button>
+                  </form>
+                </div>
+
+                {/* COLUMNA DERECHA: LISTADO DE CATEGORÍAS (OCUPA ~72% DEL MODAL) */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: "0.78rem", fontWeight: "700", color: "#334155" }}>
+                      Todas las Categorías ({dbCategories.length})
+                    </span>
+                    <button
+                      onClick={fetchCategories}
+                      style={{ fontSize: "0.68rem", color: "#059669", background: "none", border: "none", cursor: "pointer", fontWeight: "600" }}
+                    >
+                      🔄 Actualizar Lista
+                    </button>
+                  </div>
+
+                  {loadingCats ? (
+                    <div style={{ padding: "30px", textAlign: "center", color: "#64748b", fontSize: "0.8rem" }}>
+                      ⏳ Cargando categorías desde la BD...
+                    </div>
+                  ) : dbCategories.length === 0 ? (
+                    <div style={{ padding: "30px", textAlign: "center", color: "#64748b", backgroundColor: "#f8fafc", borderRadius: "10px", border: "1px dashed #cbd5e1", fontSize: "0.8rem" }}>
+                      No hay categorías registradas en la Base de Datos.
+                    </div>
+                  ) : (
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "12px", maxHeight: "400px", overflowY: "auto", paddingRight: "4px" }}>
+                      {dbCategories.map((cat) => (
+                        <div
+                          key={cat.id || cat.nombre}
+                          style={{
+                            backgroundColor: "#ffffff",
+                            border: editingCatId === cat.id ? "2px solid #0284c7" : "1px solid #e2e8f0",
+                            borderRadius: "10px",
+                            padding: "10px 12px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            gap: "8px",
+                            boxShadow: "0 2px 4px rgba(0,0,0,0.02)"
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                            <div style={{
+                              width: "36px",
+                              height: "36px",
+                              borderRadius: "8px",
+                              backgroundColor: "#f8fafc",
+                              border: "1px solid #e2e8f0",
+                              overflow: "hidden",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center"
+                            }}>
+                              {cat.icono ? (
+                                <img src={cat.icono} alt={cat.nombre} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                              ) : (
+                                <Tag01Icon size={18} color="#059669" />
+                              )}
+                            </div>
+                            <div>
+                              <strong style={{ fontSize: "0.8rem", color: "#0f172a", display: "block" }}>{cat.nombre}</strong>
+                              <span style={{ fontSize: "0.62rem", color: "#64748b" }}>ID: #{cat.id}</span>
+                            </div>
+                          </div>
+
+                          <div style={{ display: "flex", gap: "4px" }}>
+                            <button
+                              onClick={() => handleSelectCatForEdit(cat)}
+                              title="Extraer datos para Editar"
+                              style={{ background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: "6px", padding: "4px", cursor: "pointer" }}
+                            >
+                              <Edit01Icon size={14} color="#0284c7" />
+                            </button>
+
+                            <button
+                              onClick={() => handleDeleteCategory(cat.id)}
+                              title="Eliminar Categoría"
+                              style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "6px", padding: "4px", cursor: "pointer" }}
+                            >
+                              <ViewOffIcon size={14} color="#dc2626" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
               </div>
             </motion.div>
           </>

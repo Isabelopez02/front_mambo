@@ -4,6 +4,7 @@
 
 export interface ProductoDTO {
   id?: number | string;
+  sku?: string;
   nombre: string;
   categoriaNombre?: string;
   categoria?: string;
@@ -23,28 +24,32 @@ export interface ProductoDTO {
 }
 
 export interface CreateProductoDTO {
+  sku?: string;
   nombre: string;
   categoriaNombre: string;
-  precio?: number;
-  precioCompraProveedor?: number;
+  precioCompraProveedor: number;
   porcentajeGananciaMin?: number;
   porcentajeGananciaMax?: number;
   precioVentaMin?: number;
   precioVentaMax?: number;
+  precio?: number;
+  stock?: number;
   descripcion?: string;
   imagenUrl?: File | string | null;
 }
 
 export interface UpdateProductoDTO {
   id?: number | string;
+  sku?: string;
   nombre?: string;
   categoriaNombre?: string;
-  precio?: number;
   precioCompraProveedor?: number;
   porcentajeGananciaMin?: number;
   porcentajeGananciaMax?: number;
   precioVentaMin?: number;
   precioVentaMax?: number;
+  precio?: number;
+  stock?: number;
   descripcion?: string;
   imagenUrl?: File | string | null;
   activo?: boolean;
