@@ -1,12 +1,29 @@
 /**
- * Servicio de Compras conectado con CompraController (/api/compras)
- * Usando la URL Base centralizada desde apiClient (NEXT_PUBLIC_API_URL en .env)
+ * Servicio de Compras e Ingresos de Mercadería conectado con Backend Spring Boot
+ * Almacenamiento en las tablas 'compra_proveedor' y 'codigo_proveedor' en MySQL
  */
 
 import { CompraDTO, CompraRequestDTO } from "../types";
 import { apiClient } from "./apiClient";
 
 const ENDPOINT = "/api/compras";
+
+export interface CompraProveedorDTO {
+  id?: number;
+  productoId: number;
+  productoNombre?: string;
+  sku?: string;
+  proveedorId?: number;
+  proveedorNombre?: string;
+  rucProveedor?: string;
+  cantidad: number;
+  costoTotal: number;
+  costoUnitario?: number;
+  estado?: string;
+  fechaCompra?: string;
+  codigosEscaneados?: string[];
+  seriesGeneradas?: string[];
+}
 
 export const comprasService = {
   // GET /api/compras
@@ -32,5 +49,27 @@ export const comprasService = {
   // PUT /api/compras/{id}/entregar
   async marcarComoEntregado(id: number, password: string): Promise<CompraDTO> {
     return await apiClient.put<CompraDTO>(`${ENDPOINT}/${id}/entregar`, { password });
+  },
+
+  // 🛍️ GET /api/compras-proveedor -> Obtener historial de compras a proveedor almacenadas en la tabla 'compra_proveedor' de MySQL
+  async listarComprasProveedor(): Promise<CompraProveedorDTO[]> {
+    return await apiClient.get<CompraProveedorDTO[]>("/api/compras-proveedor");
+  },
+
+  // 🛍️ POST /api/compras-proveedor -> Registrar compra a proveedor en 'compra_proveedor' y guardar códigos escaneados en 'codigo_proveedor' en MySQL
+  async registrarCompraProveedor(
+    productoId: number | string,
+    proveedorId: number | string,
+    cantidad: number,
+    costoTotal: number,
+    codigos: string[]
+  ): Promise<CompraProveedorDTO> {
+    return await apiClient.post<CompraProveedorDTO>("/api/compras-proveedor", {
+      productoId: Number(productoId),
+      proveedorId: proveedorId ? Number(proveedorId) : null,
+      cantidad: Number(cantidad),
+      costoTotal: Number(costoTotal),
+      codigos: codigos || []
+    });
   }
 };
