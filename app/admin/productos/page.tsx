@@ -49,7 +49,7 @@ export default function ProductosAdminPage() {
   const [nombreInput, setNombreInput] = useState("");
   const [descripcionInput, setDescripcionInput] = useState("");
   const [catInput, setCatInput] = useState("Maquillaje");
-  const [costoCompraInput, setCostoCompraInput] = useState<string>("20.00");
+  const [costoCompraInput, setCostoCompraInput] = useState<string>("0.00");
   const [gainMinPct, setGainMinPct] = useState<number>(30); // 30%
   const [gainMaxPct, setGainMaxPct] = useState<number>(50); // 50%
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -178,7 +178,7 @@ export default function ProductosAdminPage() {
   };
 
   // CALCULATE SALE PRICES REALTIME
-  const numCostoCompra = parseFloat(costoCompraInput) || 20.00;
+  const numCostoCompra = parseFloat(costoCompraInput) || 0.00;
   const calcPMin = numCostoCompra * (1 + gainMinPct / 100);
   const calcPMax = numCostoCompra * (1 + gainMaxPct / 100);
 
@@ -265,93 +265,93 @@ export default function ProductosAdminPage() {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
       
       {/* HEADER SECTION */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
         <div>
-          <span style={{ fontSize: "0.58rem", fontWeight: "700", color: "#059669", letterSpacing: "1.8px", textTransform: "uppercase" }}>
-            SINCRONIZACIÓN BASE DE DATOS BACKEND
-          </span>
-          <h1 style={{ fontFamily: "var(--font-dm-serif), Georgia, serif", fontSize: "1.35rem", color: "#0f172a", margin: "2px 0 0 0", fontWeight: "400" }}>
-            Administración de Productos & Base de Datos Backend
+          <h1 style={{ fontSize: "1.15rem", fontWeight: "700", color: "#0f172a", margin: 0, letterSpacing: "-0.01em" }}>
+            Administración de Productos
           </h1>
+          <p style={{ fontSize: "0.74rem", color: "#64748b", margin: "2px 0 0 0" }}>
+            Gestión de inventario, precios y categorías sincronizados con backend
+          </p>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <button
             onClick={() => { resetCatForm(); setIsCatModalOpen(true); }}
             style={{
-              padding: "9px 16px",
+              padding: "7px 13px",
               backgroundColor: "#ffffff",
-              color: "#0f172a",
+              color: "#334155",
               border: "1px solid #cbd5e1",
-              borderRadius: "8px",
-              fontSize: "0.76rem",
+              borderRadius: "6px",
+              fontSize: "0.75rem",
               fontWeight: "600",
               cursor: "pointer",
               display: "inline-flex",
               alignItems: "center",
-              gap: "8px",
-              boxShadow: "0 2px 6px rgba(0,0,0,0.03)"
+              gap: "6px",
+              boxShadow: "0 1px 2px rgba(0,0,0,0.03)"
             }}
           >
-            <Tag01Icon size={16} color="#059669" /> Categorías
+            <Tag01Icon size={14} color="#059669" /> Categorías
           </button>
 
           <button
             onClick={() => setIsAddModalOpen(true)}
             style={{
-              padding: "9px 18px",
+              padding: "7px 15px",
               backgroundColor: "#0f172a",
               color: "#ffffff",
               border: "none",
-              borderRadius: "8px",
-              fontSize: "0.76rem",
+              borderRadius: "6px",
+              fontSize: "0.75rem",
               fontWeight: "600",
               cursor: "pointer",
               display: "inline-flex",
               alignItems: "center",
-              gap: "8px",
-              boxShadow: "0 4px 12px rgba(15,23,42,0.15)"
+              gap: "6px",
+              boxShadow: "0 2px 6px rgba(15,23,42,0.12)"
             }}
           >
-            <Add01Icon size={16} color="#ffffff" /> Registrar Nuevo Producto
+            <Add01Icon size={14} color="#ffffff" /> Registrar Producto
           </button>
         </div>
       </div>
 
-      {/* TABLE HEADER OPTIMIZATION: SEARCH LEFT, OUTLINE ACTIONS RIGHT */}
+      {/* TABLE HEADER OPTIMIZATION: SEARCH LEFT, FILTERS RIGHT */}
       <div style={{
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
         backgroundColor: "#ffffff",
-        padding: "12px 16px",
-        borderRadius: "12px",
+        padding: "10px 14px",
+        borderRadius: "10px",
         border: "1px solid #e2e8f0",
         flexWrap: "wrap",
-        gap: "12px"
+        gap: "10px"
       }}>
         {/* SEARCH BAR LEFT */}
-        <div style={{ position: "relative", width: "280px" }}>
+        <div style={{ position: "relative", width: "260px" }}>
           <input
             type="text"
-            placeholder="Buscar por producto o código 5D..."
+            placeholder="Buscar producto o SKU..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{
               width: "100%",
               boxSizing: "border-box",
-              padding: "7px 32px 7px 12px",
+              padding: "6px 30px 6px 10px",
               borderRadius: "6px",
               border: "1px solid #cbd5e1",
-              fontSize: "0.75rem",
+              fontSize: "0.74rem",
               backgroundColor: "#f8fafc",
               outline: "none"
             }}
           />
-          <Search01Icon size={14} color="#64748b" style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)" }} />
+          <Search01Icon size={13} color="#64748b" style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)" }} />
         </div>
 
         {/* CATEGORY CHIPS & OUTLINE ACTION BUTTONS RIGHT */}
@@ -362,14 +362,14 @@ export default function ProductosAdminPage() {
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
                 style={{
-                  padding: "4px 10px",
-                  borderRadius: "20px",
+                  padding: "3px 9px",
+                  borderRadius: "14px",
                   fontSize: "0.68rem",
                   fontWeight: "600",
                   cursor: "pointer",
-                  border: selectedCategory === cat ? "1px solid #059669" : "1px solid #cbd5e1",
-                  backgroundColor: selectedCategory === cat ? "#ecfdf5" : "#ffffff",
-                  color: selectedCategory === cat ? "#059669" : "#64748b"
+                  border: selectedCategory === cat ? "1px solid #059669" : "1px solid #e2e8f0",
+                  backgroundColor: selectedCategory === cat ? "#ecfdf5" : "#f8fafc",
+                  color: selectedCategory === cat ? "#047857" : "#64748b"
                 }}
               >
                 {cat}
@@ -380,7 +380,7 @@ export default function ProductosAdminPage() {
           <button
             type="button"
             style={{
-              padding: "6px 12px",
+              padding: "5px 10px",
               backgroundColor: "#ffffff",
               color: "#334155",
               border: "1px solid #cbd5e1",
@@ -393,13 +393,13 @@ export default function ProductosAdminPage() {
               gap: "4px"
             }}
           >
-            <FilterIcon size={14} color="#475569" /> Filtrar
+            <FilterIcon size={13} color="#475569" /> Filtrar
           </button>
 
           <button
             type="button"
             style={{
-              padding: "6px 12px",
+              padding: "5px 10px",
               backgroundColor: "#ffffff",
               color: "#334155",
               border: "1px solid #cbd5e1",
@@ -412,55 +412,55 @@ export default function ProductosAdminPage() {
               gap: "4px"
             }}
           >
-            <Download01Icon size={14} color="#475569" /> Exportar
+            <Download01Icon size={13} color="#475569" /> Exportar
           </button>
         </div>
       </div>
 
-      {/* PRODUCTS TABLE STRICTLY BACKEND DATABASE (GET /lista/productos) */}
+      {/* PRODUCTS TABLE */}
       <div style={{
         backgroundColor: "#ffffff",
-        borderRadius: "16px",
-        padding: "20px 24px",
+        borderRadius: "12px",
+        padding: "14px 16px",
         border: "1px solid #e2e8f0",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.02)"
+        boxShadow: "0 1px 2px rgba(0,0,0,0.02)"
       }}>
         {loading ? (
-          <div style={{ padding: "40px 20px", textAlign: "center", color: "#64748b", fontSize: "0.85rem" }}>
-            ⏳ Consultando la base de datos backend...
+          <div style={{ padding: "32px 16px", textAlign: "center", color: "#64748b", fontSize: "0.8rem" }}>
+            Consultando backend...
           </div>
         ) : errorMsg ? (
-          <div style={{ padding: "30px 20px", textAlign: "center", backgroundColor: "#fef2f2", borderRadius: "10px", border: "1px solid #fecaca", color: "#991b1b", fontSize: "0.8rem" }}>
-            <p style={{ margin: "0 0 10px 0", fontWeight: "700" }}>⚠️ Error de Conexión a la Base de Datos</p>
-            <p style={{ margin: 0, fontSize: "0.75rem", color: "#7f1d1d" }}>{errorMsg}</p>
+          <div style={{ padding: "24px 16px", textAlign: "center", backgroundColor: "#fef2f2", borderRadius: "8px", border: "1px solid #fecaca", color: "#991b1b", fontSize: "0.78rem" }}>
+            <p style={{ margin: "0 0 8px 0", fontWeight: "700" }}>⚠️ Error de Conexión</p>
+            <p style={{ margin: 0, fontSize: "0.73rem", color: "#7f1d1d" }}>{errorMsg}</p>
             <button
               onClick={fetchProducts}
-              style={{ marginTop: "12px", padding: "6px 12px", backgroundColor: "#991b1b", color: "#fff", border: "none", borderRadius: "6px", fontSize: "0.72rem", cursor: "pointer" }}
+              style={{ marginTop: "10px", padding: "5px 10px", backgroundColor: "#991b1b", color: "#fff", border: "none", borderRadius: "4px", fontSize: "0.7rem", cursor: "pointer" }}
             >
-              🔄 Reintentar Conexión BD
+              Reintentar Conexión
             </button>
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div style={{ padding: "40px 20px", textAlign: "center", backgroundColor: "#f8fafc", borderRadius: "10px", border: "1px dashed #cbd5e1", color: "#64748b" }}>
-            <ShoppingBag01Icon size={32} color="#cbd5e1" style={{ margin: "0 auto 10px auto", display: "block" }} />
-            <p style={{ fontSize: "0.85rem", margin: "0 0 10px 0" }}>No existen productos guardados en la Base de Datos.</p>
+          <div style={{ padding: "32px 16px", textAlign: "center", backgroundColor: "#f8fafc", borderRadius: "8px", border: "1px dashed #cbd5e1", color: "#64748b" }}>
+            <ShoppingBag01Icon size={28} color="#cbd5e1" style={{ margin: "0 auto 8px auto", display: "block" }} />
+            <p style={{ fontSize: "0.8rem", margin: "0 0 8px 0" }}>No hay productos para mostrar.</p>
             <button
               onClick={() => setIsAddModalOpen(true)}
-              style={{ padding: "6px 14px", backgroundColor: "#0f172a", color: "#fff", border: "none", borderRadius: "6px", fontSize: "0.72rem", fontWeight: "600", cursor: "pointer" }}
+              style={{ padding: "5px 12px", backgroundColor: "#0f172a", color: "#fff", border: "none", borderRadius: "6px", fontSize: "0.72rem", fontWeight: "600", cursor: "pointer" }}
             >
-              + Registrar Producto en Base de Datos
+              + Registrar Producto
             </button>
           </div>
         ) : (
-          <div style={{ border: "1px solid #e2e8f0", borderRadius: "10px", overflow: "hidden" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.76rem" }}>
+          <div style={{ border: "1px solid #e2e8f0", borderRadius: "8px", overflow: "hidden" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.74rem" }}>
               <thead>
                 <tr style={{ backgroundColor: "#f8fafc", borderBottom: "1px solid #e2e8f0", textAlign: "left" }}>
-                  <th style={thStyle}>IMAGEN</th>
-                  <th style={thStyle}>PRODUCTO & SKU (5D)</th>
-                  <th style={thStyle}>UNIDADES / SERIES</th>
-                  <th style={thStyle}>P. COMPRA PROVEEDOR</th>
-                  <th style={thStyle}>MARGEN GANANCIA (%)</th>
+                  <th style={{ ...thStyle, width: "42px" }}></th>
+                  <th style={thStyle}>PRODUCTO</th>
+                  <th style={{ ...thStyle, textAlign: "center", width: "90px" }}>STOCK</th>
+                  <th style={thStyle}>P. COMPRA</th>
+                  <th style={thStyle}>MARGEN</th>
                   <th style={thStyle}>P. VENTA MÍN.</th>
                   <th style={thStyle}>P. VENTA MÁX.</th>
                   <th style={{ ...thStyle, textAlign: "right" }}>ACCIONES</th>
@@ -477,15 +477,15 @@ export default function ProductosAdminPage() {
 
                   return (
                     <tr key={prod.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                      {/* PRODUCT THUMBNAIL IMAGE */}
-                      <td style={{ ...tdStyle, width: "50px" }}>
+                      {/* THUMBNAIL */}
+                      <td style={{ ...tdStyle, padding: "8px 6px 8px 10px" }}>
                         <div style={{
-                          width: "44px",
-                          height: "44px",
-                          borderRadius: "8px",
+                          width: "34px",
+                          height: "34px",
+                          borderRadius: "6px",
                           backgroundColor: "#f8fafc",
                           overflow: "hidden",
-                          border: "1px solid #cbd5e1",
+                          border: "1px solid #e2e8f0",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center"
@@ -493,93 +493,83 @@ export default function ProductosAdminPage() {
                           {prod.img ? (
                             <img src={prod.img} alt={prod.nombre} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                           ) : (
-                            <Image01Icon size={20} color="#94a3b8" />
+                            <Image01Icon size={16} color="#94a3b8" />
                           )}
                         </div>
                       </td>
 
-                      {/* PRODUCTO & CÓDIGO SKU 5D */}
-                      <td style={tdStyle}>
+                      {/* PRODUCTO & SKU */}
+                      <td style={{ ...tdStyle, padding: "8px 10px" }}>
                         <div>
-                          <strong style={{ color: "#0f172a", fontSize: "0.84rem" }}>{prod.nombre}</strong>
-                          {prod.descripcion && (
-                            <p style={{ margin: "2px 0 0 0", fontSize: "0.66rem", color: "#64748b", display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                              {prod.descripcion}
-                            </p>
-                          )}
-                          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "3px" }}>
+                          <span style={{ color: "#0f172a", fontWeight: "600", fontSize: "0.78rem" }}>{prod.nombre}</span>
+                          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "1px" }}>
                             {prod.sku && (
-                              <span style={{ fontSize: "0.64rem", fontWeight: "800", backgroundColor: "#e2e8f0", color: "#0f172a", padding: "1px 6px", borderRadius: "4px", fontFamily: "monospace" }}>
-                                SKU: {prod.sku}
+                              <span style={{ fontSize: "0.62rem", fontWeight: "700", color: "#475569", backgroundColor: "#f1f5f9", padding: "0px 4px", borderRadius: "3px", fontFamily: "monospace" }}>
+                                {prod.sku}
                               </span>
                             )}
-                            <span style={{ fontSize: "0.62rem", color: "#64748b" }}>
+                            <span style={{ fontSize: "0.64rem", color: "#64748b" }}>
                               {prod.categoriaNombre || prod.categoria || "General"}
                             </span>
                           </div>
                         </div>
                       </td>
 
-                      {/* STOCK Y VER SERIES INDIVIDUALES */}
-                      <td style={tdStyle}>
+                      {/* STOCK: SOLO LA CANTIDAD NUMÉRICA */}
+                      <td style={{ ...tdStyle, textAlign: "center", padding: "8px 10px" }}>
                         <button
                           type="button"
                           onClick={() => setViewUnitsProduct(prod)}
+                          title="Ver detalle de series"
                           style={{
-                            padding: "4px 8px",
-                            backgroundColor: totalStock > 0 ? "#eff6ff" : "#fef2f2",
-                            border: totalStock > 0 ? "1px solid #bfdbfe" : "1px solid #fecaca",
-                            borderRadius: "6px",
-                            fontSize: "0.7rem",
+                            padding: "2px 8px",
+                            backgroundColor: totalStock > 0 ? "#f0fdf4" : "#fef2f2",
+                            border: totalStock > 0 ? "1px solid #bbf7d0" : "1px solid #fecaca",
+                            borderRadius: "10px",
+                            fontSize: "0.72rem",
                             fontWeight: "700",
-                            color: totalStock > 0 ? "#1d4ed8" : "#dc2626",
+                            color: totalStock > 0 ? "#166534" : "#dc2626",
                             cursor: "pointer",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "4px"
+                            minWidth: "32px",
+                            display: "inline-block"
                           }}
                         >
-                          📦 {totalStock} Unidades (Series 5D)
+                          {totalStock}
                         </button>
                       </td>
 
-                      {/* P. COMPRA PROVEEDOR */}
-                      <td style={tdStyle}>
-                        <strong style={{ fontSize: "0.84rem", color: "#0f172a" }}>
-                          S/ {costoCompra.toFixed(2)}
-                        </strong>
+                      {/* P. COMPRA */}
+                      <td style={{ ...tdStyle, padding: "8px 10px", color: "#334155" }}>
+                        S/ {costoCompra.toFixed(2)}
                       </td>
 
-                      {/* MARGEN DE GANANCIA PORCENTAJE (MIN % / MAX %) */}
-                      <td style={tdStyle}>
-                        <div style={{ display: "inline-flex", alignItems: "center", gap: "4px", backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0", padding: "3px 8px", borderRadius: "6px" }}>
-                          <AnalyticsUpIcon size={13} color="#15803d" />
-                          <span style={{ fontSize: "0.72rem", fontWeight: "800", color: "#166534" }}>
-                            {marginMin}% a {marginMax}%
-                          </span>
-                        </div>
+                      {/* MARGEN */}
+                      <td style={{ ...tdStyle, padding: "8px 10px" }}>
+                        <span style={{ fontSize: "0.7rem", fontWeight: "600", color: "#166534", backgroundColor: "#f0fdf4", padding: "1px 6px", borderRadius: "4px" }}>
+                          {marginMin}% - {marginMax}%
+                        </span>
                       </td>
 
-                      {/* P. VENTA MÍNIMO CALCULADO */}
-                      <td style={{ ...tdStyle, fontWeight: "700", color: "#15803d", fontSize: "0.84rem" }}>
+                      {/* P. VENTA MÍN. */}
+                      <td style={{ ...tdStyle, padding: "8px 10px", fontWeight: "600", color: "#15803d" }}>
                         S/ {vMin.toFixed(2)}
                       </td>
 
-                      {/* P. VENTA MÁXIMO CALCULADO */}
-                      <td style={{ ...tdStyle, fontWeight: "800", color: "#166534", fontSize: "0.86rem" }}>
+                      {/* P. VENTA MÁX. */}
+                      <td style={{ ...tdStyle, padding: "8px 10px", fontWeight: "700", color: "#166534" }}>
                         S/ {vMax.toFixed(2)}
                       </td>
 
                       {/* ACCIONES */}
-                      <td style={{ ...tdStyle, textAlign: "right" }}>
-                        <div style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                      <td style={{ ...tdStyle, textAlign: "right", padding: "8px 10px" }}>
+                        <div style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
                           <button
                             type="button"
                             onClick={() => handleOpenEdit(prod)}
                             title="Editar Producto"
                             style={actionBtnStyle}
                           >
-                            <Edit01Icon size={14} color="#0284c7" /> Editar
+                            <Edit01Icon size={13} color="#0284c7" /> Editar
                           </button>
 
                           <button
@@ -589,11 +579,11 @@ export default function ProductosAdminPage() {
                             style={{
                               ...actionBtnStyle,
                               color: "#dc2626",
-                              borderColor: "#fca5a5",
+                              borderColor: "#fecaca",
                               backgroundColor: "#fef2f2"
                             }}
                           >
-                            <ViewOffIcon size={14} color="#dc2626" /> Desactivar
+                            <ViewOffIcon size={13} color="#dc2626" /> Desactivar
                           </button>
                         </div>
                       </td>
@@ -713,10 +703,20 @@ export default function ProductosAdminPage() {
                   ℹ️ El <strong>SKU único de 5 dígitos</strong> (ej. 23212) será asignado automáticamente por el backend. Las <strong>unidades físicas y series de 5 dígitos</strong> se generarán únicamente cuando registres una compra/ingreso de mercadería.
                 </div>
 
-                {/* COST PRICE INPUT */}
+                {/* READ-ONLY COST PRICE INPUT */}
                 <div>
-                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Precio Compra Proveedor (S/)</label>
-                  <input type="number" step="0.10" required value={costoCompraInput} onChange={(e) => setCostoCompraInput(e.target.value)} style={inputStyle} />
+                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
+                    Precio Compra Proveedor (Auto-asignado en Compras)
+                  </label>
+                  <input
+                    type="text"
+                    readOnly
+                    value={`S/ ${parseFloat(costoCompraInput || "0").toFixed(2)} (🔒 Se actualiza con compras)`}
+                    style={{ ...inputStyle, backgroundColor: "#f1f5f9", color: "#64748b", fontWeight: "700", cursor: "not-allowed" }}
+                  />
+                  <span style={{ fontSize: "0.62rem", color: "#64748b", marginTop: "2px", display: "block" }}>
+                    ℹ️ El costo de compra se actualizará automáticamente en la BD al registrar la primera compra al proveedor.
+                  </span>
                 </div>
 
                 {/* PERCENTAGE GAIN MARGIN INPUTS */}
@@ -1357,15 +1357,17 @@ const actionBtnStyle: React.CSSProperties = {
 };
 
 const thStyle: React.CSSProperties = {
-  padding: "10px 12px",
-  fontSize: "0.65rem",
+  padding: "8px 10px",
+  fontSize: "0.64rem",
   fontWeight: "700",
-  color: "#475569",
-  letterSpacing: "0.5px"
+  color: "#64748b",
+  letterSpacing: "0.04em",
+  textTransform: "uppercase"
 };
 
 const tdStyle: React.CSSProperties = {
-  padding: "12px",
-  fontSize: "0.76rem",
-  color: "#0f172a"
+  padding: "8px 10px",
+  fontSize: "0.74rem",
+  color: "#0f172a",
+  verticalAlign: "middle"
 };
