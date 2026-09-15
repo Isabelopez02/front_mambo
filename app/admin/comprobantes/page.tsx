@@ -2,15 +2,17 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import {
     Search01Icon,
     CheckmarkBadge01Icon,
     FilterIcon,
     Download01Icon,
     Add01Icon,
-
+    Cancel01Icon,
     File01Icon,
-    PrinterIcon
+    PrinterIcon,
+    SmartPhone01Icon
 } from "hugeicons-react";
 
 interface ComprobanteItem {
@@ -76,6 +78,8 @@ export default function ComprobantesPage() {
 
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedTipoFilter, setSelectedTipoFilter] = useState("TODOS");
+
+    const [viewingComprobante, setViewingComprobante] = useState<ComprobanteItem | null>(null);
 
     const filteredComprobantes = comprobantes.filter(c => {
         const matchesSearch =
@@ -317,20 +321,11 @@ export default function ComprobantesPage() {
                                                 <div style={{ display: "inline-flex", gap: "4px" }}>
                                                     <button
                                                         type="button"
-                                                        title="Descargar PDF"
-                                                        onClick={() => alert(`Descargando PDF ${item.serieNumero}`)}
+                                                        title="Ver Comprobante"
+                                                        onClick={() => setViewingComprobante(item)}
                                                         style={actionBtnStyle}
                                                     >
-                                                        <File01Icon size={13} color="#0284c7" /> PDF
-                                                    </button>
-
-                                                    <button
-                                                        type="button"
-                                                        title="Imprimir Ticket"
-                                                        onClick={() => alert(`Imprimiendo ticket ${item.serieNumero}`)}
-                                                        style={actionBtnStyle}
-                                                    >
-                                                        <PrinterIcon size={13} color="#334155" /> Imprimir
+                                                        <File01Icon size={13} color="#0f172a" /> Ver Comprobante
                                                     </button>
                                                 </div>
                                             </td>
@@ -343,6 +338,88 @@ export default function ComprobantesPage() {
                     </div>
                 )}
             </div>
+
+            {/* MODAL: VER COMPROBANTE */}
+            <AnimatePresence>
+                {viewingComprobante && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setViewingComprobante(null)}
+                            style={{ position: "fixed", inset: 0, backgroundColor: "rgba(15, 23, 42, 0.5)", zIndex: 1100, backdropFilter: "blur(2px)" }}
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.92, y: "-50%", x: "-50%" }}
+                            animate={{ opacity: 1, scale: 1, y: "-50%", x: "-50%" }}
+                            exit={{ opacity: 0, scale: 0.92, y: "-50%", x: "-50%" }}
+                            style={{
+                                position: "fixed",
+                                top: "50%",
+                                left: "50%",
+                                width: "90%",
+                                maxWidth: "420px",
+                                backgroundColor: "#ffffff",
+                                borderRadius: "16px",
+                                padding: "24px",
+                                zIndex: 1101,
+                                boxShadow: "0 20px 40px rgba(0,0,0,0.25)",
+                                border: "1px solid #e2e8f0"
+                            }}
+                        >
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid #f1f5f9", paddingBottom: "10px" }}>
+                                <div>
+                                    <h3 style={{ fontSize: "1.1rem", fontWeight: "700", color: "#0f172a", margin: "0 0 2px 0" }}>
+                                        {viewingComprobante.tipo} {viewingComprobante.serieNumero}
+                                    </h3>
+                                    <span style={{ fontSize: "0.68rem", color: "#64748b" }}>Emitido: {new Date(viewingComprobante.fechaEmision).toLocaleString("es-PE")}</span>
+                                </div>
+                                <button onClick={() => setViewingComprobante(null)} style={{ background: "none", border: "none", cursor: "pointer" }}>
+                                    <Cancel01Icon size={18} color="#0f172a" />
+                                </button>
+                            </div>
+
+                            <div style={{ backgroundColor: "#f8fafc", padding: "16px", borderRadius: "10px", border: "1px solid #e2e8f0", marginBottom: "20px" }}>
+                                <div style={{ marginBottom: "12px" }}>
+                                    <span style={{ fontSize: "0.65rem", fontWeight: "700", color: "#64748b", textTransform: "uppercase", display: "block" }}>Cliente</span>
+                                    <span style={{ fontSize: "0.85rem", fontWeight: "600", color: "#0f172a", display: "block" }}>{viewingComprobante.clienteNombre}</span>
+                                    <span style={{ fontSize: "0.75rem", color: "#334155" }}>{viewingComprobante.tipoDoc}: {viewingComprobante.clienteNumDoc}</span>
+                                </div>
+                                
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: "12px", borderTop: "1px dashed #cbd5e1" }}>
+                                    <span style={{ fontSize: "0.75rem", fontWeight: "700", color: "#0f172a", textTransform: "uppercase" }}>Total Pagado</span>
+                                    <span style={{ fontSize: "1.2rem", fontWeight: "800", color: "#059669" }}>S/ {viewingComprobante.montoTotal.toFixed(2)}</span>
+                                </div>
+                            </div>
+
+                            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                                <button
+                                    onClick={() => alert(`Descargando PDF ${viewingComprobante.serieNumero}`)}
+                                    style={{ width: "100%", padding: "10px", backgroundColor: "#0284c7", color: "#ffffff", border: "none", borderRadius: "8px", fontSize: "0.78rem", fontWeight: "600", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
+                                >
+                                    <Download01Icon size={16} /> Descargar PDF
+                                </button>
+                                <div style={{ display: "flex", gap: "10px" }}>
+                                    <button
+                                        onClick={() => alert(`Enviando a WhatsApp ${viewingComprobante.serieNumero}`)}
+                                        style={{ flex: 1, padding: "10px", backgroundColor: "#25D366", color: "#ffffff", border: "none", borderRadius: "8px", fontSize: "0.78rem", fontWeight: "600", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
+                                    >
+                                        <SmartPhone01Icon size={16} /> WhatsApp
+                                    </button>
+                                    <button
+                                        onClick={() => alert(`Imprimiendo ${viewingComprobante.serieNumero}`)}
+                                        style={{ flex: 1, padding: "10px", backgroundColor: "#334155", color: "#ffffff", border: "none", borderRadius: "8px", fontSize: "0.78rem", fontWeight: "600", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
+                                    >
+                                        <PrinterIcon size={16} /> Imprimir
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
+
         </div>
     );
 }

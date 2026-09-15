@@ -427,7 +427,7 @@ export default function ConductoresAdminPage() {
         )}
       </AnimatePresence>
 
-      {/* DELETE CONFIRMATION MODAL */}
+      {/* CONFIRMACION ELIMINAR */}
       <AnimatePresence>
         {deletingConductor && (
           <>
@@ -439,32 +439,43 @@ export default function ConductoresAdminPage() {
               style={{ position: "fixed", inset: 0, backgroundColor: "rgba(15, 23, 42, 0.5)", zIndex: 1100, backdropFilter: "blur(2px)" }}
             />
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.92, y: "-50%", x: "-50%" }}
+              animate={{ opacity: 1, scale: 1, y: "-50%", x: "-50%" }}
+              exit={{ opacity: 0, scale: 0.92, y: "-50%", x: "-50%" }}
               style={{
                 position: "fixed",
                 top: "50%",
                 left: "50%",
-                transform: "translate(-50%, -50%)",
-                backgroundColor: "#fff",
-                borderRadius: "12px",
-                padding: "24px",
-                zIndex: 1101,
                 width: "90%",
                 maxWidth: "360px",
-                boxShadow: "0 20px 40px rgba(0,0,0,0.2)"
+                backgroundColor: "#ffffff",
+                borderRadius: "16px",
+                padding: "24px",
+                zIndex: 1101,
+                boxShadow: "0 20px 40px rgba(0,0,0,0.25)",
+                border: "1px solid #e2e8f0",
+                textAlign: "center"
               }}
             >
-              <h3 style={{ marginTop: 0, fontSize: "1rem", color: "#0f172a" }}>Confirmar Eliminación</h3>
-              <p style={{ fontSize: "0.8rem", color: "#475569" }}>
-                ¿Estás seguro de que deseas eliminar al conductor <strong>{deletingConductor.nombre}</strong>?
+              <div style={{ width: "48px", height: "48px", backgroundColor: "#fef2f2", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px auto" }}>
+                <ViewOffIcon size={24} color="#dc2626" />
+              </div>
+              <h3 style={{ fontSize: "1.1rem", fontWeight: "700", color: "#0f172a", margin: "0 0 8px 0" }}>¿Eliminar Conductor?</h3>
+              <p style={{ fontSize: "0.8rem", color: "#64748b", margin: "0 0 20px 0" }}>
+                Estás a punto de eliminar al conductor <strong>{deletingConductor.nombre}</strong>. Esta acción no se puede deshacer.
               </p>
-              <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "20px" }}>
-                <button onClick={() => setDeletingConductor(null)} style={{ padding: "6px 12px", border: "1px solid #cbd5e1", backgroundColor: "#fff", borderRadius: "6px", cursor: "pointer", fontSize: "0.75rem" }}>
+              
+              <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
+                <button
+                  onClick={() => setDeletingConductor(null)}
+                  style={{ padding: "8px 16px", backgroundColor: "#f1f5f9", color: "#475569", border: "none", borderRadius: "8px", fontSize: "0.8rem", fontWeight: "600", cursor: "pointer", flex: 1 }}
+                >
                   Cancelar
                 </button>
-                <button onClick={handleConfirmDelete} style={{ padding: "6px 12px", border: "none", backgroundColor: "#dc2626", color: "#fff", borderRadius: "6px", cursor: "pointer", fontSize: "0.75rem", fontWeight: "600" }}>
+                <button
+                  onClick={handleConfirmDelete}
+                  style={{ padding: "8px 16px", backgroundColor: "#dc2626", color: "#ffffff", border: "none", borderRadius: "8px", fontSize: "0.8rem", fontWeight: "600", cursor: "pointer", flex: 1 }}
+                >
                   Eliminar
                 </button>
               </div>

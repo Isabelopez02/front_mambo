@@ -63,7 +63,6 @@ export default function CrearComprobantePage() {
   const [selectedProduct, setSelectedProduct] = useState<ProductoDTO | null>(null);
 
   const [precioEstimadoInput, setPrecioEstimadoInput] = useState<string>("");
-  const [cantidadInput, setCantidadInput] = useState<number>(1);
   const [fechaVentaInput, setFechaVentaInput] = useState<string>(
     new Date().toISOString().split("T")[0]
   );
@@ -138,16 +137,34 @@ export default function CrearComprobantePage() {
   // Sync inputs when typing in Codigo Search (using first 5 digits)
   const handleSearchCodigoChange = (val: string) => {
     setSearchCodigoInput(val);
+    if (!val.trim()) {
+      setSearchNombreInput("");
+      setSelectedProduct(null);
+      setPrecioEstimadoInput("");
+      return;
+    }
     const skuBusqueda = val.substring(0, 5).toLowerCase();
     const found = dbProducts.find(p => (p.sku || "").toLowerCase() === skuBusqueda);
-    if (found) handleSelectProduct(found);
+    if (found) {
+      handleSelectProduct(found);
+      setSearchNombreInput(found.nombre || "");
+    }
   };
 
   // Sync inputs when typing in Nombre Search
   const handleSearchNombreChange = (val: string) => {
     setSearchNombreInput(val);
+    if (!val.trim()) {
+      setSearchCodigoInput("");
+      setSelectedProduct(null);
+      setPrecioEstimadoInput("");
+      return;
+    }
     const found = dbProducts.find(p => p.nombre.toLowerCase() === val.trim().toLowerCase());
-    if (found) handleSelectProduct(found);
+    if (found) {
+      handleSelectProduct(found);
+      setSearchCodigoInput(found.sku || "");
+    }
   };
 
   // AGREGAR AL DETALLE (PARTE IZQUIERDA)
@@ -158,25 +175,41 @@ export default function CrearComprobantePage() {
     }
 
     const precioVentaNum = parseFloat(precioEstimadoInput) || productPriceBounds.min;
+    
+    // Auto-increment si existe el mismo SKU
+    const existingIndex = itemsDetalle.findIndex(item => item.sku === (selectedProduct.sku || "AUTO"));
+    
+    if (existingIndex >= 0) {
+      setItemsDetalle(prev => {
+        const newItems = [...prev];
+        newItems[existingIndex] = {
+          ...newItems[existingIndex],
+          cantidad: newItems[existingIndex].cantidad + 1,
+          codigoEscaneado: searchCodigoInput.trim() || newItems[existingIndex].codigoEscaneado // opcional, registrar el ultimo scan
+        };
+        return newItems;
+      });
+    } else {
+      const newItem: ItemDetalleComprobante = {
+        idTemp: `${selectedProduct.id}-${Date.now()}`,
+        productoId: selectedProduct.id,
+        nombre: selectedProduct.nombre,
+        sku: selectedProduct.sku || "AUTO",
+        codigoEscaneado: searchCodigoInput.trim() || selectedProduct.sku || "AUTO", // GUARDAR EL CÓDIGO COMPLETO
+        cantidad: 1, // Por defecto siempre es 1 en cada inserción
+        precioUnitario: precioVentaNum,
+        precioMin: productPriceBounds.min,
+        precioMax: productPriceBounds.max,
+        fechaVenta: fechaVentaInput || new Date().toISOString().split("T")[0]
+      };
+      setItemsDetalle(prev => [...prev, newItem]);
+    }
 
-    const newItem: ItemDetalleComprobante = {
-      idTemp: `${selectedProduct.id}-${Date.now()}`,
-      productoId: selectedProduct.id,
-      nombre: selectedProduct.nombre,
-      sku: selectedProduct.sku || "AUTO",
-      codigoEscaneado: searchCodigoInput.trim() || selectedProduct.sku || "AUTO", // GUARDAR EL CÓDIGO COMPLETO
-      cantidad: Math.max(1, cantidadInput),
-      precioUnitario: precioVentaNum,
-      precioMin: productPriceBounds.min,
-      precioMax: productPriceBounds.max,
-      fechaVenta: fechaVentaInput || new Date().toISOString().split("T")[0]
-    };
-
-    setItemsDetalle(prev => [...prev, newItem]);
-
-    // Reset temporal
-    setCantidadInput(1);
-    setSearchCodigoInput(""); // Limpiar código escaneado para el próximo
+    // Reset temporal de inputs
+    setSearchCodigoInput("");
+    setSearchNombreInput("");
+    setSelectedProduct(null);
+    setPrecioEstimadoInput("");
   };
 
   // CONTROLES DE LA TABLA DE DETALLE (PARTE IZQUIERDA)
@@ -251,11 +284,25 @@ export default function CrearComprobantePage() {
           </button>
 
           <h1 style={{ fontSize: "1.15rem", fontWeight: "700", color: "#0f172a", margin: 0, letterSpacing: "-0.01em" }}>
-            Emitir Nuevo Comprobante Electrónico
+            Emitir Nuevo Comprobante
           </h1>
           <p style={{ fontSize: "0.74rem", color: "#64748b", margin: "2px 0 0 0" }}>
             Selección de productos con validación de precios límite y emisión a SUNAT
           </p>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", backgroundColor: "#f8fafc", padding: "8px 12px", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
+          <Calendar01Icon size={18} color="#475569" />
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <label style={{ fontSize: "0.6rem", fontWeight: "700", color: "#64748b", textTransform: "uppercase" }}>Fecha Venta</label>
+            <input
+              type="date"
+              required
+              value={fechaVentaInput}
+              onChange={(e) => setFechaVentaInput(e.target.value)}
+              style={{ border: "none", background: "transparent", fontSize: "0.8rem", fontWeight: "600", color: "#0f172a", outline: "none", padding: 0 }}
+            />
+          </div>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -306,6 +353,76 @@ export default function CrearComprobantePage() {
         {/* PARTE IZQUIERDA: LISTA Y DETALLE DE PRODUCTOS DEL COMPROBANTE  */}
         {/* ============================================================== */}
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          {/* DATOS DE FACTURACIÓN Y CLIENTE */}
+          <div style={{
+            backgroundColor: "#ffffff",
+            borderRadius: "12px",
+            padding: "16px",
+            border: "1px solid #e2e8f0",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.02)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "12px"
+          }}>
+            <h3 style={{ fontSize: "0.82rem", fontWeight: "700", color: "#0f172a", margin: 0, display: "flex", alignItems: "center", gap: "6px" }}>
+              <User02Icon size={15} color="#0f172a" /> Datos del Cliente & Comprobante
+            </h3>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px" }}>
+              <div>
+                <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
+                  Tipo Comprobante
+                </label>
+                <select
+                  value={tipoComprobante}
+                  onChange={(e) => setTipoComprobante(e.target.value as "BOLETA" | "FACTURA")}
+                  style={inputStyle}
+                >
+                  <option value="BOLETA">Boleta Electrónica</option>
+                  <option value="FACTURA">Factura Electrónica</option>
+                </select>
+              </div>
+
+              <div style={{ gridColumn: "span 2" }}>
+                <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
+                  Cliente Asignado
+                </label>
+                {clienteNombre ? (
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", backgroundColor: "#f8fafc", border: "1px solid #cbd5e1", borderRadius: "6px", padding: "8px 12px" }}>
+                    <div>
+                      <strong style={{ fontSize: "0.75rem", color: "#0f172a", display: "block" }}>{clienteNombre}</strong>
+                      <span style={{ fontSize: "0.65rem", color: "#64748b" }}>Doc: {clienteDoc}</span>
+                    </div>
+                    <button type="button" onClick={() => setIsClienteModalOpen(true)} style={{ background: "none", border: "none", color: "#0284c7", fontSize: "0.7rem", fontWeight: "700", cursor: "pointer" }}>
+                      Cambiar
+                    </button>
+                  </div>
+                ) : (
+                  <button 
+                    type="button" 
+                    onClick={() => setIsClienteModalOpen(true)} 
+                    style={{ 
+                      width: "100%", 
+                      padding: "10px", 
+                      backgroundColor: "#f1f5f9", 
+                      color: "#334155", 
+                      border: "1px dashed #94a3b8", 
+                      borderRadius: "6px", 
+                      fontSize: "0.75rem", 
+                      fontWeight: "700", 
+                      cursor: "pointer", 
+                      display: "flex", 
+                      alignItems: "center", 
+                      justifyContent: "center", 
+                      gap: "6px" 
+                    }}
+                  >
+                    <Search01Icon size={16} /> Seleccionar o Agregar Cliente
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
           
           <div style={{
             backgroundColor: "#ffffff",
@@ -438,76 +555,6 @@ export default function CrearComprobantePage() {
 
           </div>
 
-          {/* DATOS DE FACTURACIÓN Y CLIENTE */}
-          <div style={{
-            backgroundColor: "#ffffff",
-            borderRadius: "12px",
-            padding: "16px",
-            border: "1px solid #e2e8f0",
-            boxShadow: "0 1px 2px rgba(0,0,0,0.02)",
-            display: "flex",
-            flexDirection: "column",
-            gap: "12px"
-          }}>
-            <h3 style={{ fontSize: "0.82rem", fontWeight: "700", color: "#0f172a", margin: 0, display: "flex", alignItems: "center", gap: "6px" }}>
-              <User02Icon size={15} color="#0f172a" /> Datos del Cliente & Comprobante
-            </h3>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px" }}>
-              <div>
-                <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
-                  Tipo Comprobante
-                </label>
-                <select
-                  value={tipoComprobante}
-                  onChange={(e) => setTipoComprobante(e.target.value as "BOLETA" | "FACTURA")}
-                  style={inputStyle}
-                >
-                  <option value="BOLETA">Boleta Electrónica</option>
-                  <option value="FACTURA">Factura Electrónica</option>
-                </select>
-              </div>
-
-              <div style={{ gridColumn: "span 2" }}>
-                <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
-                  Cliente Asignado
-                </label>
-                {clienteNombre ? (
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", backgroundColor: "#f8fafc", border: "1px solid #cbd5e1", borderRadius: "6px", padding: "8px 12px" }}>
-                    <div>
-                      <strong style={{ fontSize: "0.75rem", color: "#0f172a", display: "block" }}>{clienteNombre}</strong>
-                      <span style={{ fontSize: "0.65rem", color: "#64748b" }}>Doc: {clienteDoc}</span>
-                    </div>
-                    <button type="button" onClick={() => setIsClienteModalOpen(true)} style={{ background: "none", border: "none", color: "#0284c7", fontSize: "0.7rem", fontWeight: "700", cursor: "pointer" }}>
-                      Cambiar
-                    </button>
-                  </div>
-                ) : (
-                  <button 
-                    type="button" 
-                    onClick={() => setIsClienteModalOpen(true)} 
-                    style={{ 
-                      width: "100%", 
-                      padding: "10px", 
-                      backgroundColor: "#f1f5f9", 
-                      color: "#334155", 
-                      border: "1px dashed #94a3b8", 
-                      borderRadius: "6px", 
-                      fontSize: "0.75rem", 
-                      fontWeight: "700", 
-                      cursor: "pointer", 
-                      display: "flex", 
-                      alignItems: "center", 
-                      justifyContent: "center", 
-                      gap: "6px" 
-                    }}
-                  >
-                    <Search01Icon size={16} /> Seleccionar o Agregar Cliente
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
 
         </div>
 
@@ -666,35 +713,7 @@ export default function CrearComprobantePage() {
               )}
             </div>
 
-            {/* CANTIDAD & FECHA DE VENTA EN EL FORMULARIO DE AGREGAR */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1.2fr", gap: "10px" }}>
-              <div>
-                <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
-                  Cantidad
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  required
-                  value={cantidadInput}
-                  onChange={(e) => setCantidadInput(parseInt(e.target.value) || 1)}
-                  style={inputStyle}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
-                  Fecha de Venta
-                </label>
-                <input
-                  type="date"
-                  required
-                  value={fechaVentaInput}
-                  onChange={(e) => setFechaVentaInput(e.target.value)}
-                  style={inputStyle}
-                />
-              </div>
-            </div>
+            {/* CANTIDAD Y FECHA REMOVIDOS DE AQUÍ */}
 
             {/* BOTÓN DE AGREGAR AL DETALLE */}
             <button
