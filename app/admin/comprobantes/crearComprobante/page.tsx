@@ -26,10 +26,10 @@ import { motion, AnimatePresence } from "framer-motion";
 
 interface ItemDetalleComprobante {
   idTemp: string;
-  productoId?: string | number;
+  productoId: number | string;
   nombre: string;
   sku: string; // Generic SKU (5 digits)
-  codigoEscaneado: string; // Full scanned code for exact physical unit
+  codigosEscaneados: string[]; // Arreglo para guardar múltiples series
   cantidad: number;
   precioUnitario: number; // Precio manual elegido
   precioMin: number;
@@ -50,6 +50,9 @@ export default function CrearComprobantePage() {
   const [tipoComprobante, setTipoComprobante] = useState<"BOLETA" | "FACTURA">("BOLETA");
   const [clienteNombre, setClienteNombre] = useState("");
   const [clienteDoc, setClienteDoc] = useState("");
+  const [tipoEnvio, setTipoEnvio] = useState<"ENTREGA DIRECTA" | "A DOMICILIO">("ENTREGA DIRECTA");
+  const [fechaEntrega, setFechaEntrega] = useState<string>("");
+  const [tipoPago, setTipoPago] = useState<"EFECTIVO" | "TRANSFERENCIA" | "TARJETA">("EFECTIVO");
 
   // ESTADOS PARA MODAL DE CLIENTES
   const [dbClientes, setDbClientes] = useState<ClienteDTO[]>([]);
@@ -169,10 +172,54 @@ export default function CrearComprobantePage() {
   };
 
   // AGREGAR AL DETALLE (PARTE IZQUIERDA)
-  const handleAgregarAlComprobante = () => {
+  const handleAgregarAlComprobante = async () => {
     if (!selectedProduct) {
       alert("Selecciona un producto válido.");
       return;
+    }
+
+    const code = searchCodigoInput.trim();
+    // Validar en la base de datos si escaneó un código unitario real (distinto al SKU genérico)
+    if (code && code !== selectedProduct.sku) {
+      // 1. Validar que los primeros 5 dígitos correspondan al producto seleccionado
+      if (code.length === 10) {
+        const scannedSku = code.substring(0, 5);
+        if (scannedSku !== selectedProduct.sku) {
+          alert(`❌ Error: El código escaneado no pertenece al producto seleccionado. (SKU escaneado: ${scannedSku}, esperado: ${selectedProduct.sku})`);
+          return;
+        }
+      }
+
+      const serieToSearch = code.length >= 10 ? code.substring(5) : code;
+      try {
+        const token = localStorage.getItem("admin_token") || "";
+        const res = await fetch(`http://localhost:8080/api/productos-unitarios/serie/${serieToSearch}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!res.ok) {
+          alert(`❌ Error: El código / serie escaneado (${code}) NO EXISTE en el inventario.`);
+          return; // Bloquea agregar al carrito
+        }
+        
+        const unitData = await res.json();
+        if (unitData.estado !== "DISPONIBLE") {
+          alert(`⚠️ Atención: Esta unidad ya figura como "${unitData.estado}" y no puede venderse nuevamente.`);
+          return; // Bloquea agregar al carrito
+        }
+        
+        // Evitar escanear el mismo código 2 veces en el mismo comprobante (en la UI actual)
+        const yaEscaneado = itemsDetalle.some(item => (item.codigosEscaneados || []).includes(code));
+        if (yaEscaneado) {
+          alert(`⚠️ Este código (${code}) ya ha sido agregado a este comprobante.`);
+          return;
+        }
+
+      } catch (err) {
+        console.error(err);
+        alert("Error de conexión validando el código del producto.");
+        return;
+      }
     }
 
     const precioVentaNum = parseFloat(precioEstimadoInput) || productPriceBounds.min;
@@ -183,20 +230,24 @@ export default function CrearComprobantePage() {
     if (existingIndex >= 0) {
       setItemsDetalle(prev => {
         const newItems = [...prev];
+        const prevCodigos = newItems[existingIndex].codigosEscaneados || [];
+        const newCode = searchCodigoInput.trim();
+        
         newItems[existingIndex] = {
           ...newItems[existingIndex],
           cantidad: newItems[existingIndex].cantidad + 1,
-          codigoEscaneado: searchCodigoInput.trim() || newItems[existingIndex].codigoEscaneado // opcional, registrar el ultimo scan
+          codigosEscaneados: newCode && newCode !== selectedProduct.sku && !prevCodigos.includes(newCode) ? [...prevCodigos, newCode] : prevCodigos
         };
         return newItems;
       });
     } else {
+      const initialCodes = (code && code !== selectedProduct.sku) ? [code] : [];
       const newItem: ItemDetalleComprobante = {
         idTemp: `${selectedProduct.id}-${Date.now()}`,
-        productoId: selectedProduct.id,
+        productoId: selectedProduct.id || 0,
         nombre: selectedProduct.nombre,
         sku: selectedProduct.sku || "AUTO",
-        codigoEscaneado: searchCodigoInput.trim() || selectedProduct.sku || "AUTO", // GUARDAR EL CÓDIGO COMPLETO
+        codigosEscaneados: initialCodes,
         cantidad: 1, // Por defecto siempre es 1 en cada inserción
         precioUnitario: precioVentaNum,
         precioMin: productPriceBounds.min,
@@ -259,12 +310,16 @@ export default function CrearComprobantePage() {
         clienteNumDoc: clienteDoc,
         tipoDoc: clienteDoc.length > 8 ? "RUC" : "DNI",
         montoTotal: grandTotal,
+        tipoEnvio: tipoEnvio,
+        fechaEntrega: tipoEnvio === "A DOMICILIO" ? fechaEntrega : "",
+        tipoPago: tipoPago,
         detalles: itemsDetalle.map(item => ({
+          productoId: Number(item.productoId) || 0,
           cantidad: item.cantidad,
           descripcion: item.nombre,
           precioUnitario: item.precioUnitario,
           subtotal: item.cantidad * item.precioUnitario,
-          series: item.codigoEscaneado !== "AUTO" ? [item.codigoEscaneado] : []
+          series: item.codigosEscaneados
         }))
       };
 
@@ -449,6 +504,54 @@ export default function CrearComprobantePage() {
                 )}
               </div>
             </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px", marginTop: "10px" }}>
+              {/* TIPO ENVIO */}
+              <div>
+                <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
+                  Modo de Entrega
+                </label>
+                <select
+                  value={tipoEnvio}
+                  onChange={(e) => setTipoEnvio(e.target.value as any)}
+                  style={inputStyle}
+                >
+                  <option value="ENTREGA DIRECTA">Entrega Directa / Tienda</option>
+                  <option value="A DOMICILIO">A Domicilio (Delivery)</option>
+                </select>
+              </div>
+
+              {/* FECHA ENTREGA */}
+              <div>
+                <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
+                  Fecha Entrega
+                </label>
+                <input
+                  type="date"
+                  value={fechaEntrega}
+                  onChange={(e) => setFechaEntrega(e.target.value)}
+                  disabled={tipoEnvio !== "A DOMICILIO"}
+                  style={{ ...inputStyle, opacity: tipoEnvio !== "A DOMICILIO" ? 0.5 : 1, cursor: tipoEnvio !== "A DOMICILIO" ? "not-allowed" : "text" }}
+                />
+              </div>
+
+              {/* TIPO PAGO */}
+              <div>
+                <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
+                  Tipo de Pago
+                </label>
+                <select
+                  value={tipoPago}
+                  onChange={(e) => setTipoPago(e.target.value as any)}
+                  style={inputStyle}
+                >
+                  <option value="EFECTIVO">Efectivo</option>
+                  <option value="TARJETA">Tarjeta (POS)</option>
+                  <option value="TRANSFERENCIA">Transferencia / Yape / Plin</option>
+                </select>
+              </div>
+            </div>
+
           </div>
           
           <div style={{
@@ -501,9 +604,17 @@ export default function CrearComprobantePage() {
                             <span style={{ fontSize: "0.62rem", color: "#64748b", fontFamily: "monospace", display: "block" }}>
                               SKU base: {item.sku}
                             </span>
-                            <span style={{ fontSize: "0.62rem", color: "#0f172a", fontFamily: "monospace", fontWeight: "600" }}>
-                              Cód. Registro: {item.codigoEscaneado}
-                            </span>
+                            <div style={{ marginTop: "2px" }}>
+                              {item.codigosEscaneados && item.codigosEscaneados.length > 0 ? (
+                                item.codigosEscaneados.map((codigo, idx) => (
+                                  <span key={idx} style={{ fontSize: "0.6rem", color: "#0f172a", fontFamily: "monospace", fontWeight: "600", display: "inline-block", backgroundColor: "#e2e8f0", padding: "1px 4px", borderRadius: "3px", marginRight: "3px", marginBottom: "3px" }}>
+                                    {codigo}
+                                  </span>
+                                ))
+                              ) : (
+                                <span style={{ fontSize: "0.6rem", color: "#94a3b8", fontStyle: "italic" }}>Sin código unitario</span>
+                              )}
+                            </div>
                           </div>
                         </td>
 

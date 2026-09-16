@@ -1,6 +1,7 @@
 import { apiClient } from "./apiClient";
 
 export interface ComprobanteDetalleReqDTO {
+    productoId?: number;
     cantidad: number;
     descripcion: string;
     precioUnitario: number;
@@ -14,6 +15,9 @@ export interface ComprobanteReqDTO {
     clienteNumDoc: string;
     tipoDoc: string;
     montoTotal: number;
+    tipoEnvio?: string;
+    fechaEntrega?: string;
+    tipoPago?: string;
     detalles: ComprobanteDetalleReqDTO[];
 }
 
@@ -25,6 +29,9 @@ export interface ComprobanteItem {
     clienteNumDoc: string;
     tipoDoc: "DNI" | "RUC";
     montoTotal: number;
+    tipoEnvio?: string;
+    fechaEntrega?: string;
+    tipoPago?: string;
     fechaEmision: string;
     estadoSunat: "ACEPTADO" | "RECHAZADO" | "PENDIENTE";
     detalles: {

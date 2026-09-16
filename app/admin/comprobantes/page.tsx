@@ -34,6 +34,9 @@ interface ComprobanteItem {
     montoTotal: number;
     fechaEmision: string;
     estadoSunat: "ACEPTADO" | "RECHAZADO" | "PENDIENTE";
+    tipoEnvio?: string;
+    fechaEntrega?: string;
+    tipoPago?: string;
     detalles: ComprobanteDetalle[];
 }
 
@@ -348,165 +351,380 @@ export default function ComprobantesPage() {
             </div>
 
             {/* MODAL: VER COMPROBANTE */}
-            <AnimatePresence>
-                {viewingComprobante && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setViewingComprobante(null)}
-                            style={{ position: "fixed", inset: 0, backgroundColor: "rgba(15, 23, 42, 0.5)", zIndex: 1100, backdropFilter: "blur(2px)" }}
-                        />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.92, y: "-50%", x: "-50%" }}
-                            animate={{ opacity: 1, scale: 1, y: "-50%", x: "-50%" }}
-                            exit={{ opacity: 0, scale: 0.92, y: "-50%", x: "-50%" }}
-                            style={{
-                                position: "fixed",
-                                top: "50%",
-                                left: "50%",
-                                width: "90%",
-                                maxWidth: "420px",
-                                backgroundColor: "#ffffff",
-                                borderRadius: "16px",
-                                padding: "24px",
-                                zIndex: 1101,
-                                boxShadow: "0 20px 40px rgba(0,0,0,0.25)",
-                                border: "1px solid #e2e8f0"
-                            }}
-                        >
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                                <h3 style={{ fontSize: "1.1rem", fontWeight: "700", color: "#0f172a", margin: 0 }}>Vista Previa de Documento</h3>
-                                <button onClick={() => setViewingComprobante(null)} style={{ background: "none", border: "none", cursor: "pointer" }}>
-                                    <Cancel01Icon size={18} color="#0f172a" />
-                                </button>
-                            </div>
+            {/* MODAL: VER COMPROBANTE */}
+<AnimatePresence>
+    {viewingComprobante && (
+        <>
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setViewingComprobante(null)}
+                style={{ position: "fixed", inset: 0, backgroundColor: "rgba(15, 23, 42, 0.6)", zIndex: 1100, backdropFilter: "blur(3px)" }}
+            />
+            <motion.div
+                initial={{ opacity: 0, scale: 0.94, y: "-50%", x: "-50%" }}
+                animate={{ opacity: 1, scale: 1, y: "-50%", x: "-50%" }}
+                exit={{ opacity: 0, scale: 0.94, y: "-50%", x: "-50%" }}
+                style={{
+                    position: "fixed",
+                    top: "50%",
+                    left: "50%",
+                    width: "92%",
+                    maxWidth: "520px",
+                    maxHeight: "92vh",
+                    backgroundColor: "#ffffff",
+                    borderRadius: "16px",
+                    zIndex: 1101,
+                    boxShadow: "0 25px 50px rgba(0,0,0,0.3)",
+                    border: "1px solid #e2e8f0",
+                    display: "flex",
+                    flexDirection: "column",
+                    overflow: "hidden"
+                }}
+            >
+                {/* HEADER DEL MODAL */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px", borderBottom: "1px solid #e2e8f0", backgroundColor: "#f8fafc" }}>
+                    <div>
+                        <h3 style={{ fontSize: "1rem", fontWeight: "700", color: "#0f172a", margin: 0 }}>
+                            Vista Previa del Documento
+                        </h3>
+                        <p style={{ fontSize: "0.7rem", color: "#64748b", margin: "2px 0 0 0" }}>
+                            {viewingComprobante.tipo === "FACTURA" ? "Factura" : "Boleta"} Electrónica · {viewingComprobante.serieNumero}
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => setViewingComprobante(null)}
+                        style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: "8px", cursor: "pointer", width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center" }}
+                    >
+                        <Cancel01Icon size={16} color="#0f172a" />
+                    </button>
+                </div>
 
-                            {/* DOCUMENTO TIPO PDF (VISTA PREVIA) */}
-                            <div id="comprobante-imprimible" style={{
-                                backgroundColor: "#ffffff",
-                                padding: "24px",
-                                borderRadius: "4px",
-                                border: "1px solid #cbd5e1",
-                                boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
-                                marginBottom: "20px",
-                                fontFamily: "Arial, sans-serif",
-                                color: "#000",
-                                maxHeight: "50vh",
-                                overflowY: "auto"
-                            }}>
-                                <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "2px solid #000", paddingBottom: "10px", marginBottom: "15px" }}>
+                {/* CONTENIDO SCROLLABLE */}
+                <div style={{ overflowY: "auto", padding: "20px", flex: 1 }}>
+                    {/* DOCUMENTO TIPO A5 (formato real de comprobante peruano) */}
+                    <div
+                        id="comprobante-imprimible"
+                        style={{
+                            backgroundColor: "#ffffff",
+                            padding: "22px 26px",
+                            border: "1px solid #cbd5e1",
+                            boxShadow: "0 4px 15px rgba(0,0,0,0.06)",
+                            fontFamily: "'Helvetica Neue', Arial, sans-serif",
+                            color: "#000",
+                            fontSize: "11px",
+                            lineHeight: "1.45"
+                        }}
+                    >
+                        {/* ══════════ CABECERA ══════════ */}
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
+                            {/* Datos del emisor */}
+                            <div style={{ flex: 1 }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                                    <div style={{
+                                        width: "38px", height: "38px", borderRadius: "6px",
+                                        backgroundColor: "#0f172a", color: "#fff",
+                                        display: "flex", alignItems: "center", justifyContent: "center",
+                                        fontWeight: "900", fontSize: "14px", letterSpacing: "-0.5px"
+                                    }}>
+                                        T
+                                    </div>
                                     <div>
-                                        <h2 style={{ margin: "0 0 5px 0", fontSize: "1.2rem", fontWeight: "900", letterSpacing: "1px" }}>JINNOVA S.A.C.</h2>
-                                        <p style={{ margin: "0", fontSize: "0.7rem", color: "#333" }}>Av. Principal 123, Lima, Perú</p>
-                                        <p style={{ margin: "0", fontSize: "0.7rem", color: "#333" }}>Teléfono: (01) 555-1234</p>
-                                    </div>
-                                    <div style={{ border: "2px solid #000", padding: "8px 15px", textAlign: "center", borderRadius: "6px", minWidth: "140px" }}>
-                                        <p style={{ margin: "0", fontSize: "0.8rem", fontWeight: "bold" }}>R.U.C. 20123456789</p>
-                                        <p style={{ margin: "5px 0", fontSize: "0.95rem", fontWeight: "bold", backgroundColor: "#000", color: "#fff", padding: "4px" }}>
-                                            {viewingComprobante.tipo === "FACTURA" ? "FACTURA" : "BOLETA"} ELECTRÓNICA
-                                        </p>
-                                        <p style={{ margin: "0", fontSize: "0.85rem", fontWeight: "bold" }}>{viewingComprobante.serieNumero}</p>
-                                    </div>
-                                </div>
-                                
-                                <div style={{ marginBottom: "20px", fontSize: "0.75rem", lineHeight: "1.6" }}>
-                                    <div style={{ display: "grid", gridTemplateColumns: "90px 1fr", gap: "6px" }}>
-                                        <strong style={{ color: "#000" }}>Señor(es):</strong> <span>{viewingComprobante.clienteNombre}</span>
-                                        <strong style={{ color: "#000" }}>{viewingComprobante.tipoDoc}:</strong> <span>{viewingComprobante.clienteNumDoc}</span>
-                                        <strong style={{ color: "#000" }}>Fecha Emisión:</strong> <span>{new Date(viewingComprobante.fechaEmision).toLocaleDateString("es-PE")}</span>
-                                    </div>
-                                </div>
-
-                                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.75rem", marginBottom: "20px" }}>
-                                    <thead>
-                                        <tr style={{ backgroundColor: "#f8fafc", borderTop: "1px solid #000", borderBottom: "1px solid #000" }}>
-                                            <th style={{ padding: "6px", textAlign: "left" }}>Cant.</th>
-                                            <th style={{ padding: "6px", textAlign: "left" }}>Descripción</th>
-                                            <th style={{ padding: "6px", textAlign: "right" }}>P. Unitario</th>
-                                            <th style={{ padding: "6px", textAlign: "right" }}>Importe</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {viewingComprobante.detalles.map((detalle, idx) => (
-                                            <tr key={idx}>
-                                                <td style={{ padding: "8px 6px", borderBottom: "1px solid #e2e8f0", verticalAlign: "top" }}>{detalle.cantidad.toFixed(2)}</td>
-                                                <td style={{ padding: "8px 6px", borderBottom: "1px solid #e2e8f0", verticalAlign: "top" }}>
-                                                    <span style={{ fontWeight: "bold" }}>{detalle.descripcion}</span>
-                                                    {detalle.series && detalle.series.length > 0 && (
-                                                        <div style={{ marginTop: "4px", fontSize: "0.65rem", color: "#555" }}>
-                                                            <strong style={{ color: "#000" }}>S/N:</strong> {detalle.series.join(", ")}
-                                                        </div>
-                                                    )}
-                                                </td>
-                                                <td style={{ padding: "8px 6px", textAlign: "right", borderBottom: "1px solid #e2e8f0", verticalAlign: "top" }}>S/ {detalle.precioUnitario.toFixed(2)}</td>
-                                                <td style={{ padding: "8px 6px", textAlign: "right", borderBottom: "1px solid #e2e8f0", verticalAlign: "top" }}>S/ {detalle.subtotal.toFixed(2)}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-
-                                <div style={{ display: "flex", justifyContent: "flex-end", fontSize: "0.8rem" }}>
-                                    <div style={{ width: "180px" }}>
-                                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
-                                            <span>Subtotal:</span>
-                                            <span>S/ {(viewingComprobante.montoTotal / 1.18).toFixed(2)}</span>
+                                        <div style={{ fontWeight: "900", fontSize: "14px", letterSpacing: "0.5px", color: "#0f172a" }}>
+                                            TATY IMPORTACIONES S.A.C.
                                         </div>
-                                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
-                                            <span>IGV (18%):</span>
-                                            <span>S/ {(viewingComprobante.montoTotal - (viewingComprobante.montoTotal / 1.18)).toFixed(2)}</span>
-                                        </div>
-                                        <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "bold", borderTop: "2px solid #000", paddingTop: "5px", fontSize: "0.95rem" }}>
-                                            <span>Total:</span>
-                                            <span>S/ {viewingComprobante.montoTotal.toFixed(2)}</span>
+                                        <div style={{ fontSize: "9px", color: "#475569" }}>
+                                            R.U.C. 20123456789
                                         </div>
                                     </div>
                                 </div>
-                                <div style={{ textAlign: "center", marginTop: "30px", fontSize: "0.65rem", color: "#666" }}>
-                                    <p style={{ margin: "2px 0" }}>Representación impresa del Comprobante de Pago Electrónico.</p>
-                                    <p style={{ margin: "2px 0" }}>Consulte su documento en www.sunat.gob.pe</p>
+                                <div style={{ fontSize: "9.5px", color: "#334155", lineHeight: "1.5", marginTop: "6px" }}>
+                                    <div>📍 Av. Principal 123, Lima, Perú</div>
+                                    <div>📞 (01) 555-1234  ·  ✉ ventas@tatyimportaciones.pe</div>
                                 </div>
                             </div>
 
-                            {/* BOTONES DE ACCION */}
-                            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                                <button
-                                    onClick={() => {
-                                        const printContent = document.getElementById('comprobante-imprimible');
-                                        if (printContent) {
-                                            const printWindow = window.open('', '', 'width=800,height=600');
-                                            if (printWindow) {
-                                                printWindow.document.write('<html><head><title>Imprimir Comprobante</title>');
-                                                printWindow.document.write('</head><body style="margin:0; padding:40px; font-family: Arial, sans-serif;">');
-                                                printWindow.document.write(printContent.innerHTML);
-                                                printWindow.document.write('</body></html>');
-                                                printWindow.document.close();
-                                                printWindow.focus();
-                                                setTimeout(() => { printWindow.print(); printWindow.close(); }, 250);
-                                            }
-                                        }
-                                    }}
-                                    style={{ width: "100%", padding: "10px", backgroundColor: "#0284c7", color: "#ffffff", border: "none", borderRadius: "8px", fontSize: "0.78rem", fontWeight: "600", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
-                                >
-                                    <Download01Icon size={16} /> Descargar PDF / Imprimir Documento
-                                </button>
-                                <div style={{ display: "flex", gap: "10px" }}>
-                                    <button
-                                        onClick={() => {
-                                            const text = `Hola ${viewingComprobante.clienteNombre}, adjunto tu ${viewingComprobante.tipo} ${viewingComprobante.serieNumero} por el monto de S/${viewingComprobante.montoTotal.toFixed(2)}. Gracias por tu compra en Jinnova S.A.C.`;
-                                            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-                                        }}
-                                        style={{ flex: 1, padding: "10px", backgroundColor: "#25D366", color: "#ffffff", border: "none", borderRadius: "8px", fontSize: "0.78rem", fontWeight: "600", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
-                                    >
-                                        <SmartPhone01Icon size={16} /> Enviar por WhatsApp
-                                    </button>
+                            {/* Recuadro SUNAT */}
+                            <div style={{
+                                border: "2px solid #0f172a",
+                                borderRadius: "6px",
+                                padding: "10px 14px",
+                                textAlign: "center",
+                                minWidth: "190px",
+                                marginLeft: "12px"
+                            }}>
+                                <div style={{ fontSize: "10px", fontWeight: "700", color: "#334155" }}>
+                                    R.U.C. 20123456789
+                                </div>
+                                <div style={{
+                                    fontSize: "13px", fontWeight: "900", letterSpacing: "1px",
+                                    margin: "6px 0",
+                                    padding: "4px 6px",
+                                    backgroundColor: viewingComprobante.tipo === "FACTURA" ? "#1e40af" : "#0f172a",
+                                    color: "#fff",
+                                    borderRadius: "3px"
+                                }}>
+                                    {viewingComprobante.tipo === "FACTURA" ? "FACTURA" : "BOLETA"} ELECTRÓNICA
+                                </div>
+                                <div style={{ fontSize: "15px", fontWeight: "900", fontFamily: "monospace", letterSpacing: "0.5px" }}>
+                                    {viewingComprobante.serieNumero}
                                 </div>
                             </div>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+                        </div>
+
+                        {/* ══════════ DATOS DEL CLIENTE ══════════ */}
+                        <div style={{
+                            borderTop: "2px solid #0f172a",
+                            borderBottom: "1px solid #94a3b8",
+                            padding: "10px 0",
+                            marginBottom: "12px",
+                            display: "grid",
+                            gridTemplateColumns: "1fr 1fr",
+                            gap: "4px 16px",
+                            fontSize: "10.5px"
+                        }}>
+                            <div>
+                                <strong>Señor(es):</strong> {viewingComprobante.clienteNombre}
+                            </div>
+                            <div>
+                                <strong>Fecha Emisión:</strong>{" "}
+                                {new Date(viewingComprobante.fechaEmision).toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                            </div>
+                            <div>
+                                <strong>{viewingComprobante.tipoDoc}:</strong> {viewingComprobante.clienteNumDoc}
+                            </div>
+                            <div>
+                                <strong>Moneda:</strong> SOLES (PEN)
+                            </div>
+                            {viewingComprobante.tipoPago && (
+                                <div style={{ gridColumn: "1 / -1" }}>
+                                    <strong>Forma de Pago:</strong> {viewingComprobante.tipoPago}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* ══════════ DETALLE ══════════ */}
+                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "10.5px", marginBottom: "10px" }}>
+                            <thead>
+                                <tr style={{ backgroundColor: "#0f172a", color: "#fff" }}>
+                                    <th style={{ padding: "6px 8px", textAlign: "left", fontWeight: "700", fontSize: "9.5px", letterSpacing: "0.5px", width: "55px" }}>CANT.</th>
+                                    <th style={{ padding: "6px 8px", textAlign: "left", fontWeight: "700", fontSize: "9.5px", letterSpacing: "0.5px" }}>DESCRIPCIÓN</th>
+                                    <th style={{ padding: "6px 8px", textAlign: "right", fontWeight: "700", fontSize: "9.5px", letterSpacing: "0.5px", width: "75px" }}>V. UNIT.</th>
+                                    <th style={{ padding: "6px 8px", textAlign: "right", fontWeight: "700", fontSize: "9.5px", letterSpacing: "0.5px", width: "80px" }}>IMPORTE</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {viewingComprobante.detalles.map((detalle, idx) => (
+                                    <tr key={idx} style={{ borderBottom: "1px solid #e2e8f0" }}>
+                                        <td style={{ padding: "7px 8px", verticalAlign: "top", fontWeight: "600" }}>
+                                            {detalle.cantidad.toFixed(2)}
+                                        </td>
+                                        <td style={{ padding: "7px 8px", verticalAlign: "top" }}>
+                                            <div style={{ fontWeight: "700", color: "#0f172a", marginBottom: detalle.series?.length ? "3px" : 0 }}>
+                                                {detalle.descripcion}
+                                            </div>
+                                            {detalle.series && detalle.series.length > 0 && (
+                                                <div style={{ fontSize: "9px", color: "#64748b", fontFamily: "monospace", lineHeight: "1.4" }}>
+                                                    <span style={{ color: "#475569", fontWeight: "600" }}>Series: </span>
+                                                    {detalle.series.join(" - ")}
+                                                </div>
+                                            )}
+                                        </td>
+                                        <td style={{ padding: "7px 8px", textAlign: "right", verticalAlign: "top" }}>
+                                            S/ {detalle.precioUnitario.toFixed(2)}
+                                        </td>
+                                        <td style={{ padding: "7px 8px", textAlign: "right", verticalAlign: "top", fontWeight: "600" }}>
+                                            S/ {detalle.subtotal.toFixed(2)}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+
+                        {/* ══════════ TOTALES ══════════ */}
+                        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "10px" }}>
+                            <div style={{ width: "230px", fontSize: "10.5px" }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", padding: "3px 0" }}>
+                                    <span style={{ color: "#475569" }}>OP. GRAVADA:</span>
+                                    <span style={{ fontWeight: "600" }}>S/ {(viewingComprobante.montoTotal / 1.18).toFixed(2)}</span>
+                                </div>
+                                <div style={{ display: "flex", justifyContent: "space-between", padding: "3px 0" }}>
+                                    <span style={{ color: "#475569" }}>OP. EXONERADA:</span>
+                                    <span style={{ fontWeight: "600" }}>S/ 0.00</span>
+                                </div>
+                                <div style={{ display: "flex", justifyContent: "space-between", padding: "3px 0" }}>
+                                    <span style={{ color: "#475569" }}>I.G.V. (18%):</span>
+                                    <span style={{ fontWeight: "600" }}>S/ {(viewingComprobante.montoTotal - (viewingComprobante.montoTotal / 1.18)).toFixed(2)}</span>
+                                </div>
+                                <div style={{ display: "flex", justifyContent: "space-between", padding: "3px 0" }}>
+                                    <span style={{ color: "#475569" }}>DESCUENTO:</span>
+                                    <span style={{ fontWeight: "600" }}>S/ 0.00</span>
+                                </div>
+                                <div style={{
+                                    display: "flex", justifyContent: "space-between",
+                                    marginTop: "4px", paddingTop: "6px",
+                                    borderTop: "2px solid #0f172a",
+                                    fontSize: "13px", fontWeight: "900"
+                                }}>
+                                    <span>IMPORTE TOTAL:</span>
+                                    <span>S/ {viewingComprobante.montoTotal.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ══════════ MONTO EN LETRAS ══════════ */}
+                        <div style={{
+                            padding: "7px 10px",
+                            backgroundColor: "#f8fafc",
+                            border: "1px solid #e2e8f0",
+                            borderRadius: "4px",
+                            fontSize: "10px",
+                            marginBottom: "12px"
+                        }}>
+                            <strong style={{ color: "#0f172a" }}>SON: </strong>
+                            <span style={{ textTransform: "uppercase", color: "#334155" }}>
+                                {numeroALetras(viewingComprobante.montoTotal)}
+                            </span>
+                        </div>
+
+                        {/* ══════════ INFO ADICIONAL ══════════ */}
+                        {(viewingComprobante.tipoEnvio || viewingComprobante.tipoPago) && (
+                            <div style={{
+                                borderTop: "1px dashed #cbd5e1",
+                                paddingTop: "8px",
+                                marginBottom: "12px",
+                                fontSize: "10px",
+                                color: "#334155",
+                                display: "flex",
+                                justifyContent: "space-between",
+                                gap: "10px",
+                                flexWrap: "wrap"
+                            }}>
+                                <div>
+                                    <strong>Modo de Entrega:</strong> {viewingComprobante.tipoEnvio || "—"}
+                                    {viewingComprobante.tipoEnvio === "A DOMICILIO" && viewingComprobante.fechaEntrega && (
+                                        <span style={{ display: "block", marginTop: "1px" }}>
+                                            <strong>Fecha Entrega:</strong> {viewingComprobante.fechaEntrega.split("-").reverse().join("/")}
+                                        </span>
+                                    )}
+                                </div>
+                                <div style={{ textAlign: "right" }}>
+                                    <strong>Tipo de Pago:</strong> {viewingComprobante.tipoPago || "—"}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ══════════ PIE CON QR Y HASH (SUNAT) ══════════ */}
+                        <div style={{
+                            borderTop: "2px solid #0f172a",
+                            paddingTop: "10px",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "flex-end",
+                            gap: "12px"
+                        }}>
+                            <div style={{ fontSize: "8.5px", color: "#475569", lineHeight: "1.5", flex: 1 }}>
+                                <div style={{ fontWeight: "700", color: "#0f172a", marginBottom: "3px" }}>
+                                    Representación impresa del Comprobante de Pago Electrónico
+                                </div>
+                                <div>Autorizado mediante Resolución de Superintendencia N° 097-2012/SUNAT</div>
+                                <div>Consulte su documento en: <strong>www.sunat.gob.pe</strong></div>
+                                <div style={{ marginTop: "4px", fontFamily: "monospace", fontSize: "7.5px", color: "#64748b" }}>
+                                    Hash: {btoa(`${viewingComprobante.serieNumero}-${viewingComprobante.montoTotal}-${viewingComprobante.fechaEmision}`).slice(0, 40)}
+                                </div>
+                            </div>
+                            {/* QR simulado (placeholder visual) */}
+                            <div style={{
+                                width: "82px", height: "82px",
+                                border: "1px solid #0f172a",
+                                borderRadius: "4px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                backgroundColor: "#fff",
+                                flexShrink: 0,
+                                position: "relative",
+                                overflow: "hidden"
+                            }}>
+                                <div style={{
+                                    width: "100%", height: "100%",
+                                    backgroundImage: `repeating-linear-gradient(0deg, #0f172a 0 2px, transparent 2px 4px), repeating-linear-gradient(90deg, #0f172a 0 2px, transparent 2px 4px)`,
+                                    opacity: 0.85
+                                }} />
+                                <div style={{
+                                    position: "absolute", inset: "22px",
+                                    backgroundColor: "#fff",
+                                    display: "flex", alignItems: "center", justifyContent: "center",
+                                    fontWeight: "900", fontSize: "9px", color: "#0f172a"
+                                }}>
+                                    QR
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* ══════════ BOTONES DE ACCIÓN ══════════ */}
+                <div style={{
+                    padding: "14px 20px",
+                    borderTop: "1px solid #e2e8f0",
+                    backgroundColor: "#f8fafc",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "8px"
+                }}>
+                    <button
+                        onClick={() => {
+                            const printContent = document.getElementById('comprobante-imprimible');
+                            if (printContent) {
+                                const printWindow = window.open('', '', 'width=800,height=600');
+                                if (printWindow) {
+                                    printWindow.document.write('<html><head><title>Imprimir Comprobante</title>');
+                                    printWindow.document.write('<style>@page { size: A5; margin: 0; } body { margin: 0; padding: 20px; }</style>');
+                                    printWindow.document.write('</head><body>');
+                                    printWindow.document.write(printContent.outerHTML);
+                                    printWindow.document.write('</body></html>');
+                                    printWindow.document.close();
+                                    printWindow.focus();
+                                    setTimeout(() => { printWindow.print(); printWindow.close(); }, 250);
+                                }
+                            }
+                        }}
+                        style={{
+                            width: "100%", padding: "11px",
+                            backgroundColor: "#0284c7", color: "#ffffff",
+                            border: "none", borderRadius: "8px",
+                            fontSize: "0.8rem", fontWeight: "700",
+                            cursor: "pointer",
+                            display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+                            boxShadow: "0 2px 6px rgba(2,132,199,0.25)"
+                        }}
+                    >
+                        <PrinterIcon size={16} /> Descargar / Imprimir Comprobante
+                    </button>
+                    <button
+                        onClick={() => {
+                            const text = `Hola ${viewingComprobante.clienteNombre}, adjunto tu ${viewingComprobante.tipo} ${viewingComprobante.serieNumero} por el monto de S/${viewingComprobante.montoTotal.toFixed(2)}. Gracias por tu compra en TATY Importaciones.`;
+                            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                        }}
+                        style={{
+                            width: "100%", padding: "11px",
+                            backgroundColor: "#25D366", color: "#ffffff",
+                            border: "none", borderRadius: "8px",
+                            fontSize: "0.8rem", fontWeight: "700",
+                            cursor: "pointer",
+                            display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+                            boxShadow: "0 2px 6px rgba(37,211,102,0.25)"
+                        }}
+                    >
+                        <SmartPhone01Icon size={16} /> Enviar por WhatsApp
+                    </button>
+                </div>
+            </motion.div>
+        </>
+    )}
+</AnimatePresence>
 
         </div>
     );
@@ -553,3 +771,58 @@ export default function ComprobantesPage() {
             color: "#0f172a",
             verticalAlign: "middle"
 };
+
+// Convierte un número a letras en español peruano (formato SUNAT)
+function numeroALetras(num: number): string {
+    const entero = Math.floor(num);
+    const centavos = Math.round((num - entero) * 100);
+    
+    const unidades = ["", "UNO", "DOS", "TRES", "CUATRO", "CINCO", "SEIS", "SIETE", "OCHO", "NUEVE"];
+    const decenas = ["", "DIEZ", "VEINTE", "TREINTA", "CUARENTA", "CINCUENTA", "SESENTA", "SETENTA", "OCHENTA", "NOVENTA"];
+    const especiales = ["DIEZ", "ONCE", "DOCE", "TRECE", "CATORCE", "QUINCE", "DIECISÉIS", "DIECISIETE", "DIECIOCHO", "DIECINUEVE"];
+    const centenas = ["", "CIENTO", "DOSCIENTOS", "TRESCIENTOS", "CUATROCIENTOS", "QUINIENTOS", "SEISCIENTOS", "SETECIENTOS", "OCHOCIENTOS", "NOVECIENTOS"];
+
+    function convertirGrupo(n: number): string {
+        if (n === 0) return "";
+        if (n === 100) return "CIEN";
+        let output = "";
+        const c = Math.floor(n / 100);
+        const resto = n % 100;
+        if (c > 0) output += centenas[c] + " ";
+        if (resto >= 10 && resto < 20) {
+            output += especiales[resto - 10];
+        } else {
+            const d = Math.floor(resto / 10);
+            const u = resto % 10;
+            if (d > 0) {
+                if (u === 0) output += decenas[d];
+                else if (d === 2) output += "VEINTI" + unidades[u];
+                else output += decenas[d] + " Y " + unidades[u];
+            } else if (u > 0) {
+                output += unidades[u];
+            }
+        }
+        return output.trim();
+    }
+
+    function convertir(n: number): string {
+        if (n === 0) return "CERO";
+        const millones = Math.floor(n / 1000000);
+        const miles = Math.floor((n % 1000000) / 1000);
+        const resto = n % 1000;
+        let res = "";
+        if (millones > 0) {
+            res += millones === 1 ? "UN MILLÓN " : convertirGrupo(millones) + " MILLONES ";
+        }
+        if (miles > 0) {
+            res += miles === 1 ? "MIL " : convertirGrupo(miles) + " MIL ";
+        }
+        if (resto > 0) {
+            res += convertirGrupo(resto);
+        }
+        return res.trim();
+    }
+
+    const letras = convertir(entero);
+    return `${letras} CON ${centavos.toString().padStart(2, "0")}/100 SOLES`;
+}
