@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { comprobantesService } from "@/app/services/comprobantes.service"; 
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Search01Icon,
@@ -15,6 +16,14 @@ import {
     SmartPhone01Icon
 } from "hugeicons-react";
 
+interface ComprobanteDetalle {
+    cantidad: number;
+    descripcion: string;
+    series: string[];
+    precioUnitario: number;
+    subtotal: number;
+}
+
 interface ComprobanteItem {
     id: number;
     tipo: "BOLETA" | "FACTURA";
@@ -25,56 +34,50 @@ interface ComprobanteItem {
     montoTotal: number;
     fechaEmision: string;
     estadoSunat: "ACEPTADO" | "RECHAZADO" | "PENDIENTE";
+    detalles: ComprobanteDetalle[];
 }
 
 export default function ComprobantesPage() {
     const router = useRouter();
-    const [comprobantes, setComprobantes] = useState<ComprobanteItem[]>([
-        {
-            id: 1,
-            tipo: "BOLETA",
-            serieNumero: "B001-000452",
-            clienteNombre: "Carlos Mendoza",
-            clienteNumDoc: "45892100",
-            tipoDoc: "DNI",
-            montoTotal: 145.50,
-            fechaEmision: "2026-09-15T10:14:00",
-            estadoSunat: "ACEPTADO"
-        },
-        {
-            id: 2,
-            tipo: "FACTURA",
-            serieNumero: "F001-000128",
-            clienteNombre: "Comercializadora Jinnova S.A.C.",
-            clienteNumDoc: "20601234567",
-            tipoDoc: "RUC",
-            montoTotal: 890.00,
-            fechaEmision: "2026-09-15T11:05:00",
-            estadoSunat: "ACEPTADO"
-        },
-        {
-            id: 3,
-            tipo: "BOLETA",
-            serieNumero: "B001-000453",
-            clienteNombre: "María Luisa Torres",
-            clienteNumDoc: "71234567",
-            tipoDoc: "DNI",
-            montoTotal: 65.00,
-            fechaEmision: "2026-09-15T11:50:00",
-            estadoSunat: "ACEPTADO"
-        },
-        {
-            id: 4,
-            tipo: "FACTURA",
-            serieNumero: "F001-000129",
-            clienteNombre: "Distribuidora Mambo Perú E.I.R.L.",
-            clienteNumDoc: "20559988771",
-            tipoDoc: "RUC",
-            montoTotal: 1250.00,
-            fechaEmision: "2026-09-15T12:20:00",
-            estadoSunat: "ACEPTADO"
+    
+    const [comprobantes, setComprobantes] = useState<ComprobanteItem[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+    const fetchCompras = async () => {
+        try {
+            setErrorMsg(null);
+            if (typeof window !== "undefined") {
+                localStorage.removeItem('mockComprobantes');
+            }
+            const data = await comprobantesService.listarTodos();
+            
+            // Map seriesEscaneadas to series for the UI
+            const mapeado = data.map(item => ({
+                ...item,
+                detalles: item.detalles.map((d: any) => ({
+                    ...d,
+                    series: d.seriesEscaneadas ? d.seriesEscaneadas.split(",") : []
+                }))
+            }));
+            
+            setComprobantes(mapeado as ComprobanteItem[]);
+        } catch (error: any) {
+            console.error("Error cargando comprobantes", error);
+            setErrorMsg(error?.message || "Error desconocido al cargar comprobantes");
+            // Si falla el backend, intentamos leer el fallback local
+            const saved = localStorage.getItem('mockComprobantes');
+            if (saved) {
+                setComprobantes(JSON.parse(saved));
+            }
+        } finally {
+            setLoading(false);
         }
-    ]);
+    };
+
+    React.useEffect(() => {
+        fetchCompras();
+    }, []);
 
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedTipoFilter, setSelectedTipoFilter] = useState("TODOS");
@@ -231,6 +234,11 @@ export default function ComprobantesPage() {
             </div>
 
             {/* TABLA DE COMPROBANTES */}
+            {errorMsg && (
+                <div style={{ padding: "12px 16px", backgroundColor: "#fee2e2", color: "#b91c1c", borderRadius: "8px", border: "1px solid #fca5a5", fontSize: "0.85rem", fontWeight: "500" }}>
+                    Error de conexión: {errorMsg}
+                </div>
+            )}
             <div style={{
                 backgroundColor: "#ffffff",
                 borderRadius: "12px",
@@ -368,50 +376,130 @@ export default function ComprobantesPage() {
                                 border: "1px solid #e2e8f0"
                             }}
                         >
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid #f1f5f9", paddingBottom: "10px" }}>
-                                <div>
-                                    <h3 style={{ fontSize: "1.1rem", fontWeight: "700", color: "#0f172a", margin: "0 0 2px 0" }}>
-                                        {viewingComprobante.tipo} {viewingComprobante.serieNumero}
-                                    </h3>
-                                    <span style={{ fontSize: "0.68rem", color: "#64748b" }}>Emitido: {new Date(viewingComprobante.fechaEmision).toLocaleString("es-PE")}</span>
-                                </div>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                                <h3 style={{ fontSize: "1.1rem", fontWeight: "700", color: "#0f172a", margin: 0 }}>Vista Previa de Documento</h3>
                                 <button onClick={() => setViewingComprobante(null)} style={{ background: "none", border: "none", cursor: "pointer" }}>
                                     <Cancel01Icon size={18} color="#0f172a" />
                                 </button>
                             </div>
 
-                            <div style={{ backgroundColor: "#f8fafc", padding: "16px", borderRadius: "10px", border: "1px solid #e2e8f0", marginBottom: "20px" }}>
-                                <div style={{ marginBottom: "12px" }}>
-                                    <span style={{ fontSize: "0.65rem", fontWeight: "700", color: "#64748b", textTransform: "uppercase", display: "block" }}>Cliente</span>
-                                    <span style={{ fontSize: "0.85rem", fontWeight: "600", color: "#0f172a", display: "block" }}>{viewingComprobante.clienteNombre}</span>
-                                    <span style={{ fontSize: "0.75rem", color: "#334155" }}>{viewingComprobante.tipoDoc}: {viewingComprobante.clienteNumDoc}</span>
+                            {/* DOCUMENTO TIPO PDF (VISTA PREVIA) */}
+                            <div id="comprobante-imprimible" style={{
+                                backgroundColor: "#ffffff",
+                                padding: "24px",
+                                borderRadius: "4px",
+                                border: "1px solid #cbd5e1",
+                                boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
+                                marginBottom: "20px",
+                                fontFamily: "Arial, sans-serif",
+                                color: "#000",
+                                maxHeight: "50vh",
+                                overflowY: "auto"
+                            }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "2px solid #000", paddingBottom: "10px", marginBottom: "15px" }}>
+                                    <div>
+                                        <h2 style={{ margin: "0 0 5px 0", fontSize: "1.2rem", fontWeight: "900", letterSpacing: "1px" }}>JINNOVA S.A.C.</h2>
+                                        <p style={{ margin: "0", fontSize: "0.7rem", color: "#333" }}>Av. Principal 123, Lima, Perú</p>
+                                        <p style={{ margin: "0", fontSize: "0.7rem", color: "#333" }}>Teléfono: (01) 555-1234</p>
+                                    </div>
+                                    <div style={{ border: "2px solid #000", padding: "8px 15px", textAlign: "center", borderRadius: "6px", minWidth: "140px" }}>
+                                        <p style={{ margin: "0", fontSize: "0.8rem", fontWeight: "bold" }}>R.U.C. 20123456789</p>
+                                        <p style={{ margin: "5px 0", fontSize: "0.95rem", fontWeight: "bold", backgroundColor: "#000", color: "#fff", padding: "4px" }}>
+                                            {viewingComprobante.tipo === "FACTURA" ? "FACTURA" : "BOLETA"} ELECTRÓNICA
+                                        </p>
+                                        <p style={{ margin: "0", fontSize: "0.85rem", fontWeight: "bold" }}>{viewingComprobante.serieNumero}</p>
+                                    </div>
                                 </div>
                                 
-                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: "12px", borderTop: "1px dashed #cbd5e1" }}>
-                                    <span style={{ fontSize: "0.75rem", fontWeight: "700", color: "#0f172a", textTransform: "uppercase" }}>Total Pagado</span>
-                                    <span style={{ fontSize: "1.2rem", fontWeight: "800", color: "#059669" }}>S/ {viewingComprobante.montoTotal.toFixed(2)}</span>
+                                <div style={{ marginBottom: "20px", fontSize: "0.75rem", lineHeight: "1.6" }}>
+                                    <div style={{ display: "grid", gridTemplateColumns: "90px 1fr", gap: "6px" }}>
+                                        <strong style={{ color: "#000" }}>Señor(es):</strong> <span>{viewingComprobante.clienteNombre}</span>
+                                        <strong style={{ color: "#000" }}>{viewingComprobante.tipoDoc}:</strong> <span>{viewingComprobante.clienteNumDoc}</span>
+                                        <strong style={{ color: "#000" }}>Fecha Emisión:</strong> <span>{new Date(viewingComprobante.fechaEmision).toLocaleDateString("es-PE")}</span>
+                                    </div>
+                                </div>
+
+                                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.75rem", marginBottom: "20px" }}>
+                                    <thead>
+                                        <tr style={{ backgroundColor: "#f8fafc", borderTop: "1px solid #000", borderBottom: "1px solid #000" }}>
+                                            <th style={{ padding: "6px", textAlign: "left" }}>Cant.</th>
+                                            <th style={{ padding: "6px", textAlign: "left" }}>Descripción</th>
+                                            <th style={{ padding: "6px", textAlign: "right" }}>P. Unitario</th>
+                                            <th style={{ padding: "6px", textAlign: "right" }}>Importe</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {viewingComprobante.detalles.map((detalle, idx) => (
+                                            <tr key={idx}>
+                                                <td style={{ padding: "8px 6px", borderBottom: "1px solid #e2e8f0", verticalAlign: "top" }}>{detalle.cantidad.toFixed(2)}</td>
+                                                <td style={{ padding: "8px 6px", borderBottom: "1px solid #e2e8f0", verticalAlign: "top" }}>
+                                                    <span style={{ fontWeight: "bold" }}>{detalle.descripcion}</span>
+                                                    {detalle.series && detalle.series.length > 0 && (
+                                                        <div style={{ marginTop: "4px", fontSize: "0.65rem", color: "#555" }}>
+                                                            <strong style={{ color: "#000" }}>S/N:</strong> {detalle.series.join(", ")}
+                                                        </div>
+                                                    )}
+                                                </td>
+                                                <td style={{ padding: "8px 6px", textAlign: "right", borderBottom: "1px solid #e2e8f0", verticalAlign: "top" }}>S/ {detalle.precioUnitario.toFixed(2)}</td>
+                                                <td style={{ padding: "8px 6px", textAlign: "right", borderBottom: "1px solid #e2e8f0", verticalAlign: "top" }}>S/ {detalle.subtotal.toFixed(2)}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+
+                                <div style={{ display: "flex", justifyContent: "flex-end", fontSize: "0.8rem" }}>
+                                    <div style={{ width: "180px" }}>
+                                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
+                                            <span>Subtotal:</span>
+                                            <span>S/ {(viewingComprobante.montoTotal / 1.18).toFixed(2)}</span>
+                                        </div>
+                                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
+                                            <span>IGV (18%):</span>
+                                            <span>S/ {(viewingComprobante.montoTotal - (viewingComprobante.montoTotal / 1.18)).toFixed(2)}</span>
+                                        </div>
+                                        <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "bold", borderTop: "2px solid #000", paddingTop: "5px", fontSize: "0.95rem" }}>
+                                            <span>Total:</span>
+                                            <span>S/ {viewingComprobante.montoTotal.toFixed(2)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style={{ textAlign: "center", marginTop: "30px", fontSize: "0.65rem", color: "#666" }}>
+                                    <p style={{ margin: "2px 0" }}>Representación impresa del Comprobante de Pago Electrónico.</p>
+                                    <p style={{ margin: "2px 0" }}>Consulte su documento en www.sunat.gob.pe</p>
                                 </div>
                             </div>
 
+                            {/* BOTONES DE ACCION */}
                             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                                 <button
-                                    onClick={() => alert(`Descargando PDF ${viewingComprobante.serieNumero}`)}
+                                    onClick={() => {
+                                        const printContent = document.getElementById('comprobante-imprimible');
+                                        if (printContent) {
+                                            const printWindow = window.open('', '', 'width=800,height=600');
+                                            if (printWindow) {
+                                                printWindow.document.write('<html><head><title>Imprimir Comprobante</title>');
+                                                printWindow.document.write('</head><body style="margin:0; padding:40px; font-family: Arial, sans-serif;">');
+                                                printWindow.document.write(printContent.innerHTML);
+                                                printWindow.document.write('</body></html>');
+                                                printWindow.document.close();
+                                                printWindow.focus();
+                                                setTimeout(() => { printWindow.print(); printWindow.close(); }, 250);
+                                            }
+                                        }
+                                    }}
                                     style={{ width: "100%", padding: "10px", backgroundColor: "#0284c7", color: "#ffffff", border: "none", borderRadius: "8px", fontSize: "0.78rem", fontWeight: "600", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
                                 >
-                                    <Download01Icon size={16} /> Descargar PDF
+                                    <Download01Icon size={16} /> Descargar PDF / Imprimir Documento
                                 </button>
                                 <div style={{ display: "flex", gap: "10px" }}>
                                     <button
-                                        onClick={() => alert(`Enviando a WhatsApp ${viewingComprobante.serieNumero}`)}
+                                        onClick={() => {
+                                            const text = `Hola ${viewingComprobante.clienteNombre}, adjunto tu ${viewingComprobante.tipo} ${viewingComprobante.serieNumero} por el monto de S/${viewingComprobante.montoTotal.toFixed(2)}. Gracias por tu compra en Jinnova S.A.C.`;
+                                            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                                        }}
                                         style={{ flex: 1, padding: "10px", backgroundColor: "#25D366", color: "#ffffff", border: "none", borderRadius: "8px", fontSize: "0.78rem", fontWeight: "600", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
                                     >
-                                        <SmartPhone01Icon size={16} /> WhatsApp
-                                    </button>
-                                    <button
-                                        onClick={() => alert(`Imprimiendo ${viewingComprobante.serieNumero}`)}
-                                        style={{ flex: 1, padding: "10px", backgroundColor: "#334155", color: "#ffffff", border: "none", borderRadius: "8px", fontSize: "0.78rem", fontWeight: "600", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
-                                    >
-                                        <PrinterIcon size={16} /> Imprimir
+                                        <SmartPhone01Icon size={16} /> Enviar por WhatsApp
                                     </button>
                                 </div>
                             </div>

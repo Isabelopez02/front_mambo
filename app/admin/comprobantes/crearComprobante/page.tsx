@@ -21,6 +21,7 @@ import { productosService } from "../../../services/productos.service";
 import { ProductoDTO } from "../../../types/producto.dto";
 import { clientesService } from "../../../services/clientes.service";
 import { ClienteDTO } from "../../../types/cliente.dto";
+import { comprobantesService, ComprobanteReqDTO } from "../../../services/comprobantes.service";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ItemDetalleComprobante {
@@ -237,8 +238,9 @@ export default function CrearComprobantePage() {
   const igvTotal = subtotalTotal * 0.18;
   const grandTotal = subtotalTotal + igvTotal;
 
-  // EMITIR COMPROBANTE FINAL
-  const handleEmitirComprobante = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleEmitirComprobante = async (e: React.FormEvent) => {
     e.preventDefault();
     if (itemsDetalle.length === 0) {
       alert("Debes agregar al menos 1 producto al detalle del comprobante.");
@@ -249,8 +251,33 @@ export default function CrearComprobantePage() {
       return;
     }
 
-    alert(`✅ Comprobante (${tipoComprobante}) emitido exitosamente.\nCliente: ${clienteNombre}\nMonto Total: S/ ${grandTotal.toFixed(2)}`);
-    router.push("/admin/comprobantes");
+    setIsSubmitting(true);
+    try {
+      const requestDTO: ComprobanteReqDTO = {
+        tipo: tipoComprobante,
+        clienteNombre: clienteNombre,
+        clienteNumDoc: clienteDoc,
+        tipoDoc: clienteDoc.length > 8 ? "RUC" : "DNI",
+        montoTotal: grandTotal,
+        detalles: itemsDetalle.map(item => ({
+          cantidad: item.cantidad,
+          descripcion: item.nombre,
+          precioUnitario: item.precioUnitario,
+          subtotal: item.cantidad * item.precioUnitario,
+          series: item.codigoEscaneado !== "AUTO" ? [item.codigoEscaneado] : []
+        }))
+      };
+
+      await comprobantesService.emitir(requestDTO);
+
+      alert(`✅ Comprobante (${tipoComprobante}) emitido y guardado exitosamente.\nCliente: ${clienteNombre}\nMonto Total: S/ ${grandTotal.toFixed(2)}`);
+      router.push("/admin/comprobantes");
+    } catch (err) {
+      console.error(err);
+      alert("Error al guardar la compra en el servidor.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Validaciones del precio estimado manual vs límites
@@ -325,23 +352,23 @@ export default function CrearComprobantePage() {
 
           <button
             onClick={handleEmitirComprobante}
-            disabled={itemsDetalle.length === 0}
+            disabled={itemsDetalle.length === 0 || isSubmitting}
             style={{
               padding: "7px 16px",
-              backgroundColor: itemsDetalle.length === 0 ? "#cbd5e1" : "#0f172a",
+              backgroundColor: (itemsDetalle.length === 0 || isSubmitting) ? "#cbd5e1" : "#0f172a",
               color: "#ffffff",
               border: "none",
               borderRadius: "6px",
               fontSize: "0.75rem",
               fontWeight: "600",
-              cursor: itemsDetalle.length === 0 ? "not-allowed" : "pointer",
+              cursor: (itemsDetalle.length === 0 || isSubmitting) ? "not-allowed" : "pointer",
               display: "inline-flex",
               alignItems: "center",
               gap: "6px",
               boxShadow: "0 2px 6px rgba(15,23,42,0.12)"
             }}
           >
-            <CheckmarkBadge01Icon size={15} color="#ffffff" /> Emitir Comprobante
+            <CheckmarkBadge01Icon size={15} color="#ffffff" /> {isSubmitting ? "Emitiendo..." : "Emitir Comprobante"}
           </button>
         </div>
       </div>
@@ -832,80 +859,95 @@ export default function CrearComprobantePage() {
               />
               
               {(() => {
-                const found = dbClientes.find(c => (c.numeroDocumento === searchDniInput || c.numDocumento === searchDniInput));
-                if (found) {
-                   return (
-                     <div style={{ marginTop: "16px", padding: "12px", border: "1px solid #bbf7d0", backgroundColor: "#f0fdf4", borderRadius: "8px" }}>
-                       <p style={{ margin: "0 0 4px 0", fontSize: "0.75rem", color: "#166534", fontWeight: "600" }}>✓ Cliente encontrado:</p>
-                       <strong style={{ display: "block", color: "#0f172a", fontSize: "0.9rem" }}>{found.nombreCompleto}</strong>
-                       <span style={{ fontSize: "0.7rem", color: "#475569" }}>{found.email}</span>
-                       <button 
-                         onClick={() => { 
-                           setClienteNombre(found.nombreCompleto || ""); 
-                           setClienteDoc(found.numeroDocumento || found.numDocumento || ""); 
-                           setIsClienteModalOpen(false); 
-                         }} 
-                         style={{ marginTop: "12px", width: "100%", padding: "8px", backgroundColor: "#166534", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "0.8rem", fontWeight: "700" }}
-                       >
-                         Usar este cliente
-                       </button>
-                     </div>
-                   );
-                } else if (searchDniInput.length >= 8) {
-                   return (
-                     <div style={{ marginTop: "16px", padding: "12px", border: "1px dashed #cbd5e1", backgroundColor: "#f8fafc", borderRadius: "8px" }}>
-                       <p style={{ margin: "0 0 12px 0", fontSize: "0.75rem", color: "#475569" }}>
-                         No se encontró cliente con ese documento. ¿Deseas registrarlo rápidamente?
-                       </p>
-                       <input 
-                         type="text" 
-                         placeholder="Nombre Completo / Razón Social" 
-                         value={nuevoClienteNombre} 
-                         onChange={(e) => setNuevoClienteNombre(e.target.value)} 
-                         style={{ ...inputStyle, marginBottom: "12px" }} 
-                       />
-                       <button 
-                         onClick={async () => {
-                           if(!nuevoClienteNombre) return;
-                           setIsCreatingClient(true);
-                           try {
-                             const nuevo: ClienteDTO = {
-                               numeroDocumento: searchDniInput,
-                               numDocumento: searchDniInput,
-                               nombreCompleto: nuevoClienteNombre,
-                               email: searchDniInput + "@cliente.com",
-                               telefono: "000000000",
-                               contra: searchDniInput,
-                               tipoDocumento: searchDniInput.length > 8 ? "RUC" : "DNI",
-                               rol: "CLIENTE"
-                             };
-                             const res = await clientesService.crear(nuevo);
-                             setClienteNombre(res.nombreCompleto || nuevoClienteNombre);
-                             setClienteDoc(res.numeroDocumento || res.numDocumento || searchDniInput);
-                             setIsClienteModalOpen(false);
-                             fetchClientes(); // Recargar la lista en background
-                           } catch (err) {
-                             alert("Hubo un error al crear el cliente. Verifica la conexión.");
-                             console.error(err);
-                           } finally {
-                             setIsCreatingClient(false);
-                           }
-                         }} 
-                         disabled={isCreatingClient || !nuevoClienteNombre} 
-                         style={{ 
-                           width: "100%", padding: "8px", 
-                           backgroundColor: (!nuevoClienteNombre || isCreatingClient) ? "#cbd5e1" : "#0f172a", 
-                           color: "#fff", border: "none", borderRadius: "6px", 
-                           cursor: (!nuevoClienteNombre || isCreatingClient) ? "not-allowed" : "pointer", 
-                           fontSize: "0.8rem", fontWeight: "700" 
-                         }}
-                       >
-                         {isCreatingClient ? "Guardando..." : "Registrar y Usar"}
-                       </button>
-                     </div>
-                   );
-                }
-                return null;
+                const searchLower = searchDniInput.trim().toLowerCase();
+                const filtered = searchLower 
+                  ? dbClientes.filter(c => 
+                      (c.numeroDocumento && c.numeroDocumento.toLowerCase().includes(searchLower)) ||
+                      (c.numDocumento && c.numDocumento.toLowerCase().includes(searchLower)) ||
+                      (c.nombreCompleto && c.nombreCompleto.toLowerCase().includes(searchLower))
+                    )
+                  : [];
+
+                return (
+                  <div>
+                    {filtered.length > 0 && (
+                      <div style={{ marginTop: "16px", maxHeight: "150px", overflowY: "auto", border: "1px solid #e2e8f0", borderRadius: "8px" }}>
+                        {filtered.map((found, idx) => (
+                          <div key={idx} style={{ padding: "10px 12px", borderBottom: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <div>
+                              <strong style={{ display: "block", color: "#0f172a", fontSize: "0.85rem" }}>{found.nombreCompleto}</strong>
+                              <span style={{ fontSize: "0.7rem", color: "#64748b" }}>Doc: {found.numeroDocumento || found.numDocumento}</span>
+                            </div>
+                            <button 
+                              onClick={() => { 
+                                setClienteNombre(found.nombreCompleto || ""); 
+                                setClienteDoc(found.numeroDocumento || found.numDocumento || ""); 
+                                setIsClienteModalOpen(false); 
+                              }} 
+                              style={{ padding: "4px 8px", backgroundColor: "#0284c7", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "0.7rem", fontWeight: "700" }}
+                            >
+                              Seleccionar
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {searchLower.length >= 3 && filtered.length === 0 && (
+                      <div style={{ marginTop: "16px", padding: "12px", border: "1px dashed #cbd5e1", backgroundColor: "#f8fafc", borderRadius: "8px" }}>
+                        <p style={{ margin: "0 0 12px 0", fontSize: "0.75rem", color: "#475569" }}>
+                          No se encontraron clientes. ¿Deseas registrar "{searchDniInput}" rápidamente?
+                        </p>
+                        <input 
+                          type="text" 
+                          placeholder="Nombre Completo / Razón Social" 
+                          value={nuevoClienteNombre} 
+                          onChange={(e) => setNuevoClienteNombre(e.target.value)} 
+                          style={{ ...inputStyle, marginBottom: "12px" }} 
+                        />
+                        <button 
+                          onClick={async () => {
+                            if(!nuevoClienteNombre) return;
+                            setIsCreatingClient(true);
+                            try {
+                              const docNuevo = searchDniInput.trim().replace(/\D/g, ''); // solo numeros
+                              const nuevo: ClienteDTO = {
+                                numeroDocumento: docNuevo || "00000000",
+                                numDocumento: docNuevo || "00000000",
+                                nombreCompleto: nuevoClienteNombre,
+                                email: docNuevo + "@cliente.com",
+                                telefono: "000000000",
+                                contra: docNuevo,
+                                tipoDocumento: docNuevo.length > 8 ? "RUC" : "DNI",
+                                rol: "CLIENTE"
+                              };
+                              const res = await clientesService.crear(nuevo);
+                              setClienteNombre(res.nombreCompleto || nuevoClienteNombre);
+                              setClienteDoc(res.numeroDocumento || res.numDocumento || docNuevo);
+                              setIsClienteModalOpen(false);
+                              fetchClientes(); // Recargar la lista en background
+                            } catch (err) {
+                              alert("Hubo un error al crear el cliente. Verifica la conexión.");
+                              console.error(err);
+                            } finally {
+                              setIsCreatingClient(false);
+                            }
+                          }} 
+                          disabled={isCreatingClient || !nuevoClienteNombre} 
+                          style={{ 
+                            width: "100%", padding: "8px", 
+                            backgroundColor: (!nuevoClienteNombre || isCreatingClient) ? "#cbd5e1" : "#0f172a", 
+                            color: "#fff", border: "none", borderRadius: "6px", 
+                            cursor: (!nuevoClienteNombre || isCreatingClient) ? "not-allowed" : "pointer", 
+                            fontSize: "0.8rem", fontWeight: "700" 
+                          }}
+                        >
+                          {isCreatingClient ? "Guardando..." : "Registrar y Usar"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
               })()}
             </motion.div>
           </div>
