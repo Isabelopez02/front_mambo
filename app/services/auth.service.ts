@@ -58,7 +58,11 @@ export const authService = {
   logout() {
     clearToken();
     if (typeof window !== "undefined") {
-      window.location.href = "/admin/login";
+      if (window.location.pathname.startsWith("/admin")) {
+        window.location.href = "/admin/login";
+      } else {
+        window.location.href = "/";
+      }
     }
   },
 

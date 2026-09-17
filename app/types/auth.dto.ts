@@ -10,6 +10,9 @@ export interface LoginRequest {
 export interface RegisterRequest {
   numeroDocumento: string;
   password: string;
+  email?: string;
+  nombre?: string;
+  apellidos?: string;
 }
 
 export interface AuthResponse {

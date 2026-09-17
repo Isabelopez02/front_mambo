@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useState, useMemo } from "react";
+import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
 import { CartItem } from "../client/CartDrawer";
 
 interface CartContextType {
@@ -10,6 +10,7 @@ interface CartContextType {
   addToCart: (product: { id: number; title: string; price: number; category: string; rating: number; img: string }) => void;
   updateQuantity: (id: number, delta: number) => void;
   removeFromCart: (id: number) => void;
+  clearCart: () => void;
   totalItemsCount: number;
   cartTotal: number;
 }
@@ -17,27 +18,29 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: 1,
-      title: "Cartera Chic Luxe",
-      price: 59.00,
-      category: "CARTERAS",
-      rating: 5,
-      img: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=600&auto=format&fit=crop",
-      quantity: 1
-    },
-    {
-      id: 3,
-      title: "Kit Maquillaje Glow",
-      price: 35.00,
-      category: "MAQUILLAJE",
-      rating: 5,
-      img: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=600&auto=format&fit=crop",
-      quantity: 1
-    }
-  ]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("mambo_cart");
+    if (saved) {
+      try {
+        setCartItems(JSON.parse(saved));
+      } catch (e) {
+        console.error("Error parsing cart", e);
+      }
+    }
+    setIsInitialized(true);
+  }, []);
+
+  // Save to localStorage when changed
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem("mambo_cart", JSON.stringify(cartItems));
+    }
+  }, [cartItems, isInitialized]);
 
   const openCart = () => setIsCartOpen(true);
   const closeCart = () => setIsCartOpen(false);
@@ -73,6 +76,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setCartItems((prev) => prev.filter((item) => item.id !== id));
   };
 
+  const clearCart = () => {
+    setCartItems([]);
+  };
+
   const totalItemsCount = useMemo(() => {
     return cartItems.reduce((acc, item) => acc + item.quantity, 0);
   }, [cartItems]);
@@ -91,6 +98,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         addToCart,
         updateQuantity,
         removeFromCart,
+        clearCart,
         totalItemsCount,
         cartTotal,
       }}

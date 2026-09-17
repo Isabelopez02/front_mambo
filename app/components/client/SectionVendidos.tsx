@@ -3,6 +3,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { StarIcon, ArrowLeft01Icon, ArrowRight01Icon } from "hugeicons-react";
 
+import { productosService } from "../../services/productos.service";
+
+// Tipos requeridos definidos directamente o importados
 interface Product {
   id: number;
   title: string;
@@ -17,147 +20,114 @@ interface ProductSectionProps {
   products: Product[];
 }
 
-const ultimosIngresos: Product[] = [
-  { id: 1, title: "Cartera Chic Luxe", price: "S/. 59.00", rating: 5, img: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=600&auto=format&fit=crop" },
-  { id: 2, title: "Bolso Shoulder Nude", price: "S/. 49.00", rating: 4, img: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?q=80&w=600&auto=format&fit=crop" },
-  { id: 3, title: "Kit Maquillaje Glow", price: "S/. 35.00", rating: 5, img: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=600&auto=format&fit=crop" },
-  { id: 4, title: "Serum Hidratante", price: "S/. 29.90", rating: 4, img: "https://images.unsplash.com/photo-1608248597261-833257647000?q=80&w=600&auto=format&fit=crop" },
-  { id: 5, title: "Mini Backpack Velvet", price: "S/. 62.00", rating: 5, img: "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?q=80&w=600&auto=format&fit=crop" },
-  { id: 6, title: "Paleta Sombras Rose", price: "S/. 39.90", rating: 4, img: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?q=80&w=600&auto=format&fit=crop" },
-  { id: 7, title: "Jarrón Cerámica Deco", price: "S/. 42.00", rating: 5, img: "https://images.unsplash.com/photo-1616046229478-9901c5536a45?q=80&w=600&auto=format&fit=crop" },
-  { id: 8, title: "Reloj Minimal Gold", price: "S/. 75.00", rating: 5, img: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=600&auto=format&fit=crop" }
-];
+export function DynamicProductSections({ children }: { children?: React.ReactNode }) {
+  const [dbProducts, setDbProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-const maquillajeSkincare: Product[] = [
-  {
-    id: 101,
-    title: "Set Skincare Glow",
-    price: "S/. 45.00",
-    rating: 4,
-    img: "https://images.unsplash.com/photo-1608248597261-833257647000?q=80&w=600&auto=format&fit=crop"
-  },
-  {
-    id: 102,
-    title: "Sombra de Ojos Pastel",
-    price: "S/. 25.00",
-    rating: 5,
-    img: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=600&auto=format&fit=crop"
-  },
-  {
-    id: 103,
-    title: "Labial Matte Hydrating",
-    price: "S/. 18.00",
-    rating: 4,
-    img: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?q=80&w=600&auto=format&fit=crop"
-  },
-  {
-    id: 104,
-    title: "Brochas de Maquillaje Set",
-    price: "S/. 32.00",
-    rating: 5,
-    img: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=600&auto=format&fit=crop"
+  useEffect(() => {
+    productosService.getProductos()
+      .then((data: any) => {
+        if (Array.isArray(data)) {
+          setDbProducts(data);
+        } else {
+          console.error("La API no retornó un arreglo:", data);
+          setDbProducts([]);
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Error cargando productos:", err);
+        setDbProducts([]);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return <div style={{ textAlign: "center", padding: "50px" }}>Cargando catálogo...</div>;
   }
-];
 
-const carterasTendencia: Product[] = [
-  {
-    id: 201,
-    title: "Cartera Crossbody Luxe",
-    price: "S/. 65.00",
-    rating: 5,
-    img: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?q=80&w=600&auto=format&fit=crop"
-  },
-  {
-    id: 202,
-    title: "Bolso de Mano Nude",
-    price: "S/. 78.00",
-    rating: 4,
-    img: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=600&auto=format&fit=crop"
-  },
-  {
-    id: 203,
-    title: "Mini Tote Bag Premium",
-    price: "S/. 55.00",
-    rating: 5,
-    img: "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?q=80&w=600&auto=format&fit=crop"
-  },
-  {
-    id: 204,
-    title: "Cartera Cuero Sintético",
-    price: "S/. 70.00",
-    rating: 4,
-    img: "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?q=80&w=600&auto=format&fit=crop"
+  // Si no hay productos en la BD, mostramos un mensaje vacío
+  if (dbProducts.length === 0) {
+    return (
+      <div style={{ textAlign: "center", padding: "50px", color: "#64748b" }}>
+        No hay productos disponibles en el catálogo en este momento.
+      </div>
+    );
   }
-];
 
-const decoracionHogar: Product[] = [
-  {
-    id: 301,
-    title: "Lámpara Nórdica Minimalista",
-    price: "S/. 59.90",
+  // Función para transformar del Backend al Frontend UI
+  const mapToUI = (item: any): Product => ({
+    id: item.id,
+    title: item.nombre,
+    price: `S/. ${item.precioVentaMin ? item.precioVentaMin.toFixed(2) : "0.00"}`,
     rating: 5,
-    img: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?q=80&w=600&auto=format&fit=crop"
-  },
-  {
-    id: 302,
-    title: "Jarrón de Cerámica Estilo Boho",
-    price: "S/. 38.00",
-    rating: 4,
-    img: "https://images.unsplash.com/photo-1616046229478-9901c5536a45?q=80&w=600&auto=format&fit=crop"
-  },
-  {
-    id: 303,
-    title: "Vela Aromática Artesanal",
-    price: "S/. 29.90",
-    rating: 5,
-    img: "https://images.unsplash.com/photo-1603006905003-be475563bc59?q=80&w=600&auto=format&fit=crop"
-  },
-  {
-    id: 304,
-    title: "Set Cojines Decorativos Velvet",
-    price: "S/. 49.00",
-    rating: 4,
-    img: "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?q=80&w=600&auto=format&fit=crop"
-  }
-];
+    img: item.img || "https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=600&auto=format&fit=crop"
+  });
 
-export function UltimosIngresosSection() {
-  return (
-    <ProductSection 
-      subtitle="¡RECIÉN LLEGADOS!" 
-      title="Últimos Ingresos" 
-      products={ultimosIngresos} 
-    />
-  );
-}
+  // 1. NUEVOS INGRESOS (Los últimos registrados, es decir, mayor ID, máximo 10)
+  const nuevosIngresosData = [...dbProducts].sort((a, b) => b.id - a.id).slice(0, 10).map(mapToUI);
 
-export function MaquillajeSkincareSection() {
-  return (
-    <ProductSection 
-      subtitle="BELLEZA & GLOW" 
-      title="Maquillaje y Skincare" 
-      products={maquillajeSkincare} 
-    />
-  );
-}
+  // 2. MÁS POPULARES (Simulamos los más comprados tomando productos aleatorios o con IDs pares para variar)
+  const popularesData = [...dbProducts]
+    .filter(p => p.id % 2 === 0 || p.id % 3 === 0)
+    .sort(() => 0.5 - Math.random()) // Mezcla simple para que luzcan "populares"
+    .slice(0, 10)
+    .map(mapToUI);
+  
+  // Si no hay suficientes para mezclar, simplemente tomamos los primeros
+  const masPopularesFinal = popularesData.length > 0 ? popularesData : [...dbProducts].slice(0, 10).map(mapToUI);
 
-export function CarterasTendenciaSection() {
-  return (
-    <ProductSection 
-      subtitle="ESTILO & ELEGANCIA" 
-      title="Carteras en Tendencia" 
-      products={carterasTendencia} 
-    />
-  );
-}
+  // 3. AGRUPAR POR CATEGORÍA PARA EL RESTO DE SECCIONES
+  // Agrupamos todos los productos por el nombre de la categoría
+  const categoriasMap = new Map<string, any[]>();
+  dbProducts.forEach(p => {
+    const catName = p.categoria && p.categoria.nombre ? p.categoria.nombre : "Otros";
+    if (!categoriasMap.has(catName)) {
+      categoriasMap.set(catName, []);
+    }
+    categoriasMap.get(catName)!.push(p);
+  });
 
-export function DecoracionHogarSection() {
+  // Convertimos a array de secciones
+  const categorySections = Array.from(categoriasMap.entries()).map(([catName, prods]) => {
+    return {
+      title: catName,
+      subtitle: "COLECCIÓN DESTACADA",
+      products: prods.map(mapToUI)
+    };
+  });
+
   return (
-    <ProductSection 
-      subtitle="CONFORT & DISEÑO" 
-      title="Decoración de Hogar" 
-      products={decoracionHogar} 
-    />
+    <>
+      {nuevosIngresosData.length > 0 && (
+        <ProductSection 
+          subtitle="¡RECIÉN LLEGADOS!" 
+          title="Nuevos Ingresos" 
+          products={nuevosIngresosData} 
+        />
+      )}
+
+      {masPopularesFinal.length > 0 && (
+        <ProductSection 
+          subtitle="LOS MÁS COMPRADOS" 
+          title="Más Populares" 
+          products={masPopularesFinal} 
+        />
+      )}
+      
+      {/* BANNER ENVIOS se inserta aquí gracias al prop children */}
+      {children}
+
+      {/* SECCIONES POR CATEGORÍA */}
+      {categorySections.map((section, idx) => (
+        <ProductSection 
+          key={idx}
+          subtitle={section.subtitle} 
+          title={section.title} 
+          products={section.products} 
+        />
+      ))}
+    </>
   );
 }
 

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   StarIcon, 
@@ -9,9 +9,9 @@ import {
   ShoppingBag01Icon,
   CheckmarkBadge01Icon,
   GridIcon,
-  
 } from "hugeicons-react";
 import { useCart } from "../../components/context/CartContext";
+import { productosService } from "../../services/productos.service";
 
 interface Product {
   id: number;
@@ -24,24 +24,11 @@ interface Product {
   isPromo?: boolean;
 }
 
-const allProductsData: Product[] = [
-  { id: 1, title: "Cartera Chic Luxe", price: 59.00, category: "CARTERAS", rating: 5, img: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=600&auto=format&fit=crop", isNew: true },
-  { id: 2, title: "Bolso Shoulder Nude", price: 49.00, category: "CARTERAS", rating: 4, img: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?q=80&w=600&auto=format&fit=crop", isPromo: true },
-  { id: 3, title: "Kit Maquillaje Glow", price: 35.00, category: "MAQUILLAJE", rating: 5, img: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=600&auto=format&fit=crop", isNew: true },
-  { id: 4, title: "Serum Hidratante Skincare", price: 29.90, category: "SKINCARE", rating: 4, img: "https://images.unsplash.com/photo-1608248597261-833257647000?q=80&w=600&auto=format&fit=crop", isPromo: true },
-  { id: 5, title: "Mini Backpack Velvet", price: 62.00, category: "CARTERAS", rating: 5, img: "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?q=80&w=600&auto=format&fit=crop" },
-  { id: 6, title: "Paleta Sombras Rose", price: 39.90, category: "MAQUILLAJE", rating: 4, img: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?q=80&w=600&auto=format&fit=crop", isPromo: true },
-  { id: 7, title: "Jarrón Cerámica Deco", price: 42.00, category: "HOGAR", rating: 5, img: "https://images.unsplash.com/photo-1616046229478-9901c5536a45?q=80&w=600&auto=format&fit=crop", isNew: true },
-  { id: 8, title: "Reloj Minimal Gold", price: 75.00, category: "ACCESORIOS", rating: 5, img: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=600&auto=format&fit=crop" },
-  { id: 9, title: "Brochas de Maquillaje Set", price: 32.00, category: "MAQUILLAJE", rating: 4, img: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=600&auto=format&fit=crop" },
-  { id: 10, title: "Lámpara Nórdica Deco", price: 89.00, category: "HOGAR", rating: 5, img: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?q=80&w=600&auto=format&fit=crop" },
-  { id: 11, title: "Collar Dorado Pearl", price: 28.00, category: "JOYERÍA", rating: 4, img: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=600&auto=format&fit=crop", isNew: true },
-  { id: 12, title: "Tacones Stiletto Nude", price: 95.00, category: "CALZADO", rating: 5, img: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?q=80&w=600&auto=format&fit=crop", isPromo: true }
-];
-
-const categoriesList = ["TODOS", "CARTERAS", "MAQUILLAJE", "SKINCARE", "HOGAR", "ACCESORIOS", "JOYERÍA", "CALZADO"];
-
 export default function ProductosPage() {
+  const [dbProducts, setDbProducts] = useState<Product[]>([]);
+  const [dbCategoriesList, setDbCategoriesList] = useState<string[]>(["TODOS"]);
+  const [loading, setLoading] = useState(true);
+
   const [selectedCategory, setSelectedCategory] = useState<string>("TODOS");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [maxPrice, setMaxPrice] = useState<number>(100);
@@ -53,11 +40,56 @@ export default function ProductosPage() {
 
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 1024);
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  useEffect(() => {
+    productosService.getProductos()
+      .then((data: any) => {
+        if (Array.isArray(data)) {
+          // Transform backend format to UI format
+          const mapped: Product[] = data.map(item => ({
+            id: item.id,
+            title: item.nombre,
+            price: item.precioVentaMin || 0,
+            category: item.categoria?.nombre || item.categoriaNombre || "OTROS",
+            rating: 5,
+            img: item.img || "https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=600&auto=format&fit=crop",
+            // Los productos más recientes (IDs más altos) los marcamos como nuevos
+            isNew: false, 
+            isPromo: false 
+          }));
+          
+          // Ordenamos para que los nuevos estén arriba
+          mapped.sort((a, b) => b.id - a.id);
+          
+          // Marcamos los 5 primeros como "isNew"
+          for (let i = 0; i < Math.min(5, mapped.length); i++) {
+            mapped[i].isNew = true;
+          }
+
+          setDbProducts(mapped);
+          
+          // Extraemos categorías únicas
+          const cats = new Set(mapped.map(p => p.category));
+          setDbCategoriesList(["TODOS", ...Array.from(cats)]);
+          
+          // Actualizamos el precio máximo del filtro en base al precio más alto
+          if (mapped.length > 0) {
+            const maxP = Math.max(...mapped.map(p => p.price));
+            setMaxPrice(Math.ceil(maxP));
+          }
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Error al cargar productos:", err);
+        setLoading(false);
+      });
   }, []);
 
   // Filtro mobile drawer state
@@ -71,7 +103,7 @@ export default function ProductosPage() {
   const { addToCart, openCart, totalItemsCount } = useCart();
 
   const filteredProducts = useMemo(() => {
-    return allProductsData.filter((item) => {
+    return dbProducts.filter((item) => {
       const matchesCategory = selectedCategory === "TODOS" || item.category === selectedCategory;
       const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesPrice = item.price <= maxPrice;
@@ -82,7 +114,7 @@ export default function ProductosPage() {
 
       return matchesCategory && matchesSearch && matchesPrice && matchesRating && matchesNew && matchesPromo;
     });
-  }, [selectedCategory, searchQuery, maxPrice, minRating, filterNewOnly, filterPromoOnly, ratingsMap]);
+  }, [dbProducts, selectedCategory, searchQuery, maxPrice, minRating, filterNewOnly, filterPromoOnly, ratingsMap]);
 
   return (
     <div style={{ backgroundColor: '#ffffff', minHeight: '100vh', paddingBottom: '80px', position: 'relative' }}>
@@ -123,6 +155,13 @@ export default function ProductosPage() {
         </h1>
       </div>
 
+      {/* LOADING STATE */}
+      {loading ? (
+        <div style={{ textAlign: "center", padding: "50px", color: "#66585e" }}>
+          Cargando catálogo...
+        </div>
+      ) : (
+      <>
       {/* CATEGORIES NAVIGATION BAR (MAIN CONTENT HEADER) */}
       <div style={{ 
         borderTop: '1px solid #f5eaee', 
@@ -139,7 +178,7 @@ export default function ProductosPage() {
           margin: '0 auto',
           scrollbarWidth: 'none'
         }}>
-          {categoriesList.map((cat) => {
+          {dbCategoriesList.map((cat) => {
             const active = selectedCategory === cat;
             return (
               <button
@@ -173,6 +212,7 @@ export default function ProductosPage() {
         {!isMobile && (
           <aside style={{ width: '260px', flexShrink: 0 }}>
             <FilterSidebarContent 
+              dbCategoriesList={dbCategoriesList}
               selectedCategory={selectedCategory}
               setSelectedCategory={setSelectedCategory}
               searchQuery={searchQuery}
@@ -446,6 +486,7 @@ export default function ProductosPage() {
               </div>
 
               <FilterSidebarContent 
+                dbCategoriesList={dbCategoriesList}
                 selectedCategory={selectedCategory}
                 setSelectedCategory={setSelectedCategory}
                 searchQuery={searchQuery}
@@ -483,12 +524,15 @@ export default function ProductosPage() {
           </>
         )}
       </AnimatePresence>
+      </>
+      )}
     </div>
   );
 }
 
 {/* REUSABLE FILTER CONTENT WITH CATEGORIES SELECTOR AND SEARCH */}
 function FilterSidebarContent({
+  dbCategoriesList,
   selectedCategory,
   setSelectedCategory,
   searchQuery,
@@ -502,6 +546,7 @@ function FilterSidebarContent({
   filterPromoOnly,
   setFilterPromoOnly
 }: {
+  dbCategoriesList: string[];
   selectedCategory: string;
   setSelectedCategory: (v: string) => void;
   searchQuery: string;
@@ -582,7 +627,7 @@ function FilterSidebarContent({
             cursor: 'pointer'
           }}
         >
-          {categoriesList.map((cat) => (
+          {dbCategoriesList.map((cat) => (
             <option key={cat} value={cat}>
               {cat === "TODOS" ? "Todas las Categorías" : cat}
             </option>

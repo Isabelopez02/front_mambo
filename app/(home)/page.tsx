@@ -2,12 +2,7 @@
 
 import Hero from "../components/client/hero";
 import { FullCategorias } from "../components/client/categorias";
-import { 
-  UltimosIngresosSection, 
-  MaquillajeSkincareSection, 
-  CarterasTendenciaSection,
-  DecoracionHogarSection
-} from "../components/client/SectionVendidos";
+import { DynamicProductSections } from "../components/client/SectionVendidos";
 import { BannerEnvios } from "../components/client/banerEnvios";
 
 export default function Home() {
@@ -15,11 +10,9 @@ export default function Home() {
     <div>
       <Hero />
       <FullCategorias />
-      <UltimosIngresosSection />
-      <BannerEnvios />
-      <DecoracionHogarSection />
-      <MaquillajeSkincareSection />
-      <CarterasTendenciaSection />
+      <DynamicProductSections>
+        <BannerEnvios />
+      </DynamicProductSections>
     </div>
   );
 }

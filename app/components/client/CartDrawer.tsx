@@ -8,6 +8,7 @@ import {
   Remove01Icon, 
   Delete02Icon 
 } from "hugeicons-react";
+import { authService } from "../../services/auth.service";
 
 export interface CartItem {
   id: number;
@@ -25,6 +26,7 @@ interface CartDrawerProps {
   items: CartItem[];
   onUpdateQuantity: (id: number, delta: number) => void;
   onRemoveItem: (id: number) => void;
+  onRequireAuth?: () => void;
 }
 
 export function CartDrawer({
@@ -32,7 +34,8 @@ export function CartDrawer({
   onClose,
   items,
   onUpdateQuantity,
-  onRemoveItem
+  onRemoveItem,
+  onRequireAuth
 }: CartDrawerProps) {
   const cartTotal = useMemo(() => {
     return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -203,6 +206,18 @@ export function CartDrawer({
                 </div>
 
                 <button
+                  onClick={() => {
+                    if (authService.isAuthenticated()) {
+                      onClose();
+                      window.location.href = "/procesarCompra";
+                    } else {
+                      if (onRequireAuth) {
+                        onRequireAuth();
+                      } else {
+                        window.location.href = "/procesarCompra"; // Fallback
+                      }
+                    }
+                  }}
                   style={{
                     width: '100%',
                     padding: '12px',

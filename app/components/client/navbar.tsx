@@ -6,17 +6,22 @@ import {
   UserIcon, 
   ShoppingBag01Icon, 
   Menu01Icon,
-  Cancel01Icon
+  Cancel01Icon,
+  PackageIcon,
+  Logout01Icon
 } from "hugeicons-react";
 import { TopBar } from "./topBar";
 import { AuthModal } from "./AuthModal";
 import { CartDrawer } from "./CartDrawer";
 import { useCart } from "../context/CartContext";
+import { authService } from "../../services/auth.service";
 
 export default function Navbar() {
   const [isMobile, setIsMobile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userName, setUserName] = useState("");
 
   const {
     cartItems,
@@ -29,6 +34,11 @@ export default function Navbar() {
   } = useCart();
 
   useEffect(() => {
+    if (authService.isAuthenticated()) {
+      setIsLoggedIn(true);
+      const u = authService.getCurrentUser();
+      if (u) setUserName(u.nombre || "");
+    }
     const checkMobile = () => setIsMobile(window.innerWidth < 1024);
     checkMobile();
     window.addEventListener("resize", checkMobile);
@@ -109,13 +119,29 @@ export default function Navbar() {
             <Search01Icon size={18} color="#1a0f14" />
           </button>
           
-          <button 
-            onClick={() => setIsAuthOpen(true)} 
-            style={iconBtnStyle} 
-            title="Mi Cuenta"
-          >
-            <UserIcon size={18} color="#1a0f14" />
-          </button>
+          {isLoggedIn ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <a href="/mis-compras" style={{ display: 'flex', alignItems: 'center', gap: '4px', textDecoration: 'none', color: '#1a0f14' }} title="Mis Compras">
+                <PackageIcon size={18} color="#1a0f14" />
+                {!isMobile && <span style={{ fontSize: '0.75rem', fontWeight: '600' }}>Mis Compras</span>}
+              </a>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <UserIcon size={18} color="#9c3552" />
+                {!isMobile && <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#9c3552' }}>{userName.split(' ')[0]}</span>}
+              </div>
+              <button onClick={() => authService.logout()} style={iconBtnStyle} title="Cerrar Sesión">
+                <Logout01Icon size={18} color="#1a0f14" />
+              </button>
+            </div>
+          ) : (
+            <button 
+              onClick={() => setIsAuthOpen(true)} 
+              style={iconBtnStyle} 
+              title="Mi Cuenta"
+            >
+              <UserIcon size={18} color="#1a0f14" />
+            </button>
+          )}
 
           {/* Cart Icon */}
           <div style={{ position: 'relative' }}>
@@ -198,6 +224,10 @@ export default function Navbar() {
         items={cartItems}
         onUpdateQuantity={updateQuantity}
         onRemoveItem={removeFromCart}
+        onRequireAuth={() => {
+          closeCart();
+          setIsAuthOpen(true);
+        }}
       />
     </header>
   );

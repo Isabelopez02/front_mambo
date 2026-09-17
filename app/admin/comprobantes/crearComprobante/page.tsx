@@ -158,13 +158,36 @@ export default function CrearComprobantePage() {
   // Sync inputs when typing in Nombre Search
   const handleSearchNombreChange = (val: string) => {
     setSearchNombreInput(val);
-    if (!val.trim()) {
+    const trimmedVal = val.trim();
+    
+    if (!trimmedVal) {
       setSearchCodigoInput("");
       setSelectedProduct(null);
       setPrecioEstimadoInput("");
       return;
     }
-    const found = dbProducts.find(p => p.nombre.toLowerCase() === val.trim().toLowerCase());
+
+    // Si el valor ingresado es un escaneo directo de 10 dígitos (pistola lectora de código)
+    if (/^\d{10}$/.test(trimmedVal)) {
+      const scannedSku = trimmedVal.substring(0, 5);
+      const found = dbProducts.find(p => (p.sku || "") === scannedSku);
+      if (found) {
+        // Autoseleccionamos el producto
+        handleSelectProduct(found);
+        setSearchNombreInput(found.nombre || "");
+        setSearchCodigoInput(trimmedVal); // Seteamos el código completo de 10 dígitos
+        // Disparamos la adición en el próximo ciclo (después de que el estado se actualice)
+        setTimeout(() => {
+          document.getElementById('btn-agregar-comprobante')?.click();
+        }, 100);
+      } else {
+        alert("El código escaneado pertenece a un SKU no registrado en la base de datos.");
+        setSearchNombreInput("");
+      }
+      return;
+    }
+
+    const found = dbProducts.find(p => p.nombre.toLowerCase() === trimmedVal.toLowerCase());
     if (found) {
       handleSelectProduct(found);
       setSearchCodigoInput(found.sku || "");
@@ -467,13 +490,13 @@ export default function CrearComprobantePage() {
 
               <div style={{ gridColumn: "span 2" }}>
                 <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
-                  Cliente Asignado
+                  {tipoComprobante === "FACTURA" ? "RUC del Cliente" : "DNI del Cliente"}
                 </label>
                 {clienteNombre ? (
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", backgroundColor: "#f8fafc", border: "1px solid #cbd5e1", borderRadius: "6px", padding: "8px 12px" }}>
                     <div>
                       <strong style={{ fontSize: "0.75rem", color: "#0f172a", display: "block" }}>{clienteNombre}</strong>
-                      <span style={{ fontSize: "0.65rem", color: "#64748b" }}>Doc: {clienteDoc}</span>
+                      <span style={{ fontSize: "0.65rem", color: "#64748b" }}>{tipoComprobante === "FACTURA" ? "RUC" : "DNI"}: {clienteDoc}</span>
                     </div>
                     <button type="button" onClick={() => setIsClienteModalOpen(true)} style={{ background: "none", border: "none", color: "#0284c7", fontSize: "0.7rem", fontWeight: "700", cursor: "pointer" }}>
                       Cambiar
@@ -749,64 +772,84 @@ export default function CrearComprobantePage() {
               </div>
             </div>
 
-            {/* 2. DOS INPUTS PARA BUSCAR PRODUCTO */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              
-              {/* INPUT 1: BUSCAR POR CÓDIGO / SKU */}
+            {/* 2. BÚSQUEDA EN VIVO DE PRODUCTO (CÓDIGO O NOMBRE) */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px", position: "relative" }}>
               <div>
                 <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
-                  1. Buscar por Código / SKU
+                  2. Buscar Producto (Nombre o SKU)
                 </label>
                 <div style={{ position: "relative" }}>
                   <input
                     type="text"
-                    placeholder="Escribe el código o SKU (ej. 10001)..."
-                    value={searchCodigoInput}
-                    onChange={(e) => handleSearchCodigoChange(e.target.value)}
-                    style={{ ...inputStyle, paddingRight: "28px" }}
-                  />
-                  <Search01Icon size={13} color="#64748b" style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)" }} />
-                </div>
-              </div>
-
-              {/* INPUT 2: BUSCAR POR NOMBRE */}
-              <div>
-                <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
-                  2. Buscar por Nombre de Producto
-                </label>
-                <div style={{ position: "relative" }}>
-                  <input
-                    type="text"
-                    placeholder="Escribe el nombre del producto..."
+                    placeholder="Escribe el nombre o escanea el código (ej. 10001)..."
                     value={searchNombreInput}
-                    onChange={(e) => handleSearchNombreChange(e.target.value)}
+                    onChange={(e) => {
+                      setSearchNombreInput(e.target.value);
+                      handleSearchNombreChange(e.target.value);
+                    }}
                     style={{ ...inputStyle, paddingRight: "28px" }}
                   />
                   <Search01Icon size={13} color="#64748b" style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)" }} />
                 </div>
               </div>
 
-              {/* LISTA DESPLEGABLE / RESULTADOS DE BÚSQUEDA SI HAY MÚLTIPLES */}
-              {filteredProducts.length > 0 && (
-                <div>
-                  <label style={{ display: "block", fontSize: "0.62rem", color: "#64748b", marginBottom: "4px" }}>
-                    Resultados coincidentes ({filteredProducts.length}):
-                  </label>
-                  <select
-                    value={selectedProduct?.id || ""}
-                    onChange={(e) => {
-                      const found = dbProducts.find(p => String(p.id) === e.target.value);
-                      if (found) handleSelectProduct(found);
-                    }}
-                    style={{ ...inputStyle, backgroundColor: "#ffffff" }}
-                  >
-                    {filteredProducts.map(p => (
-                      <option key={p.id} value={p.id}>
-                        {p.nombre} (SKU: {p.sku}) - S/ {p.precioVentaMin ? p.precioVentaMin.toFixed(2) : "0.00"}
-                      </option>
-                    ))}
-                  </select>
+              {/* DROPDOWN FLOTANTE BÚSQUEDA EN VIVO */}
+              {searchNombreInput.trim() !== "" && !selectedProduct && filteredProducts.length > 0 && (
+                <div style={{ 
+                    position: "absolute", 
+                    top: "100%", 
+                    left: 0, 
+                    right: 0, 
+                    backgroundColor: "#fff", 
+                    border: "1px solid #cbd5e1", 
+                    borderRadius: "6px", 
+                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)", 
+                    zIndex: 10,
+                    maxHeight: "200px",
+                    overflowY: "auto",
+                    marginTop: "4px"
+                }}>
+                  {filteredProducts.map(p => (
+                    <div 
+                      key={p.id}
+                      onClick={() => {
+                        handleSelectProduct(p);
+                        setSearchNombreInput(p.nombre);
+                        // Also set the specific code scanning state so it can be added to the cart normally
+                        setSearchCodigoInput(p.sku || ""); 
+                      }}
+                      style={{ padding: "8px 12px", cursor: "pointer", borderBottom: "1px solid #f1f5f9", fontSize: "0.75rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#f8fafc"}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                    >
+                      <div>
+                        <div style={{ fontWeight: "600", color: "#0f172a" }}>{p.nombre}</div>
+                        <div style={{ fontSize: "0.65rem", color: "#64748b" }}>SKU: {p.sku}</div>
+                      </div>
+                      <div style={{ fontWeight: "700", color: "#16a34a" }}>
+                        S/ {p.precioVentaMin ? p.precioVentaMin.toFixed(2) : "0.00"}
+                      </div>
+                    </div>
+                  ))}
                 </div>
+              )}
+              {/* Si ya hay un producto seleccionado, mostrar el input de escaneo de código para ese producto */}
+              {selectedProduct && (
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#1d4ed8", textTransform: "uppercase", marginBottom: "4px", marginTop: "8px" }}>
+                      ↳ Escanea o escribe serie de la unidad:
+                    </label>
+                    <div style={{ position: "relative" }}>
+                      <input
+                        type="text"
+                        placeholder="Ej. 10 dígitos..."
+                        value={searchCodigoInput}
+                        onChange={(e) => setSearchCodigoInput(e.target.value)}
+                        style={{ ...inputStyle, paddingRight: "28px", borderColor: "#bfdbfe", backgroundColor: "#eff6ff" }}
+                      />
+                      <Search01Icon size={13} color="#3b82f6" style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)" }} />
+                    </div>
+                  </div>
               )}
             </div>
 
@@ -855,6 +898,7 @@ export default function CrearComprobantePage() {
 
             {/* BOTÓN DE AGREGAR AL DETALLE */}
             <button
+              id="btn-agregar-comprobante"
               type="button"
               onClick={handleAgregarAlComprobante}
               style={{

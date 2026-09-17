@@ -262,7 +262,7 @@ export default function ComprobantesPage() {
                                     <th style={thStyle}>COMPROBANTE</th>
                                     <th style={thStyle}>CLIENTE & DOC</th>
                                     <th style={thStyle}>MONTO TOTAL</th>
-                                    <th style={{ ...thStyle, textAlign: "center" }}>ESTADO SUNAT</th>
+                                    <th style={{ ...thStyle, textAlign: "center" }}>PRODUCTOS COMPRADOS</th>
                                     <th style={{ ...thStyle, textAlign: "right" }}>ACCIONES</th>
                                 </tr>
                             </thead>
@@ -320,10 +320,11 @@ export default function ComprobantesPage() {
                                                 S/ {item.montoTotal.toFixed(2)}
                                             </td>
 
-                                            {/* ESTADO SUNAT */}
+                                            {/* PRODUCTOS COMPRADOS */}
                                             <td style={{ ...tdStyle, textAlign: "center", padding: "8px 10px" }}>
                                                 <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "0.68rem", fontWeight: "700", backgroundColor: "#f0fdf4", color: "#166534", padding: "2px 8px", borderRadius: "10px", border: "1px solid #bbf7d0" }}>
-                                                    <CheckmarkBadge01Icon size={13} color="#166534" /> Aceptado SUNAT
+                                                    <CheckmarkBadge01Icon size={13} color="#166534" /> 
+                                                    {item.detalles ? item.detalles.reduce((acc, det) => acc + det.cantidad, 0) : 0} items
                                                 </span>
                                             </td>
 
@@ -634,31 +635,23 @@ export default function ComprobantesPage() {
                                     Hash: {btoa(`${viewingComprobante.serieNumero}-${viewingComprobante.montoTotal}-${viewingComprobante.fechaEmision}`).slice(0, 40)}
                                 </div>
                             </div>
-                            {/* QR simulado (placeholder visual) */}
-                            <div style={{
-                                width: "82px", height: "82px",
-                                border: "1px solid #0f172a",
-                                borderRadius: "4px",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                backgroundColor: "#fff",
-                                flexShrink: 0,
-                                position: "relative",
-                                overflow: "hidden"
-                            }}>
-                                <div style={{
-                                    width: "100%", height: "100%",
-                                    backgroundImage: `repeating-linear-gradient(0deg, #0f172a 0 2px, transparent 2px 4px), repeating-linear-gradient(90deg, #0f172a 0 2px, transparent 2px 4px)`,
-                                    opacity: 0.85
-                                }} />
-                                <div style={{
-                                    position: "absolute", inset: "22px",
-                                    backgroundColor: "#fff",
-                                    display: "flex", alignItems: "center", justifyContent: "center",
-                                    fontWeight: "900", fontSize: "9px", color: "#0f172a"
-                                }}>
-                                    QR
+                            {/* QRs */}
+                            <div style={{ display: "flex", gap: "10px" }}>
+                                <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                                    <img 
+                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(typeof window !== "undefined" ? window.location.origin : "" + "/admin/comprobantes/" + viewingComprobante.id)}`} 
+                                        alt="QR Comprobante" 
+                                        style={{ width: "70px", height: "70px", border: "1px solid #0f172a", borderRadius: "4px" }}
+                                    />
+                                    <span style={{ fontSize: "6.5px", marginTop: "3px", color: "#475569", fontWeight: "700" }}>VER COMPROBANTE</span>
+                                </div>
+                                <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                                    <img 
+                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent("https://jinnova.pe")}`} 
+                                        alt="QR Website" 
+                                        style={{ width: "70px", height: "70px", border: "1px solid #0f172a", borderRadius: "4px" }}
+                                    />
+                                    <span style={{ fontSize: "6.5px", marginTop: "3px", color: "#475569", fontWeight: "700" }}>SÍGUENOS</span>
                                 </div>
                             </div>
                         </div>

@@ -80,7 +80,7 @@ export async function apiFetch<T = any>(endpoint: string, options: RequestOption
 
   // INTERCEPTOR DE RESPUESTAS: 401 y 403
   if (response.status === 401 || response.status === 403) {
-    if (typeof window !== "undefined" && !window.location.pathname.includes("/admin/login")) {
+    if (typeof window !== "undefined" && window.location.pathname.startsWith("/admin") && !window.location.pathname.includes("/admin/login")) {
       clearToken();
       window.location.href = "/admin/login";
     }

@@ -2,25 +2,42 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
-const categories = [
-  { id: 1, title: "CARTERAS", img: "/img/categorias/cartera.png" },
-  { id: 2, title: "MAQUILLAJE", img: "/img/categorias/maquillaje.png" },
-  { id: 3, title: "HOGAR", img: "/img/categorias/casa.png" },
-  { id: 4, title: "ACCESORIOS", img: "/img/categorias/accesorio.png" },
-  { id: 5, title: "SKINCARE", img: "/img/categorias/skincare.png" },
-  { id: 6, title: "CALZADO", img: "/img/categorias/tacos.png" },
-  { id: 7, title: "JOYERÍA", img: "/img/categorias/joyeria.png" },
-];
+import { categoriasService } from "../../services/categorias.service";
 
 export function FullCategorias() {
   const [isMobile, setIsMobile] = useState(false);
+  const [dbCategories, setDbCategories] = useState<{id: number, title: string, img: string}[]>([]);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener("resize", checkMobile);
+    
+    // Fetch categories from backend using service
+    categoriasService.listar()
+      .then((data: any) => {
+        if (Array.isArray(data) && data.length > 0) {
+          const mapped = data.map(c => ({
+            id: c.id,
+            title: c.nombre,
+            img: c.icono || "/img/categorias/default.png"
+          }));
+          setDbCategories(mapped);
+        } else {
+          setDbCategories([]); 
+        }
+      })
+      .catch(err => {
+        console.error("Error cargando categorias:", err);
+        setDbCategories([]);
+      });
+
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
+  if (dbCategories.length === 0) {
+    return null; // Omitir sección si no hay categorías
+  }
 
   return (
     <section style={{ 
@@ -70,7 +87,7 @@ export function FullCategorias() {
         overflowX: isMobile ? 'auto' : 'visible',
         paddingBottom: isMobile ? '8px' : '0'
       }}>
-        {categories.map((cat) => (
+        {dbCategories.map((cat) => (
           <motion.div
             key={cat.id}
             whileHover={{ y: -5, scale: 1.08 }}
