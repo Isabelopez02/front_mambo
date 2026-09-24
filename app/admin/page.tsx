@@ -10,7 +10,7 @@ import {
   ArrowUp01Icon,
   Location01Icon,
   ArrowRight01Icon,
-  UserCheck01Icon
+  PackageIcon
 } from "hugeicons-react";
 
 interface MonthlyData {
@@ -29,12 +29,13 @@ const last6MonthsData: MonthlyData[] = [
   { mes: "Agosto", ingresos: 28450, egresos: 12900, ganancia: 15550 }
 ];
 
-const recentDeliveries = [
-  { id: "#1042", distrito: "Surco", conductor: "Pedro R.", estado: "En Camino", tagColor: "#3b82f6" },
-  { id: "#1040", distrito: "Miraflores", conductor: "Juan M.", estado: "Entregado", tagColor: "#10b981" },
-  { id: "#1039", distrito: "Los Olivos", conductor: "Carlos S.", estado: "Asignado", tagColor: "#9c3552" },
-  { id: "#1038", distrito: "San Isidro", conductor: "Luis G.", estado: "Entregado", tagColor: "#10b981" }
+const recentPickups = [
+  { id: "#1042", sede: "Sede Centro Histórico", cliente: "Ana B.", estado: "Pendiente", tagColor: "#3b82f6" },
+  { id: "#1040", sede: "Sede Gamarra Luxe", cliente: "Juan M.", estado: "Entregado", tagColor: "#10b981" },
+  { id: "#1039", sede: "Sede Los Olivos - Lima Norte", cliente: "Carlos S.", estado: "Por Alistar", tagColor: "#9c3552" },
+  { id: "#1038", sede: "Sede Miraflores Boutique", cliente: "Luis G.", estado: "Entregado", tagColor: "#10b981" }
 ];
+
 
 export default function AdminDashboardPage() {
   const [hoveredPointIndex, setHoveredPointIndex] = useState<number | null>(5); // Default to Agosto
@@ -77,7 +78,7 @@ export default function AdminDashboardPage() {
         <span style={{ fontSize: "0.58rem", fontWeight: "700", color: "#9c3552", letterSpacing: "1.8px", textTransform: "uppercase" }}>
           PANEL DE CONTROL
         </span>
-        <h1 style={{ fontFamily: "var(--font-dm-serif), Georgia, serif", fontSize: "1.35rem", color: "#1a0f14", margin: "2px 0 0 0", fontWeight: "400" }}>
+        <h1 style={{ fontSize: "1.35rem", color: "#1a0f14", margin: "2px 0 0 0", fontWeight: "400" }}>
           Resumen General de la Tienda
         </h1>
       </div>
@@ -144,7 +145,7 @@ export default function AdminDashboardPage() {
           </div>
         </motion.div>
 
-        {/* CARD 3: ENTREGAS EN CAMINO */}
+        {/* CARD 3: RECOJOS PENDIENTES */}
         <motion.div
           whileHover={{ y: -2 }}
           transition={{ duration: 0.15 }}
@@ -157,9 +158,9 @@ export default function AdminDashboardPage() {
           }}
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-            <span style={{ fontSize: "0.7rem", fontWeight: "600", color: "#66585e" }}>Entregas en Camino</span>
+            <span style={{ fontSize: "0.7rem", fontWeight: "600", color: "#66585e" }}>Recojos Pendientes</span>
             <div style={{ padding: "6px", borderRadius: "8px", backgroundColor: "#fcf0f4" }}>
-              <DeliveryTruck01Icon size={15} color="#9c3552" />
+              <PackageIcon size={15} color="#9c3552" />
             </div>
           </div>
 
@@ -168,8 +169,8 @@ export default function AdminDashboardPage() {
           </h3>
 
           <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-            <span style={{ fontSize: "0.68rem", fontWeight: "700", color: "#15803d" }}>4 conductores</span>
-            <span style={{ fontSize: "0.65rem", color: "#887980" }}>en ruta activa</span>
+            <span style={{ fontSize: "0.68rem", fontWeight: "700", color: "#15803d" }}>4 sedes</span>
+            <span style={{ fontSize: "0.65rem", color: "#887980" }}>con recojos</span>
           </div>
         </motion.div>
 
@@ -345,19 +346,19 @@ export default function AdminDashboardPage() {
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px", borderBottom: "1px solid #f5eaee", paddingBottom: "10px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <DeliveryTruck01Icon size={16} color="#9c3552" />
+                <PackageIcon size={16} color="#9c3552" />
                 <h3 style={{ fontSize: "0.9rem", fontWeight: "700", color: "#1a0f14", margin: 0 }}>
-                  Entregas
+                  Recojos en Tienda
                 </h3>
               </div>
               <span style={{ fontSize: "0.62rem", fontWeight: "700", color: "#9c3552", backgroundColor: "#fcf0f4", padding: "2px 6px", borderRadius: "4px" }}>
-                4 RUTA
+                HOY
               </span>
             </div>
 
-            {/* LIST OF DELIVERIES */}
+            {/* LIST OF PICKUPS */}
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              {recentDeliveries.map((item) => (
+              {recentPickups.map((item) => (
                 <div
                   key={item.id}
                   style={{
@@ -387,12 +388,12 @@ export default function AdminDashboardPage() {
 
                   <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                     <Location01Icon size={11} color="#66585e" />
-                    <span style={{ fontSize: "0.68rem", color: "#66585e" }}>{item.distrito}</span>
+                    <span style={{ fontSize: "0.68rem", color: "#66585e" }}>{item.sede}</span>
                   </div>
 
                   <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                    <UserCheck01Icon size={11} color="#9c3552" />
-                    <span style={{ fontSize: "0.68rem", fontWeight: "600", color: "#44383d" }}>Cond: {item.conductor}</span>
+                    <PackageIcon size={11} color="#9c3552" />
+                    <span style={{ fontSize: "0.68rem", fontWeight: "600", color: "#44383d" }}>Cliente: {item.cliente}</span>
                   </div>
                 </div>
               ))}
@@ -419,7 +420,7 @@ export default function AdminDashboardPage() {
               textAlign: "center"
             }}
           >
-            Ver Entregas <ArrowRight01Icon size={12} color="#9c3552" />
+            Ver Recojos <ArrowRight01Icon size={12} color="#9c3552" />
           </a>
         </div>
 

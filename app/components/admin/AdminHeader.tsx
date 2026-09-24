@@ -15,7 +15,6 @@ import { authService } from "../../services/auth.service";
 export function AdminHeader() {
   const [formattedDate, setFormattedDate] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showUserDropdown, setShowUserDropdown] = useState(false);
 
   const userDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -31,16 +30,7 @@ export function AdminHeader() {
     setFormattedDate(dateStr.charAt(0).toUpperCase() + dateStr.slice(1));
   }, []);
 
-  // Close dropdown on outside click
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (userDropdownRef.current && !userDropdownRef.current.contains(event.target as Node)) {
-        setShowUserDropdown(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+
 
   return (
     <header style={{
@@ -156,119 +146,21 @@ export function AdminHeader() {
               </div>
               
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                <div style={{ fontSize: "0.72rem", color: "#334155", backgroundColor: "#f8fafc", padding: "8px 10px", borderRadius: "8px" }}>
-                  📦 <strong>Nuevo pedido #1042</strong> recibido hace 10 min.
+                <div style={{ fontSize: "0.72rem", color: "#334155", backgroundColor: "#fcf0f4", padding: "8px 10px", borderRadius: "8px", border: "1px solid #f3c2d4" }}>
+                  ⚠️ <strong>Pedido bajo de stock</strong> en labial Red Velvet.
                 </div>
                 <div style={{ fontSize: "0.72rem", color: "#334155", backgroundColor: "#f8fafc", padding: "8px 10px", borderRadius: "8px" }}>
-                  🚚 <strong>Entrega finalizada</strong> por Conductor Pedro R.
+                  📦 <strong>Nuevo pedido #1045</strong> para recojo en tienda.
                 </div>
                 <div style={{ fontSize: "0.72rem", color: "#334155", backgroundColor: "#f8fafc", padding: "8px 10px", borderRadius: "8px" }}>
-                  ⚠️ <strong>Stock bajo</strong> en Cartera Chic Luxe.
+                  📦 <strong>Nuevo pedido #1046</strong> para recojo en tienda.
                 </div>
               </div>
             </div>
           )}
         </div>
 
-        {/* CONSOLIDATED USER PROFILE DROPDOWN (TOP RIGHT HEADER) */}
-        <div style={{ position: "relative" }} ref={userDropdownRef}>
-          <button
-            onClick={() => setShowUserDropdown(!showUserDropdown)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              padding: "4px 10px 4px 4px",
-              borderRadius: "25px",
-              backgroundColor: "#f8fafc",
-              border: "1px solid #cbd5e1",
-              cursor: "pointer"
-            }}
-          >
-            <img
-              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop"
-              alt="Admin Taty Profile"
-              style={{
-                width: "34px",
-                height: "34px",
-                borderRadius: "50%",
-                objectFit: "cover",
-                border: "2px solid #0f172a"
-              }}
-            />
 
-            <div style={{ textAlign: "left", paddingRight: "4px" }}>
-              <h4 style={{ fontSize: "0.76rem", fontWeight: "700", color: "#0f172a", margin: 0, lineHeight: 1.1 }}>
-                {authService.getCurrentUser()?.nombre || "Admin Taty"}
-              </h4>
-              <span style={{ fontSize: "0.6rem", color: "#64748b", fontWeight: "600" }}>
-                Rol: {authService.getCurrentUser()?.rol || "ADMIN"}
-              </span>
-            </div>
-
-            <ArrowDown01Icon size={14} color="#64748b" />
-          </button>
-
-          {/* USER ACCOUNT ACTIONS DROPDOWN */}
-          {showUserDropdown && (
-            <div style={{
-              position: "absolute",
-              top: "48px",
-              right: 0,
-              width: "220px",
-              backgroundColor: "#ffffff",
-              borderRadius: "14px",
-              boxShadow: "0 12px 32px rgba(0,0,0,0.15)",
-              border: "1px solid #e2e8f0",
-              padding: "8px",
-              zIndex: 250,
-              display: "flex",
-              flexDirection: "column",
-              gap: "2px"
-            }}>
-              <div style={{ padding: "8px 12px", borderBottom: "1px solid #f1f5f9" }}>
-                <strong style={{ fontSize: "0.78rem", color: "#0f172a", display: "block" }}>
-                  {authService.getCurrentUser()?.nombre || "Admin Taty"}
-                </strong>
-                <span style={{ fontSize: "0.62rem", color: "#059669", fontWeight: "700" }}>
-                  ● En línea ({authService.getCurrentUser()?.rol || "ADMIN"})
-                </span>
-              </div>
-
-              <a
-                href="/admin/configuracion"
-                style={dropdownItemStyle}
-                onClick={() => setShowUserDropdown(false)}
-              >
-                <UserIcon size={15} color="#475569" />
-                <span>Mi Perfil</span>
-              </a>
-
-              <a
-                href="/admin/configuracion"
-                style={dropdownItemStyle}
-                onClick={() => setShowUserDropdown(false)}
-              >
-                <Settings02Icon size={15} color="#475569" />
-                <span>Configuración de Cuenta</span>
-              </a>
-
-              <div style={{ borderTop: "1px solid #f1f5f9", marginTop: "4px", paddingTop: "4px" }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowUserDropdown(false);
-                    authService.logout();
-                  }}
-                  style={{ ...dropdownItemStyle, color: "#dc2626", width: "100%", border: "none", backgroundColor: "transparent" }}
-                >
-                  <Logout01Icon size={15} color="#dc2626" />
-                  <span>Cerrar Sesión</span>
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
 
       </div>
 

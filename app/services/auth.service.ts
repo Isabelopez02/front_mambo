@@ -34,10 +34,15 @@ export const authService = {
     return user;
   },
 
-  // REGISTRAR NUEVO USUARIO / ADMIN
+  // REGISTRAR NUEVO USUARIO / ADMIN / CLIENTE
   async register(requestOrDoc: RegisterRequest | string, password?: string, nombre?: string): Promise<AuthUser> {
     const payload: RegisterRequest = typeof requestOrDoc === "string"
-      ? { numeroDocumento: requestOrDoc, password: password || "" }
+      ? { 
+          numeroDocumento: requestOrDoc, 
+          email: requestOrDoc.includes("@") ? requestOrDoc : undefined,
+          password: password || "",
+          nombre: nombre
+        }
       : requestOrDoc;
 
     const data: AuthResponse & { numeroDocumento?: string; nombre?: string; rol?: string } = 
@@ -46,8 +51,8 @@ export const authService = {
     const user: AuthUser = {
       token: data.token,
       numeroDocumento: data.numeroDocumento || payload.numeroDocumento,
-      nombre: data.nombre || nombre || "Administrador",
-      rol: data.rol || "ADMIN"
+      nombre: data.nombre || nombre || "Cliente",
+      rol: data.rol || "CLIENTE"
     };
 
     setToken(user.token, user);

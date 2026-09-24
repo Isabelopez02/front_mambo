@@ -265,17 +265,17 @@ export default function ProductosAdminPage() {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       
       {/* HEADER SECTION */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
         <div>
-          <h1 style={{ fontSize: "1.15rem", fontWeight: "700", color: "#0f172a", margin: 0, letterSpacing: "-0.01em" }}>
+          <span style={{ fontSize: "0.58rem", fontWeight: "700", color: "#9c3552", letterSpacing: "1.8px", textTransform: "uppercase" }}>
             Administración de Productos
-          </h1>
-          <p style={{ fontSize: "0.74rem", color: "#64748b", margin: "2px 0 0 0" }}>
+          </span>
+          <h1 style={{ fontSize: "1.35rem", color: "#1a0f14", margin: "2px 0 0 0", fontWeight: "400" }}>
             Gestión de inventario, precios y categorías sincronizados con backend
-          </p>
+          </h1>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -616,7 +616,7 @@ export default function ProductosAdminPage() {
                 top: "50%",
                 left: "50%",
                 width: "90%",
-                maxWidth: "480px",
+                maxWidth: "750px", // WIDER MODAL FOR 2 COLUMNS
                 maxHeight: "90vh",
                 overflowY: "auto",
                 backgroundColor: "#ffffff",
@@ -627,138 +627,140 @@ export default function ProductosAdminPage() {
                 border: "1px solid #e2e8f0"
               }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid #f1f5f9", paddingBottom: "10px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", borderBottom: "1px solid #f3e2e8", paddingBottom: "12px" }}>
                 <div>
-                  <span style={{ fontSize: "0.58rem", fontWeight: "700", color: "#059669", textTransform: "uppercase" }}>BACKEND DB: POST /lista/productos</span>
-                  <h3 style={{ fontSize: "0.98rem", fontWeight: "700", color: "#0f172a", margin: "2px 0 0 0" }}>Registrar en Base de Datos</h3>
+                  <span style={{ fontSize: "0.58rem", fontWeight: "700", color: "#9c3552", textTransform: "uppercase", letterSpacing: "1px" }}>NUEVO PRODUCTO</span>
+                  <h3 style={{ fontSize: "1.1rem", fontWeight: "700", color: "#1a0f14", margin: "2px 0 0 0" }}>Registrar en Catálogo</h3>
                 </div>
-                <button onClick={() => setIsAddModalOpen(false)} style={{ background: "none", border: "none", cursor: "pointer" }}>
-                  <Cancel01Icon size={18} color="#0f172a" />
+                <button onClick={() => setIsAddModalOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px" }}>
+                  <Cancel01Icon size={20} color="#1a0f14" />
                 </button>
               </div>
 
-              <form onSubmit={handleAddProductSubmit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                
-                {/* IMAGE UPLOAD FIELD WITH PREVIEW */}
-                <div>
-                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
-                    Imagen del Producto
-                  </label>
-                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                    <div style={{
-                      width: "60px",
-                      height: "60px",
-                      borderRadius: "10px",
-                      backgroundColor: "#f8fafc",
-                      border: "1px dashed #cbd5e1",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      overflow: "hidden"
-                    }}>
-                      {imagePreview ? (
-                        <img src={imagePreview} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      ) : (
-                        <Image01Icon size={24} color="#94a3b8" />
-                      )}
-                    </div>
+              <form onSubmit={handleAddProductSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
+                  
+                  {/* LEFT COLUMN */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
 
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      style={{ fontSize: "0.72rem", color: "#334155" }}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Nombre del Producto</label>
-                  <input type="text" required placeholder="Ej. Bolso Americano" value={nombreInput} onChange={(e) => setNombreInput(e.target.value)} style={inputStyle} />
-                </div>
-
-                <div>
-                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Descripción del Producto</label>
-                  <textarea placeholder="Ingresa la descripción del producto..." value={descripcionInput} onChange={(e) => setDescripcionInput(e.target.value)} style={{ ...inputStyle, height: "55px", resize: "none" }} />
-                </div>
-
-                <div>
-                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Categoría</label>
-                  <select value={catInput} onChange={(e) => setCatInput(e.target.value)} style={inputStyle}>
-                    {dbCategories.length > 0 ? (
-                      dbCategories.map(c => <option key={c.id || c.nombre} value={c.nombre}>{c.nombre}</option>)
-                    ) : (
-                      <>
-                        <option value="Carteras">Carteras</option>
-                        <option value="Maquillaje">Maquillaje</option>
-                        <option value="Skincare">Skincare</option>
-                        <option value="Hogar">Hogar</option>
-                        <option value="Accesorios">Accesorios</option>
-                      </>
-                    )}
-                  </select>
-                </div>
-
-                <div style={{ backgroundColor: "#f8fafc", padding: "8px 12px", borderRadius: "8px", border: "1px solid #e2e8f0", fontSize: "0.66rem", color: "#475569" }}>
-                  ℹ️ El <strong>SKU único de 5 dígitos</strong> (ej. 23212) será asignado automáticamente por el backend. Las <strong>unidades físicas y series de 5 dígitos</strong> se generarán únicamente cuando registres una compra/ingreso de mercadería.
-                </div>
-
-                {/* READ-ONLY COST PRICE INPUT */}
-                <div>
-                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
-                    Precio Compra Proveedor (Auto-asignado en Compras)
-                  </label>
-                  <input
-                    type="text"
-                    readOnly
-                    value={`S/ ${parseFloat(costoCompraInput || "0").toFixed(2)} (🔒 Se actualiza con compras)`}
-                    style={{ ...inputStyle, backgroundColor: "#f1f5f9", color: "#64748b", fontWeight: "700", cursor: "not-allowed" }}
-                  />
-                  <span style={{ fontSize: "0.62rem", color: "#64748b", marginTop: "2px", display: "block" }}>
-                    ℹ️ El costo de compra se actualizará automáticamente en la BD al registrar la primera compra al proveedor.
-                  </span>
-                </div>
-
-                {/* PERCENTAGE GAIN MARGIN INPUTS */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-                  <div>
-                    <label style={{ display: "block", fontSize: "0.62rem", fontWeight: "700", color: "#15803d", textTransform: "uppercase", marginBottom: "4px" }}>% Ganancia Mínima</label>
-                    <input type="number" min="1" max="500" required value={gainMinPct} onChange={(e) => setGainMinPct(parseFloat(e.target.value) || 0)} style={inputStyle} />
-                  </div>
-
-                  <div>
-                    <label style={{ display: "block", fontSize: "0.62rem", fontWeight: "700", color: "#166534", textTransform: "uppercase", marginBottom: "4px" }}>% Ganancia Máxima</label>
-                    <input type="number" min="1" max="500" required value={gainMaxPct} onChange={(e) => setGainMaxPct(parseFloat(e.target.value) || 0)} style={inputStyle} />
-                  </div>
-                </div>
-
-                {/* AUTOMATIC CALCULATED SALE PRICES DISPLAY */}
-                <div style={{
-                  backgroundColor: "#f0fdf4",
-                  borderRadius: "10px",
-                  padding: "10px 12px",
-                  border: "1px solid #bbf7d0",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center"
-                }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                    <CalculatorIcon size={18} color="#15803d" />
                     <div>
-                      <span style={{ fontSize: "0.58rem", fontWeight: "800", color: "#166534", textTransform: "uppercase", display: "block" }}>PRECIOS CALCULADOS BD</span>
-                      <span style={{ fontSize: "0.62rem", color: "#15803d" }}>S/ {numCostoCompra.toFixed(2)} + {gainMinPct}% / {gainMaxPct}%</span>
+                      <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>
+                        Imagen del Producto
+                      </label>
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <div style={{
+                          width: "70px",
+                          height: "70px",
+                          borderRadius: "10px",
+                          backgroundColor: "#fcf0f4",
+                          border: "1px dashed #f3c2d4",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          overflow: "hidden"
+                        }}>
+                          {imagePreview ? (
+                            <img src={imagePreview} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          ) : (
+                            <Image01Icon size={24} color="#9c3552" />
+                          )}
+                        </div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          style={{ fontSize: "0.72rem", color: "#44383d" }}
+                        />
+                      </div>
                     </div>
+
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>Nombre del Producto</label>
+                      <input type="text" required placeholder="Ej. Bolso Americano" value={nombreInput} onChange={(e) => setNombreInput(e.target.value)} style={inputStyle} />
+                    </div>
+
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>Categoría</label>
+                      <select value={catInput} onChange={(e) => setCatInput(e.target.value)} style={inputStyle}>
+                        {dbCategories.length > 0 ? (
+                          dbCategories.map(c => <option key={c.id || c.nombre} value={c.nombre}>{c.nombre}</option>)
+                        ) : (
+                          <>
+                            <option value="Carteras">Carteras</option>
+                            <option value="Maquillaje">Maquillaje</option>
+                            <option value="Skincare">Skincare</option>
+                            <option value="Hogar">Hogar</option>
+                            <option value="Accesorios">Accesorios</option>
+                          </>
+                        )}
+                      </select>
+                    </div>
+
                   </div>
 
-                  <div style={{ textAlign: "right" }}>
-                    <span style={{ fontSize: "0.75rem", fontWeight: "800", color: "#15803d", display: "block" }}>Mín: S/ {calcPMin.toFixed(2)}</span>
-                    <span style={{ fontSize: "0.78rem", fontWeight: "800", color: "#166534" }}>Máx: S/ {calcPMax.toFixed(2)}</span>
+                  {/* RIGHT COLUMN */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>Descripción del Producto</label>
+                      <textarea placeholder="Ingresa la descripción del producto..." value={descripcionInput} onChange={(e) => setDescripcionInput(e.target.value)} style={{ ...inputStyle, height: "55px", resize: "none" }} />
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                      <div>
+                        <label style={{ display: "block", fontSize: "0.62rem", fontWeight: "700", color: "#9c3552", textTransform: "uppercase", marginBottom: "4px" }}>% Ganancia Mínima</label>
+                        <input type="number" min="1" max="500" required value={gainMinPct} onChange={(e) => setGainMinPct(parseFloat(e.target.value) || 0)} style={inputStyle} />
+                      </div>
+                      <div>
+                        <label style={{ display: "block", fontSize: "0.62rem", fontWeight: "700", color: "#9c3552", textTransform: "uppercase", marginBottom: "4px" }}>% Ganancia Máxima</label>
+                        <input type="number" min="1" max="500" required value={gainMaxPct} onChange={(e) => setGainMaxPct(parseFloat(e.target.value) || 0)} style={inputStyle} />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>
+                        Precio Compra (Auto-asignado al ingresar stock)
+                      </label>
+                      <input
+                        type="text"
+                        readOnly
+                        value={`S/ ${parseFloat(costoCompraInput || "0").toFixed(2)} 🔒`}
+                        style={{ ...inputStyle, backgroundColor: "#faf7f8", color: "#887980", fontWeight: "700", cursor: "not-allowed" }}
+                      />
+                    </div>
+
+                    <div style={{
+                      backgroundColor: "#fcf0f4",
+                      borderRadius: "10px",
+                      padding: "12px 14px",
+                      border: "1px solid #f3c2d4",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center"
+                    }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <CalculatorIcon size={20} color="#9c3552" />
+                        <div>
+                          <span style={{ fontSize: "0.58rem", fontWeight: "800", color: "#9c3552", textTransform: "uppercase", display: "block" }}>PRECIOS DE VENTA SUGERIDOS</span>
+                          <span style={{ fontSize: "0.62rem", color: "#887980" }}>Calculado según % de ganancia</span>
+                        </div>
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <span style={{ fontSize: "0.75rem", fontWeight: "800", color: "#9c3552", display: "block" }}>Mín: S/ {calcPMin.toFixed(2)}</span>
+                        <span style={{ fontSize: "0.78rem", fontWeight: "800", color: "#1a0f14" }}>Máx: S/ {calcPMax.toFixed(2)}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <button type="submit" style={{ width: "100%", padding: "10px", backgroundColor: "#0f172a", color: "#ffffff", border: "none", borderRadius: "8px", fontSize: "0.75rem", fontWeight: "700", cursor: "pointer", marginTop: "6px" }}>
-                  GUARDAR DIRECTO EN BASE DE DATOS
-                </button>
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "10px", borderTop: "1px solid #f3e2e8", paddingTop: "16px" }}>
+                  <button type="button" onClick={() => setIsAddModalOpen(false)} style={{ padding: "10px 16px", backgroundColor: "#ffffff", color: "#66585e", border: "1px solid #f3e2e8", borderRadius: "8px", fontSize: "0.75rem", fontWeight: "700", cursor: "pointer" }}>
+                    Cancelar
+                  </button>
+                  <button type="submit" style={{ padding: "10px 24px", backgroundColor: "#9c3552", color: "#ffffff", border: "none", borderRadius: "8px", fontSize: "0.75rem", fontWeight: "700", cursor: "pointer" }}>
+                    GUARDAR PRODUCTO
+                  </button>
+                </div>
               </form>
             </motion.div>
           </>

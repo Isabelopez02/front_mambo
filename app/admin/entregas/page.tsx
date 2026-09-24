@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
+  ArrowLeft02Icon,
   Search01Icon, 
   DeliveryTruck01Icon, 
   User02Icon, 
@@ -15,8 +16,7 @@ import {
   Clock01Icon
 } from "hugeicons-react";
 
-import { conductoresService } from "../../services/conductores.service";
-import { ConductorDTO } from "../../types/conductor.dto";
+import { compraService } from "../../services/compra.service";
 
 interface EntregaItem {
   id: number;
@@ -25,54 +25,14 @@ interface EntregaItem {
   clienteTelefono: string;
   direccion: string;
   ciudad: string;
-  conductorNombre: string;
-  conductorVehiculo?: string;
   fechaEnvio: string;
-  estado: "ENTREGADO" | "EN_CAMINO" | "PENDIENTE";
+  estado: "ENTREGADO" | "EN_CAMINO" | "PENDIENTE" | "POR_ALISTAR" | "POR_ENTREGAR" | "POR_RECOGER";
   notas?: string;
+  detallesRaw?: any[];
 }
 
 export default function EntregasPage() {
-  const [entregas, setEntregas] = useState<EntregaItem[]>([
-    {
-      id: 101,
-      pedidoCodigo: "PED-2026-8801",
-      clienteNombre: "Carlos Mendoza",
-      clienteTelefono: "987654321",
-      direccion: "Av. Las Flores 450, San Isidro",
-      ciudad: "Lima",
-      conductorNombre: "Juan Carlos Pérez",
-      conductorVehiculo: "Moto Honda (ABC-123)",
-      fechaEnvio: "2026-09-15T10:30:00",
-      estado: "ENTREGADO",
-      notas: "Entregado en recepción con DNI 45892100"
-    },
-    {
-      id: 102,
-      pedidoCodigo: "PED-2026-8804",
-      clienteNombre: "María Luisa Torres",
-      clienteTelefono: "912345678",
-      direccion: "Calle Los Pinos 128, Miraflores",
-      ciudad: "Lima",
-      conductorNombre: "Roberto Gómez",
-      conductorVehiculo: "Van Chana (F4X-892)",
-      fechaEnvio: "2026-09-15T11:45:00",
-      estado: "EN_CAMINO",
-      notas: "Cliente avisado 15min antes"
-    },
-    {
-      id: 103,
-      pedidoCodigo: "PED-2026-8809",
-      clienteNombre: "Andrea Castillo",
-      clienteTelefono: "955443322",
-      direccion: "Jr. Ayacucho 890, Surco",
-      ciudad: "Lima",
-      conductorNombre: "Juan Carlos Pérez",
-      conductorVehiculo: "Moto Honda (ABC-123)",
-      fechaEnvio: "2026-09-15T12:15:00",
-      estado: "PENDIENTE"
-    }
-  ]);
+  const [entregas, setEntregas] = useState<EntregaItem[]>([]);
 
   const [dbConductores, setDbConductores] = useState<ConductorDTO[]>([]);
   const [loading, setLoading] = useState(false);
@@ -84,22 +44,44 @@ export default function EntregasPage() {
   const [newPedidoCodigo, setNewPedidoCodigo] = useState("");
   const [newClienteNombre, setNewClienteNombre] = useState("");
   const [newDireccion, setNewDireccion] = useState("");
-  const [selectedConductorNombre, setSelectedConductorNombre] = useState("");
 
-  const loadConductores = async () => {
+  const [isObservarModalOpen, setIsObservarModalOpen] = useState(false);
+  const [selectedEntrega, setSelectedEntrega] = useState<EntregaItem | null>(null);
+
+
+  const fetchCompras = async () => {
     try {
-      const data = await conductoresService.listar();
-      setDbConductores(data);
-      if (data.length > 0) {
-        setSelectedConductorNombre(data[0].nombre || "");
-      }
-    } catch (err) {
-      console.error("Error al cargar conductores:", err);
+      setLoading(true);
+      const res = await compraService.listarCompras();
+      const mapped = res.map((c: any) => {
+        let estadoVisual = c.estado === "ENTREGADO" ? "ENTREGADO" : "PENDIENTE";
+        if (estadoVisual === "PENDIENTE" && c.tipoEnvio === "RECOJO_TIENDA") {
+          estadoVisual = c.estadoRecojo || "POR_ALISTAR";
+        }
+
+        return {
+          id: c.id,
+          pedidoCodigo: `PED-2026-${c.id.toString().padStart(4, '0')}`,
+          clienteNombre: c.nombreDestinario || "Cliente",
+          clienteTelefono: c.contactoDestinatario || "-",
+          direccion: c.sedeRecojo || "Sede Centro Histórico",
+          ciudad: "Lima",
+          fechaEnvio: c.fechaCreacion || new Date().toISOString(),
+          estado: estadoVisual,
+          notas: c.envio?.referencia || "Recojo Presencial",
+          detallesRaw: c.detalles || []
+        };
+      });
+      setEntregas(mapped);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadConductores();
+    fetchCompras();
   }, []);
 
   const handleToggleEstado = (id: number) => {
@@ -123,8 +105,6 @@ export default function EntregasPage() {
       clienteTelefono: "999888777",
       direccion: newDireccion,
       ciudad: "Lima",
-      conductorNombre: selectedConductorNombre || "Conductor Asignado",
-      conductorVehiculo: "Moto / Vehículo",
       fechaEnvio: new Date().toISOString(),
       estado: "PENDIENTE"
     };
@@ -140,30 +120,28 @@ export default function EntregasPage() {
     const matchesSearch = 
       e.pedidoCodigo.toLowerCase().includes(searchQuery.toLowerCase()) ||
       e.clienteNombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      e.conductorNombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
       e.direccion.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesStatus = 
-      selectedFilter === "TODOS" ||
-      (selectedFilter === "ENTREGADO" && e.estado === "ENTREGADO") ||
-      (selectedFilter === "EN_CAMINO" && e.estado === "EN_CAMINO") ||
-      (selectedFilter === "PENDIENTE" && e.estado === "PENDIENTE");
-
-    return matchesSearch && matchesStatus;
+    const isPendiente = e.estado === "POR_ALISTAR" || e.estado === "POR_RECOGER" || e.estado === "PENDIENTE" || e.estado === "EN_CAMINO";
+    
+    if (selectedFilter === "TODOS") return matchesSearch && isPendiente;
+    if (selectedFilter === "ENTREGADO") return matchesSearch && e.estado === "ENTREGADO";
+    if (selectedFilter === "PENDIENTE") return matchesSearch && isPendiente;
+    return matchesSearch;
   });
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       
       {/* HEADER SECTION */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
         <div>
-          <h1 style={{ fontSize: "1.15rem", fontWeight: "700", color: "#0f172a", margin: 0, letterSpacing: "-0.01em" }}>
+          <span style={{ fontSize: "0.58rem", fontWeight: "700", color: "#9c3552", letterSpacing: "1.8px", textTransform: "uppercase" }}>
             Control de Entregas & Reparto
+          </span>
+          <h1 style={{ fontSize: "1.35rem", color: "#1a0f14", margin: "2px 0 0 0", fontWeight: "400" }}>
+            Estado de los recojos en tienda en tiempo real
           </h1>
-          <p style={{ fontSize: "0.74rem", color: "#64748b", margin: "2px 0 0 0" }}>
-            Estado de entregas en tiempo real y asignación de conductores
-          </p>
         </div>
 
         <button
@@ -203,7 +181,7 @@ export default function EntregasPage() {
         <div style={{ position: "relative", width: "280px" }}>
           <input
             type="text"
-            placeholder="Buscar por pedido, cliente o conductor..."
+            placeholder="Buscar por pedido o cliente..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{
@@ -308,7 +286,6 @@ export default function EntregasPage() {
                   <th style={thStyle}>FECHA & HORA</th>
                   <th style={thStyle}>PEDIDO & CLIENTE</th>
                   <th style={thStyle}>DIRECCIÓN & DESTINO</th>
-                  <th style={thStyle}>CONDUCTOR (MANEJANDO)</th>
                   <th style={{ ...thStyle, textAlign: "center" }}>ESTADO DE ENTREGA</th>
                   <th style={{ ...thStyle, textAlign: "right" }}>ACCIONES</th>
                 </tr>
@@ -351,24 +328,6 @@ export default function EntregasPage() {
                         </div>
                       </td>
 
-                      {/* CONDUCTOR / MANEJANDO */}
-                      <td style={{ ...tdStyle, padding: "8px 10px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                          <div style={{ width: "26px", height: "26px", borderRadius: "50%", backgroundColor: "#e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                            <User02Icon size={14} color="#334155" />
-                          </div>
-                          <div>
-                            <span style={{ color: "#0f172a", fontWeight: "600", fontSize: "0.75rem", display: "block" }}>
-                              {item.conductorNombre}
-                            </span>
-                            {item.conductorVehiculo && (
-                              <span style={{ color: "#64748b", fontSize: "0.63rem", display: "block" }}>
-                                {item.conductorVehiculo}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </td>
 
                       {/* ESTADO DE ENTREGA */}
                       <td style={{ ...tdStyle, textAlign: "center", padding: "8px 10px" }}>
@@ -380,6 +339,14 @@ export default function EntregasPage() {
                           <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "0.68rem", fontWeight: "700", backgroundColor: "#eff6ff", color: "#1d4ed8", padding: "2px 8px", borderRadius: "10px", border: "1px solid #bfdbfe" }}>
                             <DeliveryTruck01Icon size={13} color="#1d4ed8" /> En Camino
                           </span>
+                        ) : item.estado === "POR_ALISTAR" ? (
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "0.68rem", fontWeight: "700", backgroundColor: "#fef2f2", color: "#b91c1c", padding: "2px 8px", borderRadius: "10px", border: "1px solid #fecaca" }}>
+                            <Clock01Icon size={13} color="#b91c1c" /> Por Alistar (Recojo)
+                          </span>
+                        ) : item.estado === "POR_RECOGER" ? (
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "0.68rem", fontWeight: "700", backgroundColor: "#fffbeb", color: "#b45309", padding: "2px 8px", borderRadius: "10px", border: "1px solid #fde68a" }}>
+                            <Clock01Icon size={13} color="#b45309" /> Por Recoger
+                          </span>
                         ) : (
                           <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "0.68rem", fontWeight: "700", backgroundColor: "#fffbeb", color: "#b45309", padding: "2px 8px", borderRadius: "10px", border: "1px solid #fde68a" }}>
                             <Clock01Icon size={13} color="#b45309" /> Pendiente
@@ -388,13 +355,16 @@ export default function EntregasPage() {
                       </td>
 
                       {/* ACCIONES */}
-                      <td style={{ ...tdStyle, textAlign: "right", padding: "8px 10px" }}>
+                      <td style={{ ...tdStyle, textAlign: "right", padding: "8px 10px", display: "flex", gap: "6px", justifyContent: "flex-end" }}>
                         <button
                           type="button"
-                          onClick={() => handleToggleEstado(item.id)}
+                          onClick={() => {
+                            setSelectedEntrega(item);
+                            setIsObservarModalOpen(true);
+                          }}
                           style={{
                             padding: "3px 8px",
-                            backgroundColor: "#ffffff",
+                            backgroundColor: "#f8fafc",
                             color: "#0f172a",
                             border: "1px solid #cbd5e1",
                             borderRadius: "5px",
@@ -403,7 +373,23 @@ export default function EntregasPage() {
                             cursor: "pointer"
                           }}
                         >
-                          Cambiar Estado
+                          Observar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleEstado(item.id)}
+                          style={{
+                            padding: "3px 8px",
+                            backgroundColor: "#0f172a",
+                            color: "#ffffff",
+                            border: "none",
+                            borderRadius: "5px",
+                            fontSize: "0.68rem",
+                            fontWeight: "600",
+                            cursor: "pointer"
+                          }}
+                        >
+                          Entregar
                         </button>
                       </td>
 
@@ -469,26 +455,6 @@ export default function EntregasPage() {
                   <input type="text" required placeholder="Ej. Av. Primavera 120" value={newDireccion} onChange={(e) => setNewDireccion(e.target.value)} style={inputStyle} />
                 </div>
 
-                <div>
-                  <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Conductor Asignado (Manejando)</label>
-                  <select
-                    value={selectedConductorNombre}
-                    onChange={(e) => setSelectedConductorNombre(e.target.value)}
-                    style={inputStyle}
-                  >
-                    {dbConductores.length > 0 ? (
-                      dbConductores.map(c => (
-                        <option key={c.id || c.nombre} value={c.nombre}>{c.nombre} ({c.telefono || "Conductor"})</option>
-                      ))
-                    ) : (
-                      <>
-                        <option value="Juan Carlos Pérez">Juan Carlos Pérez (Moto Honda)</option>
-                        <option value="Roberto Gómez">Roberto Gómez (Van Chana)</option>
-                        <option value="Miguel Ángel Rivas">Miguel Ángel Rivas (Auto Nissan)</option>
-                      </>
-                    )}
-                  </select>
-                </div>
 
                 <button
                   type="submit"
@@ -508,6 +474,78 @@ export default function EntregasPage() {
                   REGISTRAR ENTREGA
                 </button>
               </form>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* MODAL OBSERVAR PRODUCTOS */}
+      <AnimatePresence>
+        {isObservarModalOpen && selectedEntrega && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsObservarModalOpen(false)}
+              style={{
+                position: "fixed",
+                top: 0, left: 0, width: "100vw", height: "100vh",
+                backgroundColor: "rgba(15,23,42,0.5)",
+                zIndex: 999,
+                backdropFilter: "blur(4px)"
+              }}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              style={{
+                position: "fixed",
+                top: "50%", left: "50%",
+                transform: "translate(-50%, -50%)",
+                backgroundColor: "#ffffff",
+                borderRadius: "16px",
+                width: "90%",
+                maxWidth: "450px",
+                zIndex: 1000,
+                overflow: "hidden",
+                boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)"
+              }}
+            >
+              <div style={{ padding: "20px 24px", borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: "700", color: "#0f172a" }}>
+                  Pedido {selectedEntrega.pedidoCodigo}
+                </h3>
+                <button onClick={() => setIsObservarModalOpen(false)} style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: "1.5rem", lineHeight: 1 }}>
+                  &times;
+                </button>
+              </div>
+              <div style={{ padding: "20px 24px", maxHeight: "60vh", overflowY: "auto" }}>
+                <p style={{ fontSize: "0.8rem", color: "#475569", marginBottom: "16px" }}>
+                  <strong>Cliente:</strong> {selectedEntrega.clienteNombre}<br/>
+                  <strong>Sede de Recojo:</strong> {selectedEntrega.direccion}
+                </p>
+                <h4 style={{ fontSize: "0.85rem", fontWeight: "700", color: "#0f172a", marginBottom: "12px" }}>Productos a Alistar:</h4>
+                <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                  {selectedEntrega.detallesRaw?.map((det, idx) => (
+                    <li key={idx} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid #f1f5f9" }}>
+                      <div>
+                        <span style={{ fontSize: "0.85rem", fontWeight: "600", color: "#1e293b", display: "block" }}>{det.nombreProducto || det.producto?.nombre || "Producto"}</span>
+                        <span style={{ fontSize: "0.7rem", color: "#64748b" }}>Cantidad: {det.cantidad}</span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div style={{ padding: "16px 24px", backgroundColor: "#f8fafc", borderTop: "1px solid #e2e8f0", textAlign: "right" }}>
+                <button
+                  onClick={() => setIsObservarModalOpen(false)}
+                  style={{ padding: "8px 16px", backgroundColor: "#0f172a", color: "#ffffff", border: "none", borderRadius: "8px", fontSize: "0.8rem", fontWeight: "600", cursor: "pointer" }}
+                >
+                  Cerrar
+                </button>
+              </div>
             </motion.div>
           </>
         )}

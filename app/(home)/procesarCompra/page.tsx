@@ -32,7 +32,7 @@ export default function ProcesarCompraPage() {
   const [nombreCompleto, setNombreCompleto] = useState("");
   const [numDocumento, setNumDocumento] = useState("");
   const [tipoComprobante, setTipoComprobante] = useState("BOLETA");
-  const [tipoPago, setTipoPago] = useState("TRANSFERENCIA");
+  const [tipoPago, setTipoPago] = useState("TRANSFERENCIA_BANCARIA");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -76,11 +76,7 @@ export default function ProcesarCompraPage() {
   const handleNext = () => {
     if (step === 2) {
       if (!local || !nombreCompleto || !numDocumento) {
-        setErrorMsg("Por favor, completa los campos obligatorios.");
-        return;
-      }
-      if (agencia !== "TIENDA" && (!departamento || !provincia || !distrito)) {
-        setErrorMsg("Por favor, completa los datos de ubicación (Departamento, Provincia, Distrito) para el envío.");
+        setErrorMsg("Por favor, selecciona la sede y completa los datos de facturación.");
         return;
       }
       setErrorMsg("");
@@ -97,17 +93,13 @@ export default function ProcesarCompraPage() {
     setIsSubmitting(true);
     setErrorMsg("");
 
-    const direccionCompleta = agencia === "TIENDA" 
-      ? local 
-      : `${departamento} - ${provincia} - ${distrito} - Agencia: ${local}`;
-
     const payload: CompraRequestDTO = {
       envio: {
-        tipoEnvio: "AGENCIA",
-        direccionEnvio: direccionCompleta,
-        ciudad: provincia || "Lima", 
+        tipoEnvio: "RECOJO_TIENDA",
+        direccionEnvio: local || "Sede Centro Histórico", // Where the user will pick it up
+        ciudad: "Lima", 
         costoEnvio: 0.0,
-        referencia: agencia
+        referencia: "Recojo Presencial"
       },
       destinatario: {
         nombreCompleto: nombreCompleto,
@@ -285,56 +277,20 @@ export default function ProcesarCompraPage() {
                 <h3 style={{ fontSize: "1.1rem", fontWeight: "700", color: "#1a0f14", marginBottom: "20px", borderBottom: "1px solid #f5eaee", paddingBottom: "10px" }}>Datos Logísticos de Envío</h3>
                 
                 <div style={{ marginBottom: "24px" }}>
-                  <label style={{ display: "block", fontSize: "0.75rem", fontWeight: "700", color: "#1a0f14", marginBottom: "8px" }}>Agencia de Envío</label>
-                  <select value={agencia} onChange={e => {
-                    setAgencia(e.target.value);
-                    if (e.target.value === "TIENDA") {
-                      setLocal("Sede Centro Histórico");
-                    } else {
-                      setLocal("");
-                    }
-                  }} style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #e2d5da", outline: "none", fontSize: "0.85rem", cursor: "pointer" }}>
-                    <option value="SHALOM">Shalom (Destino Nacional)</option>
-                    <option value="OLVA">Olva Courier (Destino Nacional)</option>
-                    <option value="TIENDA">Recojo en Tienda Física</option>
+                  <div style={{ backgroundColor: "#fcf0f4", padding: "16px", borderRadius: "12px", border: "1px solid #f5eaee", marginBottom: "16px" }}>
+                    <p style={{ fontSize: "0.85rem", color: "#9c3552", fontWeight: "600", margin: 0 }}>
+                      ⚠️ Por el momento todas las entregas son exclusivamente de recojo presencial en nuestras sedes.
+                    </p>
+                  </div>
+                  <label style={{ display: "block", fontSize: "0.75rem", fontWeight: "700", color: "#1a0f14", marginBottom: "8px" }}>Selecciona la Sede de Recojo</label>
+                  <select value={local} onChange={e => setLocal(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #e2d5da", outline: "none", fontSize: "0.85rem", cursor: "pointer" }}>
+                    <option value="" disabled>Seleccione una sede...</option>
+                    <option value="Sede Centro Histórico">Sede Centro Histórico</option>
+                    <option value="Sede Gamarra Luxe">Sede Gamarra Luxe</option>
+                    <option value="Sede Los Olivos - Lima Norte">Sede Los Olivos - Lima Norte</option>
+                    <option value="Sede Miraflores Boutique">Sede Miraflores Boutique</option>
                   </select>
                 </div>
-
-                {agencia === "TIENDA" ? (
-                  <div style={{ marginBottom: "24px" }}>
-                    <label style={{ display: "block", fontSize: "0.75rem", fontWeight: "700", color: "#1a0f14", marginBottom: "8px" }}>Selecciona el Local</label>
-                    <select value={local} onChange={e => setLocal(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #e2d5da", outline: "none", fontSize: "0.85rem", cursor: "pointer" }}>
-                      <option value="Sede Centro Histórico">Sede Centro Histórico</option>
-                      <option value="Sede Gamarra Luxe">Sede Gamarra Luxe</option>
-                      <option value="Sede Los Olivos - Lima Norte">Sede Los Olivos - Lima Norte</option>
-                      <option value="Sede Miraflores Boutique">Sede Miraflores Boutique</option>
-                    </select>
-                  </div>
-                ) : (
-                  <div style={{ backgroundColor: "#fcf0f4", padding: "16px", borderRadius: "12px", marginBottom: "24px", border: "1px solid #f5eaee" }}>
-                    <h4 style={{ fontSize: "0.85rem", fontWeight: "700", color: "#9c3552", marginBottom: "16px", marginTop: 0 }}>Ubicación para Agencia {agencia}</h4>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "16px" }}>
-                      <div>
-                        <label style={{ display: "block", fontSize: "0.7rem", fontWeight: "700", color: "#1a0f14", marginBottom: "6px" }}>Departamento</label>
-                        <input type="text" value={departamento} onChange={e => setDepartamento(e.target.value)} placeholder="Ej. Arequipa" style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #e2d5da", outline: "none", fontSize: "0.85rem" }} />
-                      </div>
-                      <div>
-                        <label style={{ display: "block", fontSize: "0.7rem", fontWeight: "700", color: "#1a0f14", marginBottom: "6px" }}>Provincia</label>
-                        <input type="text" value={provincia} onChange={e => setProvincia(e.target.value)} placeholder="Ej. Arequipa" style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #e2d5da", outline: "none", fontSize: "0.85rem" }} />
-                      </div>
-                    </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                      <div>
-                        <label style={{ display: "block", fontSize: "0.7rem", fontWeight: "700", color: "#1a0f14", marginBottom: "6px" }}>Distrito</label>
-                        <input type="text" value={distrito} onChange={e => setDistrito(e.target.value)} placeholder="Ej. Cerro Colorado" style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #e2d5da", outline: "none", fontSize: "0.85rem" }} />
-                      </div>
-                      <div>
-                        <label style={{ display: "block", fontSize: "0.7rem", fontWeight: "700", color: "#1a0f14", marginBottom: "6px" }}>Nombre de la Agencia</label>
-                        <input type="text" value={local} onChange={e => setLocal(e.target.value)} placeholder="Ej. Agencia Norte" style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #e2d5da", outline: "none", fontSize: "0.85rem" }} />
-                      </div>
-                    </div>
-                  </div>
-                )}
 
                 <h3 style={{ fontSize: "1.1rem", fontWeight: "700", color: "#1a0f14", marginBottom: "20px", borderBottom: "1px solid #f5eaee", paddingBottom: "10px" }}>Datos de Facturación</h3>
 
@@ -367,24 +323,34 @@ export default function ProcesarCompraPage() {
               <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
                 <h3 style={{ fontSize: "1.1rem", fontWeight: "700", color: "#1a0f14", marginBottom: "20px", borderBottom: "1px solid #f5eaee", paddingBottom: "10px" }}>Método de Pago</h3>
                 
-                <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "30px" }}>
-                  {["TRANSFERENCIA", "YAPE / PLIN", "TARJETA (PASARELA)"].map(metodo => (
-                    <div 
-                      key={metodo} 
-                      onClick={() => setTipoPago(metodo)}
-                      style={{ 
-                        display: "flex", alignItems: "center", justifyContent: "space-between", 
-                        padding: "16px", borderRadius: "12px", cursor: "pointer",
-                        border: tipoPago === metodo ? "2px solid #9c3552" : "1px solid #e2d5da",
-                        backgroundColor: tipoPago === metodo ? "#fcf0f4" : "#fff",
-                        transition: "all 0.2s ease"
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "20px" }}>
+                  {[
+                    { value: "TRANSFERENCIA_BANCARIA", label: "Transferencia" },
+                    { value: "YAPE", label: "Yape / Plin" },
+                    { value: "TARJETA", label: "Tarjeta (Pasarela)" }
+                  ].map(metodo => (
+                    <button
+                      key={metodo.value}
+                      type="button"
+                      onClick={() => setTipoPago(metodo.value)}
+                      style={{
+                        padding: "16px",
+                        border: tipoPago === metodo.value ? "2px solid #9c3552" : "1px solid #e2d5da",
+                        borderRadius: "12px",
+                        backgroundColor: tipoPago === metodo.value ? "#fff0f3" : "#fff",
+                        color: tipoPago === metodo.value ? "#9c3552" : "#66585e",
+                        fontWeight: "600",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "10px",
+                        transition: "all 0.2s"
                       }}
                     >
-                      <span style={{ fontSize: "0.9rem", fontWeight: "600", color: tipoPago === metodo ? "#9c3552" : "#1a0f14" }}>{metodo}</span>
-                      <div style={{ width: "20px", height: "20px", borderRadius: "50%", border: "2px solid", borderColor: tipoPago === metodo ? "#9c3552" : "1px solid #e2d5da", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        {tipoPago === metodo && <div style={{ width: "10px", height: "10px", backgroundColor: "#9c3552", borderRadius: "50%" }} />}
-                      </div>
-                    </div>
+                      <CreditCardIcon size={18} color={tipoPago === metodo.value ? "#9c3552" : "#66585e"} />
+                      {metodo.label}
+                    </button>
                   ))}
                 </div>
 

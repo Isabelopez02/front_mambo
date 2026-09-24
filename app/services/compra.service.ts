@@ -32,6 +32,9 @@ export interface CompraRequestDTO {
 export const compraService = {
   procesarCheckout: async (payload: CompraRequestDTO) => {
     return apiClient.post("/api/compras/carrito", payload);
+  },
+  listarCompras: async () => {
+    return apiClient.get("/api/compras");
   }
 };
 

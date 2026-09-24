@@ -189,17 +189,17 @@ export default function ClientesAdminPage() {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       
       {/* HEADER SECTION */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
         <div>
-          <h1 style={{ fontSize: "1.15rem", fontWeight: "700", color: "#0f172a", margin: 0, letterSpacing: "-0.01em" }}>
+          <span style={{ fontSize: "0.58rem", fontWeight: "700", color: "#9c3552", letterSpacing: "1.8px", textTransform: "uppercase" }}>
             Administración de Clientes
-          </h1>
-          <p style={{ fontSize: "0.74rem", color: "#64748b", margin: "2px 0 0 0" }}>
+          </span>
+          <h1 style={{ fontSize: "1.35rem", color: "#1a0f14", margin: "2px 0 0 0", fontWeight: "400" }}>
             Gestión de usuarios y clientes sincronizados con backend
-          </p>
+          </h1>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>

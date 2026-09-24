@@ -54,6 +54,9 @@ export default function CrearComprobantePage() {
   const [fechaEntrega, setFechaEntrega] = useState<string>("");
   const [tipoPago, setTipoPago] = useState<"EFECTIVO" | "TRANSFERENCIA" | "TARJETA">("EFECTIVO");
 
+  const [pedidosPendientes, setPedidosPendientes] = useState<any[]>([]);
+  const [pedidoVinculado, setPedidoVinculado] = useState<string>("");
+
   // ESTADOS PARA MODAL DE CLIENTES
   const [dbClientes, setDbClientes] = useState<ClienteDTO[]>([]);
   const [isClienteModalOpen, setIsClienteModalOpen] = useState(false);
@@ -96,9 +99,27 @@ export default function CrearComprobantePage() {
     }
   };
 
+  const fetchPedidosPendientes = async () => {
+    try {
+      const token = localStorage.getItem("admin_token") || "";
+      const res = await fetch("http://localhost:8080/api/compras", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // Filramos solo los que son RECOJO_TIENDA y están POR_ALISTAR
+        const pendientes = data.filter((c: any) => c.tipoEnvio === "RECOJO_TIENDA" && c.estadoRecojo === "POR_ALISTAR");
+        setPedidosPendientes(pendientes);
+      }
+    } catch (err) {
+      console.error("Error al cargar pedidos:", err);
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
     fetchClientes();
+    fetchPedidosPendientes();
   }, []);
 
   // CALCULATE SALE PRICE BOUNDARIES (PRECIO MINIMO & PRECIO MAXIMO)
@@ -348,6 +369,19 @@ export default function CrearComprobantePage() {
 
       await comprobantesService.emitir(requestDTO);
 
+      // Si se vinculó un pedido, actualizarlo en el backend
+      if (tipoEnvio === "ENTREGA DIRECTA" && pedidoVinculado && fechaEntrega) {
+        const token = localStorage.getItem("admin_token") || "";
+        await fetch(`http://localhost:8080/api/compras/${pedidoVinculado}/programar-recojo`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ fechaProgramada: fechaEntrega + "T00:00:00" }) // Append time to be parsable
+        });
+      }
+
       alert(`✅ Comprobante (${tipoComprobante}) emitido y guardado exitosamente.\nCliente: ${clienteNombre}\nMonto Total: S/ ${grandTotal.toFixed(2)}`);
       router.push("/admin/comprobantes");
     } catch (err) {
@@ -528,7 +562,7 @@ export default function CrearComprobantePage() {
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px", marginTop: "10px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: tipoEnvio === "ENTREGA DIRECTA" ? "1fr 1fr 1fr 1fr" : "1fr 1fr 1fr", gap: "10px", marginTop: "10px" }}>
               {/* TIPO ENVIO */}
               <div>
                 <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
@@ -544,17 +578,35 @@ export default function CrearComprobantePage() {
                 </select>
               </div>
 
-              {/* FECHA ENTREGA */}
+              {/* VINCULAR A PEDIDO WEB (Solo para Entrega Directa / Tienda) */}
+              {tipoEnvio === "ENTREGA DIRECTA" ? (
+                <div>
+                  <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
+                    Vincular a Pedido Web
+                  </label>
+                  <select
+                    value={pedidoVinculado}
+                    onChange={(e) => setPedidoVinculado(e.target.value)}
+                    style={inputStyle}
+                  >
+                    <option value="">-- Sin Vincular --</option>
+                    {pedidosPendientes.map((p) => (
+                      <option key={p.id} value={p.id}>Pedido {p.id} - {p.nombreDestinario}</option>
+                    ))}
+                  </select>
+                </div>
+              ) : null}
+
+              {/* FECHA ENTREGA / RECOJO */}
               <div>
                 <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
-                  Fecha Entrega
+                  Fecha de {tipoEnvio === "ENTREGA DIRECTA" ? "Recojo" : "Entrega"}
                 </label>
                 <input
                   type="date"
                   value={fechaEntrega}
                   onChange={(e) => setFechaEntrega(e.target.value)}
-                  disabled={tipoEnvio !== "A DOMICILIO"}
-                  style={{ ...inputStyle, opacity: tipoEnvio !== "A DOMICILIO" ? 0.5 : 1, cursor: tipoEnvio !== "A DOMICILIO" ? "not-allowed" : "text" }}
+                  style={inputStyle}
                 />
               </div>
 
