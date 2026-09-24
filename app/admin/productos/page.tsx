@@ -787,7 +787,7 @@ export default function ProductosAdminPage() {
                 top: "50%",
                 left: "50%",
                 width: "90%",
-                maxWidth: "480px",
+                maxWidth: "750px", // WIDER MODAL FOR 2 COLUMNS
                 maxHeight: "90vh",
                 overflowY: "auto",
                 backgroundColor: "#ffffff",
@@ -798,134 +798,140 @@ export default function ProductosAdminPage() {
                 border: "1px solid #e2e8f0"
               }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid #f1f5f9", paddingBottom: "10px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", borderBottom: "1px solid #f3e2e8", paddingBottom: "12px" }}>
                 <div>
-                  <span style={{ fontSize: "0.58rem", fontWeight: "700", color: "#0284c7", textTransform: "uppercase" }}>BACKEND DB: PUT /lista/productos/{editingProduct.id}</span>
-                  <h3 style={{ fontSize: "0.95rem", fontWeight: "700", color: "#0f172a", margin: "2px 0 0 0" }}>{editingProduct.nombre}</h3>
+                  <span style={{ fontSize: "0.58rem", fontWeight: "700", color: "#9c3552", textTransform: "uppercase", letterSpacing: "1px" }}>EDITAR PRODUCTO</span>
+                  <h3 style={{ fontSize: "1.1rem", fontWeight: "700", color: "#1a0f14", margin: "2px 0 0 0" }}>{editingProduct.nombre}</h3>
                 </div>
-                <button onClick={() => setEditingProduct(null)} style={{ background: "none", border: "none", cursor: "pointer" }}>
-                  <Cancel01Icon size={18} color="#0f172a" />
+                <button type="button" onClick={() => setEditingProduct(null)} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px" }}>
+                  <Cancel01Icon size={20} color="#1a0f14" />
                 </button>
               </div>
 
-              <form onSubmit={handleUpdateProductSubmit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                
-                {/* 5-DIGIT BASE CODE READONLY */}
+              <form onSubmit={handleUpdateProductSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
+                  
+                  {/* LEFT COLUMN */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
 
-
-                {/* EDIT IMAGE UPLOAD FIELD */}
-                <div>
-                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
-                    Actualizar Imagen
-                  </label>
-                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                    <div style={{
-                      width: "60px",
-                      height: "60px",
-                      borderRadius: "10px",
-                      backgroundColor: "#f8fafc",
-                      border: "1px dashed #cbd5e1",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      overflow: "hidden"
-                    }}>
-                      {editImagePreview ? (
-                        <img src={editImagePreview} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      ) : (
-                        <Image01Icon size={24} color="#94a3b8" />
-                      )}
-                    </div>
-
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleEditImageChange}
-                      style={{ fontSize: "0.72rem", color: "#334155" }}
-                    />
-                  </div>
-                </div>
-
-                <div style={{ backgroundColor: "#f8fafc", padding: "8px 12px", borderRadius: "8px", border: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: "0.68rem", fontWeight: "700", color: "#475569" }}>CÓDIGO SKU (MODELO 5D)</span>
-                  <span style={{ fontSize: "0.85rem", fontWeight: "800", color: "#0f172a", fontFamily: "monospace", backgroundColor: "#e2e8f0", padding: "2px 8px", borderRadius: "4px" }}>
-                    {editingProduct.sku || "AUTO"}
-                  </span>
-                </div>
-
-                <div>
-                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Nombre del Producto</label>
-                  <input type="text" required value={editNombre} onChange={(e) => setEditNombre(e.target.value)} style={inputStyle} />
-                </div>
-
-                <div>
-                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Descripción del Producto</label>
-                  <textarea placeholder="Ingresa la descripción del producto..." value={editDescripcion} onChange={(e) => setEditDescripcion(e.target.value)} style={{ ...inputStyle, height: "55px", resize: "none" }} />
-                </div>
-
-                <div>
-                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Categoría</label>
-                  <select value={editCat} onChange={(e) => setEditCat(e.target.value)} style={inputStyle}>
-                    {dbCategories.length > 0 ? (
-                      dbCategories.map(c => <option key={c.id || c.nombre} value={c.nombre}>{c.nombre}</option>)
-                    ) : (
-                      <>
-                        <option value="Carteras">Carteras</option>
-                        <option value="Maquillaje">Maquillaje</option>
-                        <option value="Skincare">Skincare</option>
-                        <option value="Hogar">Hogar</option>
-                        <option value="Accesorios">Accesorios</option>
-                      </>
-                    )}
-                  </select>
-                </div>
-
-                {/* EDIT COST PRICE INPUT */}
-                <div>
-                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Precio Compra Proveedor (S/)</label>
-                  <input type="number" step="0.10" required value={editCostoCompra} onChange={(e) => setEditCostoCompra(e.target.value)} style={inputStyle} />
-                </div>
-
-                {/* PERCENTAGE GAIN MARGIN INPUTS */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-                  <div>
-                    <label style={{ display: "block", fontSize: "0.62rem", fontWeight: "700", color: "#15803d", textTransform: "uppercase", marginBottom: "4px" }}>% Ganancia Mínima</label>
-                    <input type="number" min="1" max="500" required value={editGainMinPct} onChange={(e) => setEditGainMinPct(parseFloat(e.target.value) || 0)} style={inputStyle} />
-                  </div>
-
-                  <div>
-                    <label style={{ display: "block", fontSize: "0.62rem", fontWeight: "700", color: "#166534", textTransform: "uppercase", marginBottom: "4px" }}>% Ganancia Máxima</label>
-                    <input type="number" min="1" max="500" required value={editGainMaxPct} onChange={(e) => setEditGainMaxPct(parseFloat(e.target.value) || 0)} style={inputStyle} />
-                  </div>
-                </div>
-
-                {/* AUTOMATIC CALCULATED SALE PRICES DISPLAY */}
-                <div style={{
-                  backgroundColor: "#f0fdf4",
-                  borderRadius: "10px",
-                  padding: "10px 12px",
-                  border: "1px solid #bbf7d0",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center"
-                }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                    <CalculatorIcon size={18} color="#15803d" />
                     <div>
-                      <span style={{ fontSize: "0.58rem", fontWeight: "800", color: "#166534", textTransform: "uppercase", display: "block" }}>NUEVOS PRECIOS CALCULADOS BD</span>
-                      <span style={{ fontSize: "0.62rem", color: "#15803d" }}>S/ {editNumCostoCompra.toFixed(2)} + {editGainMinPct}% / {editGainMaxPct}%</span>
+                      <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>
+                        Actualizar Imagen
+                      </label>
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <div style={{
+                          width: "70px",
+                          height: "70px",
+                          borderRadius: "10px",
+                          backgroundColor: "#fcf0f4",
+                          border: "1px dashed #f3c2d4",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          overflow: "hidden"
+                        }}>
+                          {editImagePreview ? (
+                            <img src={editImagePreview} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          ) : (
+                            <Image01Icon size={24} color="#9c3552" />
+                          )}
+                        </div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleEditImageChange}
+                          style={{ fontSize: "0.72rem", color: "#44383d" }}
+                        />
+                      </div>
                     </div>
+
+                    <div style={{ backgroundColor: "#faf7f8", padding: "8px 12px", borderRadius: "8px", border: "1px solid #f3e2e8", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: "0.68rem", fontWeight: "700", color: "#66585e" }}>CÓDIGO SKU</span>
+                      <span style={{ fontSize: "0.85rem", fontWeight: "800", color: "#1a0f14", fontFamily: "monospace", backgroundColor: "#ffffff", padding: "2px 8px", borderRadius: "4px", border: "1px solid #f3e2e8" }}>
+                        {editingProduct.sku || "AUTO"}
+                      </span>
+                    </div>
+
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>Nombre del Producto</label>
+                      <input type="text" required value={editNombre} onChange={(e) => setEditNombre(e.target.value)} style={{ ...inputStyle, backgroundColor: "#faf7f8", borderColor: "#f3e2e8" }} />
+                    </div>
+
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>Categoría</label>
+                      <select value={editCat} onChange={(e) => setEditCat(e.target.value)} style={{ ...inputStyle, backgroundColor: "#faf7f8", borderColor: "#f3e2e8" }}>
+                        {dbCategories.length > 0 ? (
+                          dbCategories.map(c => <option key={c.id || c.nombre} value={c.nombre}>{c.nombre}</option>)
+                        ) : (
+                          <>
+                            <option value="Carteras">Carteras</option>
+                            <option value="Maquillaje">Maquillaje</option>
+                            <option value="Skincare">Skincare</option>
+                            <option value="Hogar">Hogar</option>
+                            <option value="Accesorios">Accesorios</option>
+                          </>
+                        )}
+                      </select>
+                    </div>
+
                   </div>
 
-                  <div style={{ textAlign: "right" }}>
-                    <span style={{ fontSize: "0.75rem", fontWeight: "800", color: "#15803d", display: "block" }}>Mín: S/ {editCalcPMin.toFixed(2)}</span>
-                    <span style={{ fontSize: "0.78rem", fontWeight: "800", color: "#166534" }}>Máx: S/ {editCalcPMax.toFixed(2)}</span>
+                  {/* RIGHT COLUMN */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>Descripción del Producto</label>
+                      <textarea placeholder="Ingresa la descripción del producto..." value={editDescripcion} onChange={(e) => setEditDescripcion(e.target.value)} style={{ ...inputStyle, backgroundColor: "#faf7f8", borderColor: "#f3e2e8", height: "55px", resize: "none" }} />
+                    </div>
+
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>Precio Compra Proveedor (S/)</label>
+                      <input type="number" step="0.10" required value={editCostoCompra} onChange={(e) => setEditCostoCompra(e.target.value)} style={{ ...inputStyle, backgroundColor: "#faf7f8", borderColor: "#f3e2e8" }} />
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                      <div>
+                        <label style={{ display: "block", fontSize: "0.62rem", fontWeight: "700", color: "#9c3552", textTransform: "uppercase", marginBottom: "4px" }}>% Ganancia Mínima</label>
+                        <input type="number" min="1" max="500" required value={editGainMinPct} onChange={(e) => setEditGainMinPct(parseFloat(e.target.value) || 0)} style={{ ...inputStyle, backgroundColor: "#faf7f8", borderColor: "#f3e2e8" }} />
+                      </div>
+                      <div>
+                        <label style={{ display: "block", fontSize: "0.62rem", fontWeight: "700", color: "#9c3552", textTransform: "uppercase", marginBottom: "4px" }}>% Ganancia Máxima</label>
+                        <input type="number" min="1" max="500" required value={editGainMaxPct} onChange={(e) => setEditGainMaxPct(parseFloat(e.target.value) || 0)} style={{ ...inputStyle, backgroundColor: "#faf7f8", borderColor: "#f3e2e8" }} />
+                      </div>
+                    </div>
+
+                    <div style={{
+                      backgroundColor: "#fcf0f4",
+                      borderRadius: "10px",
+                      padding: "12px 14px",
+                      border: "1px solid #f3c2d4",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center"
+                    }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <CalculatorIcon size={20} color="#9c3552" />
+                        <div>
+                          <span style={{ fontSize: "0.58rem", fontWeight: "800", color: "#9c3552", textTransform: "uppercase", display: "block" }}>PRECIOS DE VENTA (NUEVOS)</span>
+                          <span style={{ fontSize: "0.62rem", color: "#887980" }}>Calculado según % de ganancia</span>
+                        </div>
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <span style={{ fontSize: "0.75rem", fontWeight: "800", color: "#9c3552", display: "block" }}>Mín: S/ {editCalcPMin.toFixed(2)}</span>
+                        <span style={{ fontSize: "0.78rem", fontWeight: "800", color: "#1a0f14" }}>Máx: S/ {editCalcPMax.toFixed(2)}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <button type="submit" style={{ width: "100%", padding: "10px", backgroundColor: "#0284c7", color: "#ffffff", border: "none", borderRadius: "8px", fontSize: "0.75rem", fontWeight: "700", cursor: "pointer", marginTop: "6px" }}>
-                  ACTUALIZAR DIRECTO EN BASE DE DATOS
-                </button>
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "10px", borderTop: "1px solid #f3e2e8", paddingTop: "16px" }}>
+                  <button type="button" onClick={() => setEditingProduct(null)} style={{ padding: "10px 16px", backgroundColor: "#ffffff", color: "#66585e", border: "1px solid #f3e2e8", borderRadius: "8px", fontSize: "0.75rem", fontWeight: "700", cursor: "pointer" }}>
+                    Cancelar
+                  </button>
+                  <button type="submit" style={{ padding: "10px 24px", backgroundColor: "#9c3552", color: "#ffffff", border: "none", borderRadius: "8px", fontSize: "0.75rem", fontWeight: "700", cursor: "pointer" }}>
+                    GUARDAR CAMBIOS
+                  </button>
+                </div>
               </form>
             </motion.div>
           </>

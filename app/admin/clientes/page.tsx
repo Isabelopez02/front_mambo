@@ -437,7 +437,7 @@ export default function ClientesAdminPage() {
                 top: "50%",
                 left: "50%",
                 width: "90%",
-                maxWidth: "480px",
+                maxWidth: "450px",
                 maxHeight: "90vh",
                 overflowY: "auto",
                 backgroundColor: "#ffffff",
@@ -448,53 +448,60 @@ export default function ClientesAdminPage() {
                 border: "1px solid #e2e8f0"
               }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid #f1f5f9", paddingBottom: "10px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", borderBottom: "1px solid #f3e2e8", paddingBottom: "12px" }}>
                 <div>
-                  <h3 style={{ fontSize: "0.98rem", fontWeight: "700", color: "#0f172a", margin: "2px 0 0 0" }}>Registrar Cliente</h3>
+                  <span style={{ fontSize: "0.58rem", fontWeight: "700", color: "#9c3552", textTransform: "uppercase", letterSpacing: "1px" }}>NUEVO REGISTRO</span>
+                  <h3 style={{ fontSize: "1.1rem", fontWeight: "700", color: "#1a0f14", margin: "2px 0 0 0" }}>Registrar Cliente</h3>
                 </div>
-                <button onClick={() => setIsAddModalOpen(false)} style={{ background: "none", border: "none", cursor: "pointer" }}>
-                  <Cancel01Icon size={18} color="#0f172a" />
+                <button type="button" onClick={() => setIsAddModalOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px" }}>
+                  <Cancel01Icon size={20} color="#1a0f14" />
                 </button>
               </div>
 
-              <form onSubmit={handleAddClienteSubmit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              <form onSubmit={handleAddClienteSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                
                 <div>
-                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Nombre Completo</label>
-                  <input type="text" required placeholder="Ej. Juan Perez" value={nombreCompletoInput} onChange={(e) => setNombreCompletoInput(e.target.value)} style={inputStyle} />
+                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>Nombre Completo</label>
+                  <input type="text" required placeholder="Ej. Juan Perez" value={nombreCompletoInput} onChange={(e) => setNombreCompletoInput(e.target.value)} style={{ ...inputStyle, backgroundColor: "#faf7f8", borderColor: "#f3e2e8" }} />
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1.5fr", gap: "10px" }}>
                   <div>
-                    <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Tipo Doc</label>
-                    <select value={tipoDocumentoInput} onChange={(e) => setTipoDocumentoInput(e.target.value)} style={inputStyle}>
+                    <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>Tipo Doc</label>
+                    <select value={tipoDocumentoInput} onChange={(e) => setTipoDocumentoInput(e.target.value)} style={{ ...inputStyle, backgroundColor: "#faf7f8", borderColor: "#f3e2e8" }}>
                       <option value="DNI">DNI</option>
                       <option value="CE">CE</option>
                     </select>
                   </div>
                   <div>
-                    <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Número Doc</label>
-                    <input type="text" required placeholder="Ej. 72483812" value={numeroDocumentoInput} onChange={(e) => setNumeroDocumentoInput(e.target.value)} style={inputStyle} />
+                    <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>Número Doc</label>
+                    <input type="text" required placeholder="Ej. 72483812" value={numeroDocumentoInput} onChange={(e) => setNumeroDocumentoInput(e.target.value)} style={{ ...inputStyle, backgroundColor: "#faf7f8", borderColor: "#f3e2e8" }} />
                   </div>
                 </div>
 
                 <div>
-                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Email</label>
-                  <input type="email" required placeholder="ejemplo@correo.com" value={emailInput} onChange={(e) => setEmailInput(e.target.value)} style={inputStyle} />
+                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>Email</label>
+                  <input type="email" required placeholder="ejemplo@correo.com" value={emailInput} onChange={(e) => setEmailInput(e.target.value)} style={{ ...inputStyle, backgroundColor: "#faf7f8", borderColor: "#f3e2e8" }} />
                 </div>
 
                 <div>
-                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Teléfono</label>
-                  <input type="text" placeholder="Ej. 999888777" value={telefonoInput} onChange={(e) => setTelefonoInput(e.target.value)} style={inputStyle} />
+                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>Teléfono</label>
+                  <input type="text" placeholder="Ej. 999888777" value={telefonoInput} onChange={(e) => setTelefonoInput(e.target.value)} style={{ ...inputStyle, backgroundColor: "#faf7f8", borderColor: "#f3e2e8" }} />
                 </div>
 
                 <div>
-                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Contraseña</label>
-                  <input type="password" required placeholder="********" value={contraInput} onChange={(e) => setContraInput(e.target.value)} style={inputStyle} />
+                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>Contraseña Inicial</label>
+                  <input type="password" required placeholder="********" value={contraInput} onChange={(e) => setContraInput(e.target.value)} style={{ ...inputStyle, backgroundColor: "#faf7f8", borderColor: "#f3e2e8" }} />
                 </div>
 
-                <button type="submit" style={{ width: "100%", padding: "10px", backgroundColor: "#0f172a", color: "#ffffff", border: "none", borderRadius: "8px", fontSize: "0.75rem", fontWeight: "700", cursor: "pointer", marginTop: "6px" }}>
-                  GUARDAR CLIENTE
-                </button>
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "10px", borderTop: "1px solid #f3e2e8", paddingTop: "16px" }}>
+                  <button type="button" onClick={() => setIsAddModalOpen(false)} style={{ padding: "10px 16px", backgroundColor: "#ffffff", color: "#66585e", border: "1px solid #f3e2e8", borderRadius: "8px", fontSize: "0.75rem", fontWeight: "700", cursor: "pointer", flex: 1 }}>
+                    Cancelar
+                  </button>
+                  <button type="submit" style={{ padding: "10px 24px", backgroundColor: "#9c3552", color: "#ffffff", border: "none", borderRadius: "8px", fontSize: "0.75rem", fontWeight: "700", cursor: "pointer", flex: 1 }}>
+                    GUARDAR CLIENTE
+                  </button>
+                </div>
               </form>
             </motion.div>
           </>

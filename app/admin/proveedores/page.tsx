@@ -432,7 +432,7 @@ export default function ProveedoresAdminListPage() {
                 top: "50%",
                 left: "50%",
                 width: "90%",
-                maxWidth: "480px",
+                maxWidth: "450px",
                 maxHeight: "90vh",
                 overflowY: "auto",
                 backgroundColor: "#ffffff",
@@ -443,73 +443,64 @@ export default function ProveedoresAdminListPage() {
                 border: "1px solid #e2e8f0"
               }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid #f1f5f9", paddingBottom: "10px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", borderBottom: "1px solid #f3e2e8", paddingBottom: "12px" }}>
                 <div>
-                  <h3 style={{ fontSize: "0.98rem", fontWeight: "700", color: "#0f172a", margin: "2px 0 0 0" }}>
+                  <span style={{ fontSize: "0.58rem", fontWeight: "700", color: "#9c3552", textTransform: "uppercase", letterSpacing: "1px" }}>{editingSupplier ? "EDITAR REGISTRO" : "NUEVO REGISTRO"}</span>
+                  <h3 style={{ fontSize: "1.1rem", fontWeight: "700", color: "#1a0f14", margin: "2px 0 0 0" }}>
                     {editingSupplier ? "Editar Proveedor" : "Registrar Proveedor"}
                   </h3>
                 </div>
-                <button onClick={() => setIsModalOpen(false)} style={{ background: "none", border: "none", cursor: "pointer" }}>
-                  <Cancel01Icon size={18} color="#0f172a" />
+                <button type="button" onClick={() => setIsModalOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px" }}>
+                  <Cancel01Icon size={20} color="#1a0f14" />
                 </button>
               </div>
 
-              <form onSubmit={handleSaveSupplier} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              <form onSubmit={handleSaveSupplier} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                
                 <div>
-                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Nombre o Razón Social</label>
-                  <input type="text" required placeholder="Ej. Cosméticos Global S.A.C." value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
+                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>Nombre o Razón Social</label>
+                  <input type="text" required placeholder="Ej. Cosméticos Global S.A.C." value={name} onChange={(e) => setName(e.target.value)} style={{ ...inputStyle, backgroundColor: "#faf7f8", borderColor: "#f3e2e8" }} />
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: "10px" }}>
                   <div>
-                    <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>RUC</label>
-                    <input type="text" required placeholder="20601234567" value={ruc} onChange={(e) => setRuc(e.target.value)} style={inputStyle} />
+                    <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>RUC</label>
+                    <input type="text" required placeholder="20601234567" value={ruc} onChange={(e) => setRuc(e.target.value)} style={{ ...inputStyle, backgroundColor: "#faf7f8", borderColor: "#f3e2e8" }} />
                   </div>
                   <div>
-                    <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Ciudad</label>
-                    <input type="text" placeholder="Ej. Lima" value={city} onChange={(e) => setCity(e.target.value)} style={inputStyle} />
-                  </div>
-                </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-                  <div>
-                    <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Nombre de Contacto</label>
-                    <input type="text" placeholder="Ej. Elena Ramos" value={contact} onChange={(e) => setContact(e.target.value)} style={inputStyle} />
-                  </div>
-                  <div>
-                    <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Teléfono / WhatsApp</label>
-                    <input type="text" placeholder="+51 987 111 222" value={phone} onChange={(e) => setPhone(e.target.value)} style={inputStyle} />
+                    <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>Ciudad</label>
+                    <input type="text" placeholder="Ej. Lima" value={city} onChange={(e) => setCity(e.target.value)} style={{ ...inputStyle, backgroundColor: "#faf7f8", borderColor: "#f3e2e8" }} />
                   </div>
                 </div>
 
                 <div>
-                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Correo Electrónico</label>
-                  <input type="email" placeholder="ventas@proveedor.pe" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} />
+                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>Dirección Física</label>
+                  <input type="text" placeholder="Av. Los Olivos 123" value={address} onChange={(e) => setAddress(e.target.value)} style={{ ...inputStyle, backgroundColor: "#faf7f8", borderColor: "#f3e2e8" }} />
                 </div>
 
                 <div>
-                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>Dirección</label>
-                  <input type="text" placeholder="Av. Los Olivos 123" value={address} onChange={(e) => setAddress(e.target.value)} style={inputStyle} />
+                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>Nombre de Contacto</label>
+                  <input type="text" placeholder="Ej. Elena Ramos" value={contact} onChange={(e) => setContact(e.target.value)} style={{ ...inputStyle, backgroundColor: "#faf7f8", borderColor: "#f3e2e8" }} />
+                </div>
+                
+                <div>
+                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>Teléfono / WhatsApp</label>
+                  <input type="text" placeholder="+51 987 111 222" value={phone} onChange={(e) => setPhone(e.target.value)} style={{ ...inputStyle, backgroundColor: "#faf7f8", borderColor: "#f3e2e8" }} />
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={saving}
-                  style={{
-                    width: "100%",
-                    padding: "10px",
-                    backgroundColor: editingSupplier ? "#0284c7" : "#0f172a",
-                    color: "#ffffff",
-                    border: "none",
-                    borderRadius: "8px",
-                    fontSize: "0.75rem",
-                    fontWeight: "700",
-                    cursor: saving ? "wait" : "pointer",
-                    marginTop: "6px"
-                  }}
-                >
-                  {saving ? "Guardando..." : editingSupplier ? "ACTUALIZAR PROVEEDOR" : "GUARDAR PROVEEDOR"}
-                </button>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.65rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>Correo Electrónico</label>
+                  <input type="email" placeholder="ventas@proveedor.pe" value={email} onChange={(e) => setEmail(e.target.value)} style={{ ...inputStyle, backgroundColor: "#faf7f8", borderColor: "#f3e2e8" }} />
+                </div>
+
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "10px", borderTop: "1px solid #f3e2e8", paddingTop: "16px" }}>
+                  <button type="button" onClick={() => setIsModalOpen(false)} style={{ padding: "10px 16px", backgroundColor: "#ffffff", color: "#66585e", border: "1px solid #f3e2e8", borderRadius: "8px", fontSize: "0.75rem", fontWeight: "700", cursor: "pointer", flex: 1 }}>
+                    Cancelar
+                  </button>
+                  <button type="submit" disabled={saving} style={{ padding: "10px 24px", backgroundColor: saving ? "#f3e2e8" : "#9c3552", color: "#ffffff", border: "none", borderRadius: "8px", fontSize: "0.75rem", fontWeight: "700", cursor: saving ? "wait" : "pointer", flex: 1 }}>
+                    {saving ? "Guardando..." : editingSupplier ? "ACTUALIZAR PROVEEDOR" : "GUARDAR PROVEEDOR"}
+                  </button>
+                </div>
               </form>
             </motion.div>
           </>
