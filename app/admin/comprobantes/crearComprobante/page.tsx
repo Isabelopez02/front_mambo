@@ -50,7 +50,8 @@ export default function CrearComprobantePage() {
   const [tipoComprobante, setTipoComprobante] = useState<"BOLETA" | "FACTURA">("BOLETA");
   const [clienteNombre, setClienteNombre] = useState("");
   const [clienteDoc, setClienteDoc] = useState("");
-  const [tipoEnvio, setTipoEnvio] = useState<"ENTREGA DIRECTA" | "A DOMICILIO">("ENTREGA DIRECTA");
+  const [tipoEnvio, setTipoEnvio] = useState<"RECOJO_TIENDA">("RECOJO_TIENDA");
+  const [estadoEntrega, setEstadoEntrega] = useState<"ENTREGADO" | "POR_ENTREGAR">("POR_ENTREGAR");
   const [fechaEntrega, setFechaEntrega] = useState<string>("");
   const [tipoPago, setTipoPago] = useState<"EFECTIVO" | "TRANSFERENCIA" | "TARJETA">("EFECTIVO");
 
@@ -355,7 +356,8 @@ export default function CrearComprobantePage() {
         tipoDoc: clienteDoc.length > 8 ? "RUC" : "DNI",
         montoTotal: grandTotal,
         tipoEnvio: tipoEnvio,
-        fechaEntrega: tipoEnvio === "A DOMICILIO" ? fechaEntrega : "",
+        estadoEntrega: estadoEntrega,
+        fechaEntrega: fechaEntrega,
         tipoPago: tipoPago,
         detalles: itemsDetalle.map(item => ({
           productoId: Number(item.productoId) || 0,
@@ -370,7 +372,7 @@ export default function CrearComprobantePage() {
       await comprobantesService.emitir(requestDTO);
 
       // Si se vinculó un pedido, actualizarlo en el backend
-      if (tipoEnvio === "ENTREGA DIRECTA" && pedidoVinculado && fechaEntrega) {
+      if (tipoEnvio === "RECOJO_TIENDA" && pedidoVinculado && fechaEntrega) {
         const token = localStorage.getItem("admin_token") || "";
         await fetch(`http://localhost:8080/api/compras/${pedidoVinculado}/programar-recojo`, {
           method: "PUT",
@@ -408,7 +410,7 @@ export default function CrearComprobantePage() {
             style={{
               background: "none",
               border: "none",
-              color: "#64748b",
+              color: "#66585e",
               fontSize: "0.75rem",
               fontWeight: "600",
               cursor: "pointer",
@@ -419,27 +421,27 @@ export default function CrearComprobantePage() {
               marginBottom: "4px"
             }}
           >
-            <ArrowLeft02Icon size={14} color="#64748b" /> Volver a Comprobantes
+            <ArrowLeft02Icon size={14} color="#66585e" /> Volver a Comprobantes
           </button>
 
-          <h1 style={{ fontSize: "1.15rem", fontWeight: "700", color: "#0f172a", margin: 0, letterSpacing: "-0.01em" }}>
+          <h1 style={{ fontSize: "1.15rem", fontWeight: "700", color: "#1a0f14", margin: 0, letterSpacing: "-0.01em" }}>
             Emitir Nuevo Comprobante
           </h1>
-          <p style={{ fontSize: "0.74rem", color: "#64748b", margin: "2px 0 0 0" }}>
+          <p style={{ fontSize: "0.74rem", color: "#66585e", margin: "2px 0 0 0" }}>
             Selección de productos con validación de precios límite y emisión a SUNAT
           </p>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", backgroundColor: "#f8fafc", padding: "8px 12px", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
-          <Calendar01Icon size={18} color="#475569" />
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", backgroundColor: "#faf7f8", padding: "8px 12px", borderRadius: "8px", border: "1px solid #f3e2e8" }}>
+          <Calendar01Icon size={18} color="#66585e" />
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <label style={{ fontSize: "0.6rem", fontWeight: "700", color: "#64748b", textTransform: "uppercase" }}>Fecha Venta</label>
+            <label style={{ fontSize: "0.6rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase" }}>Fecha Venta</label>
             <input
               type="date"
               required
               value={fechaVentaInput}
               onChange={(e) => setFechaVentaInput(e.target.value)}
-              style={{ border: "none", background: "transparent", fontSize: "0.8rem", fontWeight: "600", color: "#0f172a", outline: "none", padding: 0 }}
+              style={{ border: "none", background: "transparent", fontSize: "0.8rem", fontWeight: "600", color: "#1a0f14", outline: "none", padding: 0 }}
             />
           </div>
         </div>
@@ -451,8 +453,8 @@ export default function CrearComprobantePage() {
             style={{
               padding: "7px 14px",
               backgroundColor: "#ffffff",
-              color: "#475569",
-              border: "1px solid #cbd5e1",
+              color: "#66585e",
+              border: "1px solid #f3e2e8",
               borderRadius: "6px",
               fontSize: "0.75rem",
               fontWeight: "600",
@@ -467,8 +469,8 @@ export default function CrearComprobantePage() {
             disabled={itemsDetalle.length === 0 || isSubmitting}
             style={{
               padding: "7px 16px",
-              backgroundColor: (itemsDetalle.length === 0 || isSubmitting) ? "#cbd5e1" : "#0f172a",
-              color: "#ffffff",
+              backgroundColor: (itemsDetalle.length === 0 || isSubmitting) ? "#f3e2e8" : "#9c3552",
+              color: (itemsDetalle.length === 0 || isSubmitting) ? "#66585e" : "#ffffff",
               border: "none",
               borderRadius: "6px",
               fontSize: "0.75rem",
@@ -477,10 +479,10 @@ export default function CrearComprobantePage() {
               display: "inline-flex",
               alignItems: "center",
               gap: "6px",
-              boxShadow: "0 2px 6px rgba(15,23,42,0.12)"
+              boxShadow: "0 2px 6px rgba(156, 53, 82, 0.2)"
             }}
           >
-            <CheckmarkBadge01Icon size={15} color="#ffffff" /> {isSubmitting ? "Emitiendo..." : "Emitir Comprobante"}
+            <CheckmarkBadge01Icon size={15} color={(itemsDetalle.length === 0 || isSubmitting) ? "#66585e" : "#ffffff"} /> {isSubmitting ? "Emitiendo..." : "Emitir Comprobante"}
           </button>
         </div>
       </div>
@@ -496,20 +498,20 @@ export default function CrearComprobantePage() {
           <div style={{
             backgroundColor: "#ffffff",
             borderRadius: "12px",
-            padding: "16px",
-            border: "1px solid #e2e8f0",
-            boxShadow: "0 1px 2px rgba(0,0,0,0.02)",
+            padding: "20px",
+            border: "1px solid #f3e2e8",
+            boxShadow: "0 4px 12px rgba(156, 53, 82, 0.04)",
             display: "flex",
             flexDirection: "column",
             gap: "12px"
           }}>
-            <h3 style={{ fontSize: "0.82rem", fontWeight: "700", color: "#0f172a", margin: 0, display: "flex", alignItems: "center", gap: "6px" }}>
-              <User02Icon size={15} color="#0f172a" /> Datos del Cliente & Comprobante
+            <h3 style={{ fontSize: "0.82rem", fontWeight: "700", color: "#1a0f14", margin: 0, display: "flex", alignItems: "center", gap: "6px" }}>
+              <div style={{ padding: "6px", backgroundColor: "#fcf0f4", borderRadius: "8px" }}><User02Icon size={16} color="#9c3552" /></div> Datos del Ingreso
             </h3>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px" }}>
               <div>
-                <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
+                <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>
                   Tipo Comprobante
                 </label>
                 <select
@@ -523,16 +525,16 @@ export default function CrearComprobantePage() {
               </div>
 
               <div style={{ gridColumn: "span 2" }}>
-                <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
+                <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>
                   {tipoComprobante === "FACTURA" ? "RUC del Cliente" : "DNI del Cliente"}
                 </label>
                 {clienteNombre ? (
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", backgroundColor: "#f8fafc", border: "1px solid #cbd5e1", borderRadius: "6px", padding: "8px 12px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", backgroundColor: "#faf7f8", border: "1px solid #f3e2e8", borderRadius: "6px", padding: "8px 12px" }}>
                     <div>
-                      <strong style={{ fontSize: "0.75rem", color: "#0f172a", display: "block" }}>{clienteNombre}</strong>
-                      <span style={{ fontSize: "0.65rem", color: "#64748b" }}>{tipoComprobante === "FACTURA" ? "RUC" : "DNI"}: {clienteDoc}</span>
+                      <strong style={{ fontSize: "0.75rem", color: "#1a0f14", display: "block" }}>{clienteNombre}</strong>
+                      <span style={{ fontSize: "0.65rem", color: "#66585e" }}>{tipoComprobante === "FACTURA" ? "RUC" : "DNI"}: {clienteDoc}</span>
                     </div>
-                    <button type="button" onClick={() => setIsClienteModalOpen(true)} style={{ background: "none", border: "none", color: "#0284c7", fontSize: "0.7rem", fontWeight: "700", cursor: "pointer" }}>
+                    <button type="button" onClick={() => setIsClienteModalOpen(true)} style={{ background: "none", border: "none", color: "#9c3552", fontSize: "0.7rem", fontWeight: "700", cursor: "pointer" }}>
                       Cambiar
                     </button>
                   </div>
@@ -543,8 +545,8 @@ export default function CrearComprobantePage() {
                     style={{ 
                       width: "100%", 
                       padding: "10px", 
-                      backgroundColor: "#f1f5f9", 
-                      color: "#334155", 
+                      backgroundColor: "#f3e2e8", 
+                      color: "#44383d", 
                       border: "1px dashed #94a3b8", 
                       borderRadius: "6px", 
                       fontSize: "0.75rem", 
@@ -562,45 +564,53 @@ export default function CrearComprobantePage() {
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: tipoEnvio === "ENTREGA DIRECTA" ? "1fr 1fr 1fr 1fr" : "1fr 1fr 1fr", gap: "10px", marginTop: "10px" }}>
-              {/* TIPO ENVIO */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px", marginTop: "16px" }}>
+              {/* TIPO ENVIO (SOLO RECOJO) */}
               <div>
-                <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
+                <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>
                   Modo de Entrega
                 </label>
+                <div style={{ ...inputStyle, backgroundColor: "#f3e2e8", color: "#66585e", cursor: "not-allowed", display: "flex", alignItems: "center", height: "38px" }}>
+                  Recojo en Tienda
+                </div>
+              </div>
+
+              {/* ESTADO ENTREGA */}
+              <div>
+                <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>
+                  Estado del Paquete
+                </label>
                 <select
-                  value={tipoEnvio}
-                  onChange={(e) => setTipoEnvio(e.target.value as any)}
+                  value={estadoEntrega}
+                  onChange={(e) => setEstadoEntrega(e.target.value as any)}
                   style={inputStyle}
                 >
-                  <option value="ENTREGA DIRECTA">Entrega Directa / Tienda</option>
-                  <option value="A DOMICILIO">A Domicilio (Delivery)</option>
+                  <option value="POR_ENTREGAR">📦 Por Entregar (En Espera)</option>
+                  <option value="ENTREGADO">✅ Entregado al Cliente</option>
                 </select>
               </div>
 
-              {/* VINCULAR A PEDIDO WEB (Solo para Entrega Directa / Tienda) */}
-              {tipoEnvio === "ENTREGA DIRECTA" ? (
-                <div>
-                  <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
-                    Vincular a Pedido Web
-                  </label>
-                  <select
-                    value={pedidoVinculado}
-                    onChange={(e) => setPedidoVinculado(e.target.value)}
-                    style={inputStyle}
-                  >
-                    <option value="">-- Sin Vincular --</option>
-                    {pedidosPendientes.map((p) => (
-                      <option key={p.id} value={p.id}>Pedido {p.id} - {p.nombreDestinario}</option>
-                    ))}
-                  </select>
-                </div>
-              ) : null}
-
-              {/* FECHA ENTREGA / RECOJO */}
+              {/* VINCULAR A PEDIDO WEB */}
               <div>
-                <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
-                  Fecha de {tipoEnvio === "ENTREGA DIRECTA" ? "Recojo" : "Entrega"}
+                <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>
+                  Vincular a Pedido Web
+                </label>
+                <select
+                  value={pedidoVinculado}
+                  onChange={(e) => setPedidoVinculado(e.target.value)}
+                  style={inputStyle}
+                >
+                  <option value="">-- Sin Vincular --</option>
+                  {pedidosPendientes.map((p) => (
+                    <option key={p.id} value={p.id}>Pedido {p.id} - {p.nombreDestinario}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* FECHA RECOJO */}
+              <div>
+                <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>
+                  Fecha de Recojo
                 </label>
                 <input
                   type="date"
@@ -611,18 +621,18 @@ export default function CrearComprobantePage() {
               </div>
 
               {/* TIPO PAGO */}
-              <div>
-                <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
-                  Tipo de Pago
+              <div style={{ gridColumn: "span 2" }}>
+                <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>
+                  Tipo de Pago Recibido
                 </label>
                 <select
                   value={tipoPago}
                   onChange={(e) => setTipoPago(e.target.value as any)}
                   style={inputStyle}
                 >
-                  <option value="EFECTIVO">Efectivo</option>
-                  <option value="TARJETA">Tarjeta (POS)</option>
-                  <option value="TRANSFERENCIA">Transferencia / Yape / Plin</option>
+                  <option value="EFECTIVO">💵 Efectivo</option>
+                  <option value="TARJETA">💳 Tarjeta (POS)</option>
+                  <option value="TRANSFERENCIA">📲 Transferencia / Yape / Plin</option>
                 </select>
               </div>
             </div>
@@ -632,14 +642,14 @@ export default function CrearComprobantePage() {
           <div style={{
             backgroundColor: "#ffffff",
             borderRadius: "12px",
-            padding: "16px",
-            border: "1px solid #e2e8f0",
-            boxShadow: "0 1px 2px rgba(0,0,0,0.02)"
+            padding: "20px",
+            border: "1px solid #f3e2e8",
+            boxShadow: "0 4px 12px rgba(156, 53, 82, 0.04)"
           }}>
             
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-              <h2 style={{ fontSize: "0.86rem", fontWeight: "700", color: "#0f172a", margin: 0, display: "flex", alignItems: "center", gap: "6px" }}>
-                <Invoice01Icon size={16} color="#0f172a" /> Detalle de Productos en Comprobante
+              <h2 style={{ fontSize: "0.86rem", fontWeight: "700", color: "#1a0f14", margin: 0, display: "flex", alignItems: "center", gap: "6px" }}>
+                <div style={{ padding: "6px", backgroundColor: "#fcf0f4", borderRadius: "8px" }}><Invoice01Icon size={16} color="#9c3552" /></div> Detalle del Comprobante
               </h2>
               <span style={{ fontSize: "0.7rem", fontWeight: "700", color: "#166534", backgroundColor: "#f0fdf4", padding: "2px 8px", borderRadius: "10px", border: "1px solid #bbf7d0" }}>
                 {itemsDetalle.length} ítems agregados
@@ -648,16 +658,16 @@ export default function CrearComprobantePage() {
 
             {/* TABLA DE PRODUCTOS AGREGADOS (PARTE IZQUIERDA) */}
             {itemsDetalle.length === 0 ? (
-              <div style={{ padding: "36px 16px", textAlign: "center", backgroundColor: "#f8fafc", borderRadius: "8px", border: "1px dashed #cbd5e1", color: "#64748b", fontSize: "0.78rem" }}>
-                <ShoppingBag01Icon size={32} color="#cbd5e1" style={{ margin: "0 auto 8px auto", display: "block" }} />
+              <div style={{ padding: "36px 16px", textAlign: "center", backgroundColor: "#faf7f8", borderRadius: "8px", border: "1px dashed #f3e2e8", color: "#66585e", fontSize: "0.78rem" }}>
+                <ShoppingBag01Icon size={32} color="#f3e2e8" style={{ margin: "0 auto 8px auto", display: "block" }} />
                 No has agregado ningún producto al comprobante todavía.<br />
                 Usa el formulario de la derecha para buscar y añadir productos.
               </div>
             ) : (
-              <div style={{ border: "1px solid #e2e8f0", borderRadius: "8px", overflow: "hidden" }}>
+              <div style={{ border: "1px solid #f3e2e8", borderRadius: "8px", overflow: "hidden" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.74rem" }}>
                   <thead>
-                    <tr style={{ backgroundColor: "#f8fafc", borderBottom: "1px solid #e2e8f0", textAlign: "left" }}>
+                    <tr style={{ backgroundColor: "#faf7f8", borderBottom: "1px solid #f3e2e8", textAlign: "left" }}>
                       <th style={thStyle}>PRODUCTO</th>
                       <th style={{ ...thStyle, textAlign: "center" }}>CANTIDAD</th>
                       <th style={thStyle}>FECHA VENTA</th>
@@ -668,21 +678,21 @@ export default function CrearComprobantePage() {
                   </thead>
                   <tbody>
                     {itemsDetalle.map((item) => (
-                      <tr key={item.idTemp} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                      <tr key={item.idTemp} style={{ borderBottom: "1px solid #f3e2e8" }}>
                         
                         {/* PRODUCTO & SKU */}
                         <td style={{ ...tdStyle, padding: "8px 10px" }}>
                           <div>
-                            <span style={{ color: "#0f172a", fontWeight: "600", fontSize: "0.78rem", display: "block" }}>
+                            <span style={{ color: "#1a0f14", fontWeight: "600", fontSize: "0.78rem", display: "block" }}>
                               {item.nombre}
                             </span>
-                            <span style={{ fontSize: "0.62rem", color: "#64748b", fontFamily: "monospace", display: "block" }}>
+                            <span style={{ fontSize: "0.62rem", color: "#66585e", fontFamily: "monospace", display: "block" }}>
                               SKU base: {item.sku}
                             </span>
                             <div style={{ marginTop: "2px" }}>
                               {item.codigosEscaneados && item.codigosEscaneados.length > 0 ? (
                                 item.codigosEscaneados.map((codigo, idx) => (
-                                  <span key={idx} style={{ fontSize: "0.6rem", color: "#0f172a", fontFamily: "monospace", fontWeight: "600", display: "inline-block", backgroundColor: "#e2e8f0", padding: "1px 4px", borderRadius: "3px", marginRight: "3px", marginBottom: "3px" }}>
+                                  <span key={idx} style={{ fontSize: "0.6rem", color: "#1a0f14", fontFamily: "monospace", fontWeight: "600", display: "inline-block", backgroundColor: "#f3e2e8", padding: "1px 4px", borderRadius: "3px", marginRight: "3px", marginBottom: "3px" }}>
                                     {codigo}
                                   </span>
                                 ))
@@ -695,17 +705,17 @@ export default function CrearComprobantePage() {
 
                         {/* CANTIDAD CON AUMENTAR / DISMINUIR */}
                         <td style={{ ...tdStyle, textAlign: "center", padding: "8px 6px" }}>
-                          <div style={{ display: "inline-flex", alignItems: "center", gap: "4px", backgroundColor: "#f8fafc", border: "1px solid #cbd5e1", borderRadius: "6px", padding: "2px 4px" }}>
+                          <div style={{ display: "inline-flex", alignItems: "center", gap: "4px", backgroundColor: "#faf7f8", border: "1px solid #f3e2e8", borderRadius: "6px", padding: "2px 4px" }}>
                             <button
                               type="button"
                               onClick={() => handleDisminuirCantidad(item.idTemp)}
                               title="Disminuir cantidad"
-                              style={{ border: "none", background: "none", cursor: "pointer", display: "flex", alignItems: "center", padding: "0 4px", fontSize: "0.85rem", fontWeight: "700", color: "#475569" }}
+                              style={{ border: "none", background: "none", cursor: "pointer", display: "flex", alignItems: "center", padding: "0 4px", fontSize: "0.85rem", fontWeight: "700", color: "#66585e" }}
                             >
                               -
                             </button>
 
-                            <span style={{ fontSize: "0.74rem", fontWeight: "700", minWidth: "20px", textAlign: "center", color: "#0f172a" }}>
+                            <span style={{ fontSize: "0.74rem", fontWeight: "700", minWidth: "20px", textAlign: "center", color: "#1a0f14" }}>
                               {item.cantidad}
                             </span>
 
@@ -713,7 +723,7 @@ export default function CrearComprobantePage() {
                               type="button"
                               onClick={() => handleAumentarCantidad(item.idTemp)}
                               title="Aumentar cantidad"
-                              style={{ border: "none", background: "none", cursor: "pointer", display: "flex", alignItems: "center", padding: "0 4px", fontSize: "0.85rem", fontWeight: "700", color: "#475569" }}
+                              style={{ border: "none", background: "none", cursor: "pointer", display: "flex", alignItems: "center", padding: "0 4px", fontSize: "0.85rem", fontWeight: "700", color: "#66585e" }}
                             >
                               +
                             </button>
@@ -722,14 +732,14 @@ export default function CrearComprobantePage() {
 
                         {/* FECHA DE VENTA */}
                         <td style={{ ...tdStyle, padding: "8px 10px" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.7rem", color: "#334155" }}>
-                            <Calendar01Icon size={12} color="#64748b" />
+                          <div style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.7rem", color: "#44383d" }}>
+                            <Calendar01Icon size={12} color="#66585e" />
                             <span>{item.fechaVenta}</span>
                           </div>
                         </td>
 
                         {/* PRECIO UNITARIO ESTIMADO MANUAL */}
-                        <td style={{ ...tdStyle, padding: "8px 10px", fontWeight: "600", color: "#0f172a" }}>
+                        <td style={{ ...tdStyle, padding: "8px 10px", fontWeight: "600", color: "#1a0f14" }}>
                           S/ {item.precioUnitario.toFixed(2)}
                         </td>
 
@@ -780,16 +790,16 @@ export default function CrearComprobantePage() {
           <div style={{
             backgroundColor: "#ffffff",
             borderRadius: "12px",
-            padding: "16px",
-            border: "1px solid #e2e8f0",
-            boxShadow: "0 1px 2px rgba(0,0,0,0.02)",
+            padding: "20px",
+            border: "1px solid #f3e2e8",
+            boxShadow: "0 4px 12px rgba(156, 53, 82, 0.04)",
             display: "flex",
             flexDirection: "column",
             gap: "12px"
           }}>
             
-            <h2 style={{ fontSize: "0.85rem", fontWeight: "700", color: "#0f172a", margin: 0, display: "flex", alignItems: "center", gap: "6px" }}>
-              <Tag01Icon size={16} color="#0f172a" /> Configurar & Agregar Producto
+            <h2 style={{ fontSize: "0.85rem", fontWeight: "700", color: "#1a0f14", margin: 0, display: "flex", alignItems: "center", gap: "6px" }}>
+              <div style={{ padding: "6px", backgroundColor: "#fcf0f4", borderRadius: "8px" }}><Tag01Icon size={16} color="#9c3552" /></div> Agregar Producto
             </h2>
 
             {/* 1. PARTE SUPERIOR DE LA SECCIÓN DERECHA: PRECIO MINIMO Y PRECIO MAXIMO */}
@@ -827,7 +837,7 @@ export default function CrearComprobantePage() {
             {/* 2. BÚSQUEDA EN VIVO DE PRODUCTO (CÓDIGO O NOMBRE) */}
             <div style={{ display: "flex", flexDirection: "column", gap: "10px", position: "relative" }}>
               <div>
-                <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#475569", textTransform: "uppercase", marginBottom: "4px" }}>
+                <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#66585e", textTransform: "uppercase", marginBottom: "4px" }}>
                   2. Buscar Producto (Nombre o SKU)
                 </label>
                 <div style={{ position: "relative" }}>
@@ -841,7 +851,7 @@ export default function CrearComprobantePage() {
                     }}
                     style={{ ...inputStyle, paddingRight: "28px" }}
                   />
-                  <Search01Icon size={13} color="#64748b" style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)" }} />
+                  <Search01Icon size={13} color="#66585e" style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)" }} />
                 </div>
               </div>
 
@@ -853,7 +863,7 @@ export default function CrearComprobantePage() {
                     left: 0, 
                     right: 0, 
                     backgroundColor: "#fff", 
-                    border: "1px solid #cbd5e1", 
+                    border: "1px solid #f3e2e8", 
                     borderRadius: "6px", 
                     boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)", 
                     zIndex: 10,
@@ -870,13 +880,13 @@ export default function CrearComprobantePage() {
                         // Also set the specific code scanning state so it can be added to the cart normally
                         setSearchCodigoInput(p.sku || ""); 
                       }}
-                      style={{ padding: "8px 12px", cursor: "pointer", borderBottom: "1px solid #f1f5f9", fontSize: "0.75rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#f8fafc"}
+                      style={{ padding: "8px 12px", cursor: "pointer", borderBottom: "1px solid #f3e2e8", fontSize: "0.75rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#faf7f8"}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
                     >
                       <div>
-                        <div style={{ fontWeight: "600", color: "#0f172a" }}>{p.nombre}</div>
-                        <div style={{ fontSize: "0.65rem", color: "#64748b" }}>SKU: {p.sku}</div>
+                        <div style={{ fontWeight: "600", color: "#1a0f14" }}>{p.nombre}</div>
+                        <div style={{ fontSize: "0.65rem", color: "#66585e" }}>SKU: {p.sku}</div>
                       </div>
                       <div style={{ fontWeight: "700", color: "#16a34a" }}>
                         S/ {p.precioVentaMin ? p.precioVentaMin.toFixed(2) : "0.00"}
@@ -888,7 +898,7 @@ export default function CrearComprobantePage() {
               {/* Si ya hay un producto seleccionado, mostrar el input de escaneo de código para ese producto */}
               {selectedProduct && (
                   <div>
-                    <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#1d4ed8", textTransform: "uppercase", marginBottom: "4px", marginTop: "8px" }}>
+                    <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#9c3552", textTransform: "uppercase", marginBottom: "4px", marginTop: "8px" }}>
                       ↳ Escanea o escribe serie de la unidad:
                     </label>
                     <div style={{ position: "relative" }}>
@@ -897,17 +907,17 @@ export default function CrearComprobantePage() {
                         placeholder="Ej. 10 dígitos..."
                         value={searchCodigoInput}
                         onChange={(e) => setSearchCodigoInput(e.target.value)}
-                        style={{ ...inputStyle, paddingRight: "28px", borderColor: "#bfdbfe", backgroundColor: "#eff6ff" }}
+                        style={{ ...inputStyle, paddingRight: "28px", borderColor: "#f3c2d4", backgroundColor: "#fcf0f4" }}
                       />
-                      <Search01Icon size={13} color="#3b82f6" style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)" }} />
+                      <Search01Icon size={13} color="#9c3552" style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)" }} />
                     </div>
                   </div>
               )}
             </div>
 
             {/* 3. COLOCAR EL PRECIO DE VENTA ESTIMADO (MANUAL) QUE PERMITE COLOCAR EL LÍMITE */}
-            <div style={{ borderTop: "1px solid #f1f5f9", paddingTop: "10px", marginTop: "2px" }}>
-              <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#0f172a", textTransform: "uppercase", marginBottom: "4px" }}>
+            <div style={{ borderTop: "1px solid #f3e2e8", paddingTop: "10px", marginTop: "2px" }}>
+              <label style={{ display: "block", fontSize: "0.64rem", fontWeight: "700", color: "#1a0f14", textTransform: "uppercase", marginBottom: "4px" }}>
                 Precio de Venta Estimado (Manual con Límite)
               </label>
               <input
@@ -921,8 +931,8 @@ export default function CrearComprobantePage() {
                   ...inputStyle,
                   fontSize: "0.88rem",
                   fontWeight: "700",
-                  color: "#0f172a",
-                  borderColor: isBelowMin || isAboveMax ? "#f87171" : "#cbd5e1"
+                  color: "#1a0f14",
+                  borderColor: isBelowMin || isAboveMax ? "#f87171" : "#f3e2e8"
                 }}
               />
 
@@ -956,7 +966,7 @@ export default function CrearComprobantePage() {
               style={{
                 width: "100%",
                 padding: "10px",
-                backgroundColor: "#0f172a",
+                backgroundColor: "#9c3552",
                 color: "#ffffff",
                 border: "none",
                 borderRadius: "8px",
@@ -968,7 +978,7 @@ export default function CrearComprobantePage() {
                 justifyContent: "center",
                 gap: "6px",
                 marginTop: "6px",
-                boxShadow: "0 2px 6px rgba(15,23,42,0.12)"
+                boxShadow: "0 4px 10px rgba(156, 53, 82, 0.25)"
               }}
             >
               <Add01Icon size={14} color="#ffffff" /> AGREGAR AL COMPROBANTE
@@ -980,29 +990,29 @@ export default function CrearComprobantePage() {
           <div style={{
             backgroundColor: "#ffffff",
             borderRadius: "12px",
-            padding: "16px",
-            border: "1px solid #e2e8f0",
-            boxShadow: "0 1px 2px rgba(0,0,0,0.02)"
+            padding: "20px",
+            border: "1px solid #f3e2e8",
+            boxShadow: "0 4px 12px rgba(156, 53, 82, 0.04)"
           }}>
-            <h3 style={{ fontSize: "0.82rem", fontWeight: "700", color: "#0f172a", margin: "0 0 10px 0" }}>
+            <h3 style={{ fontSize: "0.82rem", fontWeight: "700", color: "#1a0f14", margin: "0 0 10px 0" }}>
               Resumen del Comprobante
             </h3>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "0.74rem" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", color: "#475569" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", color: "#66585e" }}>
                 <span>Subtotal Neto:</span>
-                <strong style={{ color: "#0f172a" }}>S/ {subtotalTotal.toFixed(2)}</strong>
+                <strong style={{ color: "#1a0f14" }}>S/ {subtotalTotal.toFixed(2)}</strong>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "space-between", color: "#475569" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", color: "#66585e" }}>
                 <span>IGV (18%):</span>
-                <strong style={{ color: "#0f172a" }}>S/ {igvTotal.toFixed(2)}</strong>
+                <strong style={{ color: "#1a0f14" }}>S/ {igvTotal.toFixed(2)}</strong>
               </div>
 
-              <div style={{ height: "1px", backgroundColor: "#e2e8f0", margin: "2px 0" }} />
+              <div style={{ height: "1px", backgroundColor: "#f3e2e8", margin: "2px 0" }} />
 
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: "0.78rem", fontWeight: "700", color: "#0f172a" }}>TOTAL A COBRAR:</span>
+                <span style={{ fontSize: "0.78rem", fontWeight: "700", color: "#1a0f14" }}>TOTAL A COBRAR:</span>
                 <span style={{ fontSize: "1.15rem", fontWeight: "800", color: "#166534" }}>
                   S/ {grandTotal.toFixed(2)}
                 </span>
@@ -1046,14 +1056,14 @@ export default function CrearComprobantePage() {
                 style={{
                   position: "absolute", top: "16px", right: "16px",
                   background: "none", border: "none", cursor: "pointer",
-                  color: "#64748b"
+                  color: "#66585e"
                 }}
               >
                 ✕
               </button>
               
-              <h3 style={{ fontSize: "1.1rem", margin: "0 0 16px 0", color: "#0f172a" }}>Seleccionar o Crear Cliente</h3>
-              <p style={{ fontSize: "0.75rem", color: "#64748b", margin: "0 0 12px 0" }}>
+              <h3 style={{ fontSize: "1.1rem", margin: "0 0 16px 0", color: "#1a0f14" }}>Seleccionar o Crear Cliente</h3>
+              <p style={{ fontSize: "0.75rem", color: "#66585e", margin: "0 0 12px 0" }}>
                 Ingresa el DNI o RUC. Si no existe, podrás crearlo.
               </p>
               
@@ -1078,12 +1088,12 @@ export default function CrearComprobantePage() {
                 return (
                   <div>
                     {filtered.length > 0 && (
-                      <div style={{ marginTop: "16px", maxHeight: "150px", overflowY: "auto", border: "1px solid #e2e8f0", borderRadius: "8px" }}>
+                      <div style={{ marginTop: "16px", maxHeight: "150px", overflowY: "auto", border: "1px solid #f3e2e8", borderRadius: "8px" }}>
                         {filtered.map((found, idx) => (
-                          <div key={idx} style={{ padding: "10px 12px", borderBottom: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <div key={idx} style={{ padding: "10px 12px", borderBottom: "1px solid #f3e2e8", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                             <div>
-                              <strong style={{ display: "block", color: "#0f172a", fontSize: "0.85rem" }}>{found.nombreCompleto}</strong>
-                              <span style={{ fontSize: "0.7rem", color: "#64748b" }}>Doc: {found.numeroDocumento || found.numDocumento}</span>
+                              <strong style={{ display: "block", color: "#1a0f14", fontSize: "0.85rem" }}>{found.nombreCompleto}</strong>
+                              <span style={{ fontSize: "0.7rem", color: "#66585e" }}>Doc: {found.numeroDocumento || found.numDocumento}</span>
                             </div>
                             <button 
                               onClick={() => { 
@@ -1091,7 +1101,7 @@ export default function CrearComprobantePage() {
                                 setClienteDoc(found.numeroDocumento || found.numDocumento || ""); 
                                 setIsClienteModalOpen(false); 
                               }} 
-                              style={{ padding: "4px 8px", backgroundColor: "#0284c7", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "0.7rem", fontWeight: "700" }}
+                              style={{ padding: "4px 8px", backgroundColor: "#9c3552", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "0.7rem", fontWeight: "700" }}
                             >
                               Seleccionar
                             </button>
@@ -1101,8 +1111,8 @@ export default function CrearComprobantePage() {
                     )}
                     
                     {searchLower.length >= 3 && filtered.length === 0 && (
-                      <div style={{ marginTop: "16px", padding: "12px", border: "1px dashed #cbd5e1", backgroundColor: "#f8fafc", borderRadius: "8px" }}>
-                        <p style={{ margin: "0 0 12px 0", fontSize: "0.75rem", color: "#475569" }}>
+                      <div style={{ marginTop: "16px", padding: "12px", border: "1px dashed #f3e2e8", backgroundColor: "#faf7f8", borderRadius: "8px" }}>
+                        <p style={{ margin: "0 0 12px 0", fontSize: "0.75rem", color: "#66585e" }}>
                           No se encontraron clientes. ¿Deseas registrar "{searchDniInput}" rápidamente?
                         </p>
                         <input 
@@ -1142,11 +1152,12 @@ export default function CrearComprobantePage() {
                           }} 
                           disabled={isCreatingClient || !nuevoClienteNombre} 
                           style={{ 
-                            width: "100%", padding: "8px", 
-                            backgroundColor: (!nuevoClienteNombre || isCreatingClient) ? "#cbd5e1" : "#0f172a", 
-                            color: "#fff", border: "none", borderRadius: "6px", 
+                            width: "100%", padding: "10px", 
+                            backgroundColor: (!nuevoClienteNombre || isCreatingClient) ? "#f3e2e8" : "#9c3552", 
+                            color: (!nuevoClienteNombre || isCreatingClient) ? "#66585e" : "#fff", border: "none", borderRadius: "8px", 
                             cursor: (!nuevoClienteNombre || isCreatingClient) ? "not-allowed" : "pointer", 
-                            fontSize: "0.8rem", fontWeight: "700" 
+                            fontSize: "0.8rem", fontWeight: "700",
+                            boxShadow: "0 2px 6px rgba(156, 53, 82, 0.15)"
                           }}
                         >
                           {isCreatingClient ? "Guardando..." : "Registrar y Usar"}
@@ -1167,20 +1178,21 @@ export default function CrearComprobantePage() {
 const inputStyle: React.CSSProperties = {
   width: "100%",
   boxSizing: "border-box",
-  padding: "7px 10px",
-  borderRadius: "6px",
-  border: "1px solid #cbd5e1",
-  fontSize: "0.74rem",
+  padding: "10px 12px",
+  borderRadius: "8px",
+  border: "2px solid #f3e2e8",
+  fontSize: "0.78rem",
   outline: "none",
-  backgroundColor: "#f8fafc",
-  color: "#0f172a"
+  backgroundColor: "#faf7f8",
+  color: "#1a0f14",
+  fontWeight: "600"
 };
 
 const thStyle: React.CSSProperties = {
   padding: "8px 10px",
   fontSize: "0.64rem",
   fontWeight: "700",
-  color: "#64748b",
+  color: "#66585e",
   letterSpacing: "0.04em",
   textTransform: "uppercase"
 };
@@ -1188,6 +1200,6 @@ const thStyle: React.CSSProperties = {
 const tdStyle: React.CSSProperties = {
   padding: "8px 10px",
   fontSize: "0.74rem",
-  color: "#0f172a",
+  color: "#1a0f14",
   verticalAlign: "middle"
 };

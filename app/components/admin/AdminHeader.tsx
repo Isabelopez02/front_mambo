@@ -8,7 +8,9 @@ import {
   UserIcon,
   Settings02Icon,
   Logout01Icon,
-  ArrowDown01Icon
+  ArrowDown01Icon,
+  Alert01Icon,
+  PackageIcon
 } from "hugeicons-react";
 import { authService } from "../../services/auth.service";
 
@@ -146,14 +148,17 @@ export function AdminHeader() {
               </div>
               
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                <div style={{ fontSize: "0.72rem", color: "#334155", backgroundColor: "#fcf0f4", padding: "8px 10px", borderRadius: "8px", border: "1px solid #f3c2d4" }}>
-                  ⚠️ <strong>Pedido bajo de stock</strong> en labial Red Velvet.
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.72rem", color: "#334155", backgroundColor: "#fcf0f4", padding: "8px 10px", borderRadius: "8px", border: "1px solid #f3c2d4" }}>
+                  <Alert01Icon size={14} color="#ef4444" />
+                  <span><strong>Pedido bajo de stock</strong> en labial Red Velvet.</span>
                 </div>
-                <div style={{ fontSize: "0.72rem", color: "#334155", backgroundColor: "#f8fafc", padding: "8px 10px", borderRadius: "8px" }}>
-                  📦 <strong>Nuevo pedido #1045</strong> para recojo en tienda.
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.72rem", color: "#334155", backgroundColor: "#f8fafc", padding: "8px 10px", borderRadius: "8px" }}>
+                  <PackageIcon size={14} color="#0284c7" />
+                  <span><strong>Nuevo pedido #1045</strong> para recojo en tienda.</span>
                 </div>
-                <div style={{ fontSize: "0.72rem", color: "#334155", backgroundColor: "#f8fafc", padding: "8px 10px", borderRadius: "8px" }}>
-                  📦 <strong>Nuevo pedido #1046</strong> para recojo en tienda.
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.72rem", color: "#334155", backgroundColor: "#f8fafc", padding: "8px 10px", borderRadius: "8px" }}>
+                  <PackageIcon size={14} color="#0284c7" />
+                  <span><strong>Nuevo pedido #1046</strong> para recojo en tienda.</span>
                 </div>
               </div>
             </div>

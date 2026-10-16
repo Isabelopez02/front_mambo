@@ -18,6 +18,7 @@ export interface ComprobanteReqDTO {
     tipoEnvio?: string;
     fechaEntrega?: string;
     tipoPago?: string;
+    estadoEntrega?: string;
     detalles: ComprobanteDetalleReqDTO[];
 }
 

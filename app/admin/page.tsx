@@ -1,59 +1,82 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   ShoppingBag01Icon, 
   CheckmarkBadge01Icon,
-  DeliveryTruck01Icon,
   AnalyticsUpIcon,
   ArrowUp01Icon,
   Location01Icon,
   ArrowRight01Icon,
-  PackageIcon
+  PackageIcon,
+  Alert01Icon
 } from "hugeicons-react";
-
-interface MonthlyData {
-  mes: string;
-  ingresos: number;
-  egresos: number;
-  ganancia: number;
-}
-
-const last6MonthsData: MonthlyData[] = [
-  { mes: "Marzo", ingresos: 18500, egresos: 9200, ganancia: 9300 },
-  { mes: "Abril", ingresos: 22100, egresos: 10800, ganancia: 11300 },
-  { mes: "Mayo", ingresos: 20400, egresos: 9900, ganancia: 10500 },
-  { mes: "Junio", ingresos: 26800, egresos: 12400, ganancia: 14400 },
-  { mes: "Julio", ingresos: 24900, egresos: 11500, ganancia: 13400 },
-  { mes: "Agosto", ingresos: 28450, egresos: 12900, ganancia: 15550 }
-];
-
-const recentPickups = [
-  { id: "#1042", sede: "Sede Centro Histórico", cliente: "Ana B.", estado: "Pendiente", tagColor: "#3b82f6" },
-  { id: "#1040", sede: "Sede Gamarra Luxe", cliente: "Juan M.", estado: "Entregado", tagColor: "#10b981" },
-  { id: "#1039", sede: "Sede Los Olivos - Lima Norte", cliente: "Carlos S.", estado: "Por Alistar", tagColor: "#9c3552" },
-  { id: "#1038", sede: "Sede Miraflores Boutique", cliente: "Luis G.", estado: "Entregado", tagColor: "#10b981" }
-];
-
+import { dashboardService } from "../services/dashboard.service";
+import { comprobantesService, ComprobanteItem } from "../services/comprobantes.service";
+import { DashboardDTO } from "../types";
 
 export default function AdminDashboardPage() {
-  const [hoveredPointIndex, setHoveredPointIndex] = useState<number | null>(5); // Default to Agosto
+  const [hoveredPointIndex, setHoveredPointIndex] = useState<number | null>(6);
+  const [dashboardData, setDashboardData] = useState<DashboardDTO | null>(null);
+  const [recentPickups, setRecentPickups] = useState<ComprobanteItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Chart dimensions & scaling
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [resumen, comprobantes] = await Promise.all([
+          dashboardService.obtenerResumen(),
+          comprobantesService.listarTodos()
+        ]);
+        setDashboardData(resumen);
+
+        // Filtrar comprobantes de recojo en tienda
+        const recojos = comprobantes.filter(c => c.tipoEnvio === "RECOJO_TIENDA" || !c.tipoEnvio);
+        setRecentPickups(recojos.slice(0, 5)); // Mostrar últimos 5
+      } catch (error) {
+        console.error("Error fetching dashboard data", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
+
+  const chartDays = dashboardData?.diasSemana && dashboardData.diasSemana.length > 0 
+    ? dashboardData.diasSemana 
+    : ["Lun", "Mar", "Mie", "Jue", "Vie", "Sab", "Dom"];
+    
+  const chartVentas = dashboardData?.ventasSemana && dashboardData.ventasSemana.length > 0 
+    ? dashboardData.ventasSemana 
+    : [0, 0, 0, 0, 0, 0, 0];
+  
+  const chartData = chartDays.map((dia, index) => {
+    const ingresos = chartVentas[index] || 0;
+    const egresos = ingresos * 0.4; // Estimado demostrativo
+    return {
+      mes: dia,
+      ingresos,
+      egresos,
+      ganancia: ingresos - egresos
+    };
+  });
+
   const width = 640;
   const height = 230;
   const paddingX = 40;
   const paddingY = 30;
 
-  const maxVal = 32000;
+  const maxValRaw = Math.max(...chartData.map(d => d.ingresos), 1000);
+  const maxVal = maxValRaw * 1.2;
   const minVal = 0;
 
-  const getX = (index: number) => paddingX + (index * (width - 2 * paddingX)) / (last6MonthsData.length - 1);
+  const getX = (index: number) => paddingX + (index * (width - 2 * paddingX)) / (Math.max(chartData.length - 1, 1));
   const getY = (value: number) => height - paddingY - ((value - minVal) * (height - 2 * paddingY)) / (maxVal - minVal);
 
-  const generateSmoothPath = (key: keyof Omit<MonthlyData, 'mes'>) => {
-    const points = last6MonthsData.map((d, i) => ({ x: getX(i), y: getY(d[key]) }));
+  const generateSmoothPath = (key: keyof typeof chartData[0]) => {
+    if (chartData.length === 0) return "";
+    const points = chartData.map((d, i) => ({ x: getX(i), y: getY(d[key] as number) }));
 
     return points.reduce((acc, point, i) => {
       if (i === 0) return `M ${point.x},${point.y}`;
@@ -69,6 +92,10 @@ export default function AdminDashboardPage() {
   const ingresosPath = generateSmoothPath("ingresos");
   const egresosPath = generateSmoothPath("egresos");
   const gananciaPath = generateSmoothPath("ganancia");
+
+  if (loading) {
+    return <div style={{ padding: "40px", textAlign: "center", color: "#66585e" }}>Cargando dashboard...</div>;
+  }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -86,7 +113,7 @@ export default function AdminDashboardPage() {
       {/* COMPACT 3 CARDS ROW */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
         
-        {/* CARD 1: VENTAS DEL MES */}
+        {/* CARD 1: VENTAS DE HOY */}
         <motion.div
           whileHover={{ y: -2 }}
           transition={{ duration: 0.15 }}
@@ -99,24 +126,23 @@ export default function AdminDashboardPage() {
           }}
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-            <span style={{ fontSize: "0.7rem", fontWeight: "600", color: "#66585e" }}>Ventas del Mes</span>
+            <span style={{ fontSize: "0.7rem", fontWeight: "600", color: "#66585e" }}>Ventas de Hoy</span>
             <div style={{ padding: "6px", borderRadius: "8px", backgroundColor: "#fcf0f4" }}>
               <ShoppingBag01Icon size={15} color="#9c3552" />
             </div>
           </div>
 
           <h3 style={{ fontSize: "1.25rem", fontWeight: "800", color: "#1a0f14", margin: "0 0 3px 0" }}>
-            S/. 28,450.00
+            S/. {(dashboardData?.ventasHoy || 0).toLocaleString('es-PE', { minimumFractionDigits: 2 })}
           </h3>
 
           <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-            <ArrowUp01Icon size={12} color="#15803d" />
-            <span style={{ fontSize: "0.68rem", fontWeight: "700", color: "#15803d" }}>+14.2%</span>
-            <span style={{ fontSize: "0.65rem", color: "#887980" }}>vs mes previo</span>
+            <span style={{ fontSize: "0.68rem", fontWeight: "700", color: "#15803d" }}>Sincronizado</span>
+            <span style={{ fontSize: "0.65rem", color: "#887980" }}>en tiempo real</span>
           </div>
         </motion.div>
 
-        {/* CARD 2: PEDIDOS REALIZADOS */}
+        {/* CARD 2: PEDIDOS PENDIENTES */}
         <motion.div
           whileHover={{ y: -2 }}
           transition={{ duration: 0.15 }}
@@ -129,23 +155,22 @@ export default function AdminDashboardPage() {
           }}
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-            <span style={{ fontSize: "0.7rem", fontWeight: "600", color: "#66585e" }}>Pedidos Realizados</span>
+            <span style={{ fontSize: "0.7rem", fontWeight: "600", color: "#66585e" }}>Pedidos Pendientes</span>
             <div style={{ padding: "6px", borderRadius: "8px", backgroundColor: "#fcf0f4" }}>
               <CheckmarkBadge01Icon size={15} color="#9c3552" />
             </div>
           </div>
 
           <h3 style={{ fontSize: "1.25rem", fontWeight: "800", color: "#1a0f14", margin: "0 0 3px 0" }}>
-            348
+            {dashboardData?.pedidosPendientes || 0}
           </h3>
 
           <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-            <span style={{ fontSize: "0.68rem", fontWeight: "700", color: "#9c3552" }}>32 pendientes</span>
-            <span style={{ fontSize: "0.65rem", color: "#887980" }}>por despachar</span>
+            <span style={{ fontSize: "0.65rem", color: "#887980" }}>Total por despachar</span>
           </div>
         </motion.div>
 
-        {/* CARD 3: RECOJOS PENDIENTES */}
+        {/* CARD 3: BAJO STOCK */}
         <motion.div
           whileHover={{ y: -2 }}
           transition={{ duration: 0.15 }}
@@ -158,19 +183,18 @@ export default function AdminDashboardPage() {
           }}
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-            <span style={{ fontSize: "0.7rem", fontWeight: "600", color: "#66585e" }}>Recojos Pendientes</span>
+            <span style={{ fontSize: "0.7rem", fontWeight: "600", color: "#66585e" }}>Productos Bajo Stock</span>
             <div style={{ padding: "6px", borderRadius: "8px", backgroundColor: "#fcf0f4" }}>
-              <PackageIcon size={15} color="#9c3552" />
+              <Alert01Icon size={15} color="#9c3552" />
             </div>
           </div>
 
           <h3 style={{ fontSize: "1.25rem", fontWeight: "800", color: "#1a0f14", margin: "0 0 3px 0" }}>
-            18
+            {dashboardData?.productosBajoStock || 0}
           </h3>
 
           <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-            <span style={{ fontSize: "0.68rem", fontWeight: "700", color: "#15803d" }}>4 sedes</span>
-            <span style={{ fontSize: "0.65rem", color: "#887980" }}>con recojos</span>
+            <span style={{ fontSize: "0.65rem", color: "#887980" }}>Requieren atención</span>
           </div>
         </motion.div>
 
@@ -205,11 +229,11 @@ export default function AdminDashboardPage() {
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                 <AnalyticsUpIcon size={16} color="#9c3552" />
                 <h3 style={{ fontSize: "0.95rem", fontWeight: "700", color: "#1a0f14", margin: 0 }}>
-                  Balance Financiero (6 Meses)
+                  Balance Semanal
                 </h3>
               </div>
               <span style={{ fontSize: "0.68rem", color: "#66585e", display: "block", marginTop: "2px" }}>
-                Pasa el mouse sobre el gráfico para ver el detalle por mes
+                Pasa el mouse sobre el gráfico para ver el detalle por día
               </span>
             </div>
 
@@ -235,21 +259,21 @@ export default function AdminDashboardPage() {
             <svg viewBox={`0 0 ${width} ${height}`} style={{ width: "100%", height: "auto", minWidth: "480px" }}>
               
               {/* GRID LINES */}
-              {[0, 8000, 16000, 24000, 32000].map((val) => {
+              {[0, maxVal * 0.25, maxVal * 0.5, maxVal * 0.75, maxVal].map((val) => {
                 const y = getY(val);
                 return (
                   <g key={val}>
                     <line x1={paddingX} y1={y} x2={width - paddingX} y2={y} stroke="#f3e2e8" strokeDasharray="3 3" strokeWidth="1" />
                     <text x={paddingX - 8} y={y + 3} textAnchor="end" fontSize="9" fill="#887980" fontWeight="500">
-                      S/. {val / 1000}k
+                      S/. {(val / 1000).toFixed(1)}k
                     </text>
                   </g>
                 );
               })}
 
-              {/* MONTH LABELS */}
-              {last6MonthsData.map((d, i) => (
-                <text key={d.mes} x={getX(i)} y={height - 8} textAnchor="middle" fontSize="10" fill="#44383d" fontWeight={hoveredPointIndex === i ? "700" : "500"}>
+              {/* DAY LABELS */}
+              {chartData.map((d, i) => (
+                <text key={i} x={getX(i)} y={height - 8} textAnchor="middle" fontSize="10" fill="#44383d" fontWeight={hoveredPointIndex === i ? "700" : "500"}>
                   {d.mes}
                 </text>
               ))}
@@ -264,7 +288,7 @@ export default function AdminDashboardPage() {
               <path d={ingresosPath} fill="none" stroke="#9c3552" strokeWidth="2.5" strokeLinecap="round" />
 
               {/* INTERACTIVE POINTS */}
-              {last6MonthsData.map((d, i) => {
+              {chartData.map((d, i) => {
                 const x = getX(i);
                 const yIngresos = getY(d.ingresos);
                 const yEgresos = getY(d.egresos);
@@ -272,7 +296,7 @@ export default function AdminDashboardPage() {
                 const isHovered = hoveredPointIndex === i;
 
                 return (
-                  <g key={d.mes} onMouseEnter={() => setHoveredPointIndex(i)} style={{ cursor: "pointer" }}>
+                  <g key={i} onMouseEnter={() => setHoveredPointIndex(i)} style={{ cursor: "pointer" }}>
                     {isHovered && (
                       <line x1={x} y1={paddingY} x2={x} y2={height - paddingY} stroke="#9c3552" strokeWidth="1" strokeDasharray="3 3" opacity="0.4" />
                     )}
@@ -286,7 +310,7 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* DETAILED HOVER BREAKDOWN CARD */}
-          {hoveredPointIndex !== null && (
+          {hoveredPointIndex !== null && chartData[hoveredPointIndex] && (
             <div style={{
               marginTop: "12px",
               backgroundColor: "#fcf0f4",
@@ -301,7 +325,7 @@ export default function AdminDashboardPage() {
             }}>
               <div>
                 <span style={{ fontSize: "0.6rem", fontWeight: "700", color: "#9c3552", textTransform: "uppercase", letterSpacing: "1px" }}>
-                  DETALLE DE {last6MonthsData[hoveredPointIndex].mes.toUpperCase()}
+                  DETALLE DEL {chartData[hoveredPointIndex].mes.toUpperCase()}
                 </span>
               </div>
 
@@ -309,21 +333,21 @@ export default function AdminDashboardPage() {
                 <div>
                   <span style={{ fontSize: "0.62rem", color: "#66585e" }}>Ingresos:</span>{" "}
                   <strong style={{ fontSize: "0.78rem", color: "#9c3552" }}>
-                    S/. {last6MonthsData[hoveredPointIndex].ingresos.toLocaleString('es-PE')}
+                    S/. {chartData[hoveredPointIndex].ingresos.toLocaleString('es-PE', { maximumFractionDigits: 0 })}
                   </strong>
                 </div>
 
                 <div>
                   <span style={{ fontSize: "0.62rem", color: "#66585e" }}>Egresos:</span>{" "}
                   <strong style={{ fontSize: "0.78rem", color: "#ef4444" }}>
-                    S/. {last6MonthsData[hoveredPointIndex].egresos.toLocaleString('es-PE')}
+                    S/. {chartData[hoveredPointIndex].egresos.toLocaleString('es-PE', { maximumFractionDigits: 0 })}
                   </strong>
                 </div>
 
                 <div>
                   <span style={{ fontSize: "0.62rem", color: "#66585e" }}>Ganancia Neta:</span>{" "}
                   <strong style={{ fontSize: "0.78rem", color: "#10b981" }}>
-                    S/. {last6MonthsData[hoveredPointIndex].ganancia.toLocaleString('es-PE')}
+                    S/. {chartData[hoveredPointIndex].ganancia.toLocaleString('es-PE', { maximumFractionDigits: 0 })}
                   </strong>
                 </div>
               </div>
@@ -348,17 +372,19 @@ export default function AdminDashboardPage() {
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                 <PackageIcon size={16} color="#9c3552" />
                 <h3 style={{ fontSize: "0.9rem", fontWeight: "700", color: "#1a0f14", margin: 0 }}>
-                  Recojos en Tienda
+                  Recojos Recientes
                 </h3>
               </div>
               <span style={{ fontSize: "0.62rem", fontWeight: "700", color: "#9c3552", backgroundColor: "#fcf0f4", padding: "2px 6px", borderRadius: "4px" }}>
-                HOY
+                NUEVOS
               </span>
             </div>
 
             {/* LIST OF PICKUPS */}
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              {recentPickups.map((item) => (
+              {recentPickups.length === 0 ? (
+                <div style={{ fontSize: "0.75rem", color: "#66585e", textAlign: "center", padding: "20px 0" }}>No hay recojos pendientes</div>
+              ) : recentPickups.map((item) => (
                 <div
                   key={item.id}
                   style={{
@@ -372,28 +398,28 @@ export default function AdminDashboardPage() {
                   }}
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: "0.75rem", fontWeight: "700", color: "#1a0f14" }}>{item.id}</span>
+                    <span style={{ fontSize: "0.75rem", fontWeight: "700", color: "#1a0f14" }}>Nº {item.id}</span>
                     <span style={{
                       fontSize: "0.58rem",
                       fontWeight: "700",
                       color: "#ffffff",
-                      backgroundColor: item.tagColor,
+                      backgroundColor: item.estadoSunat === "ACEPTADO" ? "#10b981" : "#9c3552",
                       padding: "2px 6px",
                       borderRadius: "4px",
                       textTransform: "uppercase"
                     }}>
-                      {item.estado}
+                      {item.estadoSunat || "PENDIENTE"}
                     </span>
                   </div>
 
                   <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                     <Location01Icon size={11} color="#66585e" />
-                    <span style={{ fontSize: "0.68rem", color: "#66585e" }}>{item.sede}</span>
+                    <span style={{ fontSize: "0.68rem", color: "#66585e" }}>Tienda Principal</span>
                   </div>
 
                   <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                     <PackageIcon size={11} color="#9c3552" />
-                    <span style={{ fontSize: "0.68rem", fontWeight: "600", color: "#44383d" }}>Cliente: {item.cliente}</span>
+                    <span style={{ fontSize: "0.68rem", fontWeight: "600", color: "#44383d" }}>{item.clienteNombre}</span>
                   </div>
                 </div>
               ))}
@@ -402,7 +428,7 @@ export default function AdminDashboardPage() {
 
           {/* VIEW ALL BUTTON */}
           <a
-            href="/admin/entregas"
+            href="/admin/comprobantes"
             style={{
               marginTop: "14px",
               padding: "8px",
@@ -420,12 +446,10 @@ export default function AdminDashboardPage() {
               textAlign: "center"
             }}
           >
-            Ver Recojos <ArrowRight01Icon size={12} color="#9c3552" />
+            Ver Todos <ArrowRight01Icon size={12} color="#9c3552" />
           </a>
         </div>
-
       </div>
-
     </div>
   );
 }
